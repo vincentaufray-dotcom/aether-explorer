@@ -1,0 +1,1969 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ÆTHER Universe Explorer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #000000 0%, #0a0a1a 50%, #1a1a3a 100%); 
+            color: #e0e0e0; 
+            min-height: 100vh; 
+            padding: 15px; 
+            overflow-x: hidden; 
+        }
+        
+        .header { text-align: center; margin-bottom: 20px; animation: fadeIn 1s; }
+        h1 { 
+            color: #00d4ff; 
+            font-size: 2.5em; 
+            margin-bottom: 5px; 
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.6); 
+        }
+        .version-badge { 
+            display: inline-block; 
+            background: linear-gradient(135deg, #ff00ff, #00ffff); 
+            color: white; 
+            padding: 4px 12px; 
+            border-radius: 15px; 
+            font-size: 0.6em; 
+            vertical-align: middle; 
+            margin-left: 10px; 
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tagline { color: #888; font-size: 1.1em; margin-bottom: 15px; }
+        
+        .mode-emploi { 
+            background: rgba(0,212,255,0.05); 
+            border: 1px solid #00d4ff; 
+            border-radius: 10px; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            font-size: 0.95em; 
+            line-height: 1.6; 
+            text-align: center;
+        }
+        .mode-emploi strong { color: #00d4ff; }
+        
+        .main-container { max-width: 1700px; margin: 0 auto; }
+        
+        .mode-selector { 
+            background: rgba(20, 20, 40, 0.95); 
+            border-radius: 15px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            display: flex; 
+            justify-content: center; 
+            gap: 10px; 
+            flex-wrap: wrap; 
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3); 
+            border: 1px solid rgba(0, 212, 255, 0.2); 
+        }
+        .mode-btn { 
+            background: rgba(0, 0, 0, 0.4); 
+            color: #00d4ff; 
+            border: 2px solid #00d4ff; 
+            padding: 10px 22px; 
+            border-radius: 10px; 
+            font-size: 0.95em; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            font-weight: 700; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
+        .mode-btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.5); 
+        }
+        .mode-btn.active { 
+            background: linear-gradient(135deg, #00d4ff, #0088cc); 
+            color: white; 
+            border-color: white; 
+            box-shadow: 0 6px 25px rgba(0, 212, 255, 0.7);
+        }
+        .mode-icon { font-size: 1.3em; }
+        
+        .aether-gauge { 
+            background: rgba(20, 20, 40, 0.9); 
+            border-radius: 15px; 
+            padding: 15px; 
+            margin-bottom: 15px; 
+            text-align: center; 
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3); 
+            border: 1px solid rgba(0, 212, 255, 0.2); 
+        }
+        .gauge-label { 
+            color: #00d4ff; 
+            font-size: 0.9em; 
+            margin-bottom: 8px; 
+            font-weight: 600; 
+        }
+        .gauge-bar { 
+            width: 100%; 
+            height: 22px; 
+            background: rgba(0, 0, 0, 0.5); 
+            border-radius: 11px; 
+            overflow: hidden; 
+            border: 1px solid rgba(0, 212, 255, 0.3); 
+            position: relative; 
+        }
+        .gauge-fill { 
+            height: 100%; 
+            background: linear-gradient(90deg, #0088cc, #00d4ff, #00ffff); 
+            border-radius: 11px; 
+            transition: width 0.5s; 
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
+        }
+        .gauge-text { 
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            color: white; 
+            font-size: 0.8em; 
+            font-weight: bold; 
+            text-shadow: 0 0 5px #000; 
+        }
+        
+        .canvas-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+            margin-bottom: 15px; 
+        }
+        @media (max-width: 1024px) { 
+            .canvas-grid { grid-template-columns: 1fr; } 
+        }
+        
+        .canvas-wrapper { 
+            background: rgba(20, 20, 40, 0.9); 
+            border-radius: 15px; 
+            padding: 20px; 
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2); 
+            border: 1px solid rgba(0, 212, 255, 0.2); 
+            position: relative; 
+        }
+        .canvas-title { 
+            color: #00d4ff; 
+            font-size: 1.25em; 
+            margin-bottom: 12px; 
+            text-align: center; 
+            font-weight: 600; 
+        }
+        .zenodo-link { 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+            background: rgba(0, 100, 200, 0.3); 
+            color: #00d4ff; 
+            padding: 5px 10px; 
+            border-radius: 5px; 
+            font-size: 0.75em; 
+            text-decoration: none; 
+            border: 1px solid #00d4ff; 
+            transition: all 0.3s;
+        }
+        .zenodo-link:hover {
+            background: rgba(0, 100, 200, 0.6);
+            transform: scale(1.05);
+        }
+        
+        canvas { 
+            background: #000; 
+            border-radius: 10px; 
+            display: block; 
+            border: 2px solid #00d4ff; 
+            width: 100%; 
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.3); 
+        }
+        
+        .legend-panel { 
+            margin-top: 15px; 
+            background: rgba(0,0,0,0.5); 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: 1px solid rgba(0,212,255,0.3); 
+        }
+        .legend-title { 
+            color: #00d4ff; 
+            font-size: 0.9em; 
+            margin-bottom: 10px; 
+            text-align: center; 
+            font-weight: 600;
+        }
+        .legend-items { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+            justify-content: center; 
+        }
+        .legend-item { 
+            font-size: 0.85em; 
+            color: #ddd; 
+            background: rgba(20,20,40,0.8); 
+            padding: 6px 12px; 
+            border-radius: 15px; 
+            border: 1px solid #444; 
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .legend-item:hover {
+            background: rgba(0, 212, 255, 0.2);
+            transform: scale(1.05);
+        }
+        .legend-item.selected {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: #00d4ff;
+        }
+        
+        .timeline-bar { margin-top: 15px; }
+        .timeline-label { 
+            font-size: 0.85em; 
+            color: #00d4ff; 
+            margin-bottom: 5px; 
+            font-weight: 600;
+        }
+        .timeline-progress { 
+            width: 100%; 
+            height: 6px; 
+            background: rgba(0,0,0,0.5); 
+            border-radius: 3px; 
+            overflow: hidden;
+            border: 1px solid rgba(0,212,255,0.3);
+        }
+        .timeline-fill { 
+            height: 100%; 
+            background: linear-gradient(90deg, #00d4ff, #00ffff); 
+            border-radius: 3px; 
+            transition: width 0.1s linear;
+        }
+        
+        .controls-panel { 
+            background: rgba(20, 20, 40, 0.9); 
+            border-radius: 15px; 
+            padding: 18px; 
+            margin-bottom: 15px; 
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2); 
+            border: 1px solid rgba(0, 212, 255, 0.2); 
+        }
+        .controls-title { 
+            color: #00d4ff; 
+            font-size: 1.2em; 
+            margin-bottom: 15px; 
+            text-align: center; 
+            font-weight: 600;
+        }
+        .controls-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+            gap: 12px; 
+            margin-bottom: 15px;
+        }
+        .control-item { 
+            background: rgba(0, 0, 0, 0.4); 
+            padding: 10px; 
+            border-radius: 8px; 
+            border: 1px solid rgba(0, 212, 255, 0.2); 
+        }
+        label { 
+            display: block; 
+            color: #00d4ff; 
+            margin-bottom: 5px; 
+            font-weight: 600; 
+            font-size: 0.85em; 
+        }
+        input[type="range"] { width: 100%; margin-bottom: 3px; }
+        .value-display { 
+            color: #aaa; 
+            font-size: 0.8em; 
+            text-align: right; 
+            margin-top: 3px;
+        }
+        
+        .button-row { 
+            display: flex; 
+            gap: 10px; 
+            justify-content: center; 
+            flex-wrap: wrap; 
+            margin-top: 15px; 
+        }
+        button.action-btn { 
+            background: linear-gradient(135deg, #00d4ff, #0088cc); 
+            color: white; 
+            border: none; 
+            padding: 9px 18px; 
+            border-radius: 6px; 
+            font-size: 0.9em;
+            cursor: pointer; 
+            transition: all 0.3s; 
+            font-weight: 600;
+        }
+        button.action-btn:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(0, 212, 255, 0.6); 
+        }
+        button.danger { 
+            background: linear-gradient(135deg, #ff4444, #cc0000); 
+        }
+        button.success { 
+            background: linear-gradient(135deg, #44ff44, #00cc00); 
+        }
+        button.purple { 
+            background: linear-gradient(135deg, #ff00ff, #aa00aa); 
+        }
+        
+        .metrics-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
+            gap: 10px; 
+            margin-top: 15px; 
+        }
+        .metric { 
+            background: rgba(0, 0, 0, 0.5); 
+            padding: 12px; 
+            border-radius: 8px; 
+            text-align: center; 
+            border: 1px solid rgba(0, 212, 255, 0.2); 
+        }
+        .metric-value { 
+            font-size: 1.3em; 
+            color: #00d4ff; 
+            font-weight: bold; 
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+        }
+        .metric-label { 
+            color: #888; 
+            font-size: 0.75em; 
+            margin-top: 3px; 
+        }
+        
+        .info-panel {
+            background: rgba(0, 100, 150, 0.2);
+            border-left: 4px solid #00d4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .info-title {
+            color: #00d4ff;
+            font-size: 1.05em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .info-text {
+            color: #ccc;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        
+        .extra-canvas { margin-top: 15px; }
+        
+        .share-box { 
+            text-align: center; 
+            margin-top: 20px; 
+            padding: 15px; 
+        }
+        .export-btn { 
+            background: linear-gradient(135deg, #ff00ff, #00ffff); 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 0.95em;
+            transition: all 0.3s;
+        }
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 0, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌌 ÆTHER Universe Explorer</h1>
+        <div class="tagline">De la Cosmologie à la Conscience | Simulateur Physique Multi-Échelles</div>
+        <div style="margin-top:8px;">
+            <a href="https://zenodo.org/communities/aether-cosmology" target="_blank" 
+               style="display:inline-flex;align-items:center;gap:7px;background:rgba(0,212,255,0.1);border:1px solid #00d4ff;
+                      color:#00d4ff;padding:6px 16px;border-radius:20px;font-size:0.88em;text-decoration:none;
+                      transition:all 0.3s;" 
+               onmouseover="this.style.background='rgba(0,212,255,0.25)'" 
+               onmouseout="this.style.background='rgba(0,212,255,0.1)'">
+                🔬 Communauté Zenodo — Papers I–IX disponibles
+            </a>
+        </div>
+    </div>
+
+    <div class="mode-emploi">
+        <strong>Bienvenue dans l'Æther :</strong> Le vide n'est pas vide, c'est un milieu actif. Naviguez entre les échelles (Système Solaire Complet, Planète 9, Galaxie, Trou Noir, Conscience) pour observer comment la tension de l'Æther (paramètres β et μ) résout les anomalies de la physique standard.
+    </div>
+    
+    <div class="main-container">
+        <div class="mode-selector">
+            <button class="mode-btn active" id="btnSolar" onclick="switchMode('solar')">
+                <span class="mode-icon">☉</span> Solaire
+            </button>
+            <button class="mode-btn" id="btnP9" onclick="switchMode('p9')">
+                <span class="mode-icon">🔭</span> Anomalies TNO
+            </button>
+            <button class="mode-btn" id="btnGalaxy" onclick="switchMode('galaxy')">
+                <span class="mode-icon">🌀</span> Galaxie
+            </button>
+            <button class="mode-btn" id="btnBlackHole" onclick="switchMode('blackhole')">
+                <span class="mode-icon">🕳️</span> Trou Noir
+            </button>
+            <button class="mode-btn" id="btnBrain" onclick="switchMode('brain')">
+                <span class="mode-icon">🧠</span> Conscience
+            </button>
+        </div>
+        
+        <div class="aether-gauge">
+            <div class="gauge-label">⚡ Tension du Champ ÆTHER</div>
+            <div class="gauge-bar">
+                <div class="gauge-fill" id="gaugeFill" style="width: 15%;"></div>
+                <div class="gauge-text" id="gaugeText">ÉCRANTAGE SOLAIRE</div>
+            </div>
+        </div>
+        
+        <div class="canvas-grid">
+            <div class="canvas-wrapper">
+                <a href="https://zenodo.org/records/17819679" class="zenodo-link" id="zenodoLeft" target="_blank">📄 Preuve TSTU</a>
+                <div class="canvas-title" id="titleLeft">🔵 Modèle ÆTHER / TSTU</div>
+                <canvas id="canvasLeft" width="650" height="650"></canvas>
+                
+                <div class="legend-panel" id="legendLeft">
+                    <div class="legend-title">Dynamique en temps réel - Cliquez pour focus</div>
+                    <div class="legend-items" id="legendItemsLeft"></div>
+                </div>
+                
+                <div class="timeline-bar">
+                    <div class="timeline-label">Temps de simulation : <span id="timeDisplay">0</span></div>
+                    <div class="timeline-progress">
+                        <div class="timeline-fill" id="timelineFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="canvas-wrapper">
+                <a href="#" class="zenodo-link" id="zenodoRight" style="color:#aaa; border-color:#aaa;" target="_blank">📄 Modèle Standard</a>
+                <div class="canvas-title" id="titleRight" style="color:#aaa;">⚪ Modèle Standard (GR)</div>
+                <canvas id="canvasRight" width="650" height="650"></canvas>
+            </div>
+        </div>
+        
+        <div class="controls-panel">
+            <div class="controls-title">⚙️ Paramètres Physiques</div>
+            <div class="controls-grid">
+                <div class="control-item">
+                    <label>Couplage β</label>
+                    <input type="range" id="betaSlider" min="0.01" max="0.20" step="0.01" value="0.095">
+                    <div class="value-display" id="betaValue">0.095</div>
+                </div>
+                <div class="control-item">
+                    <label>Cosmologique μ</label>
+                    <input type="range" id="muSlider" min="1.000" max="1.050" step="0.001" value="1.018">
+                    <div class="value-display" id="muValue">1.018</div>
+                </div>
+                <div class="control-item">
+                    <label>Vitesse d'écoulement</label>
+                    <input type="range" id="speedSlider" min="0.1" max="5" step="0.1" value="1.0">
+                    <div class="value-display" id="speedValue">1.0×</div>
+                </div>
+                <div class="control-item">
+                    <label>Zoom</label>
+                    <input type="range" id="zoomSlider" min="0.2" max="5" step="0.1" value="1.0">
+                    <div class="value-display" id="zoomValue">1.0×</div>
+                </div>
+                <div class="control-item" id="massControl" style="display:none;">
+                    <label>Masse (M☉)</label>
+                    <input type="range" id="massSlider" min="5" max="50" step="1" value="20">
+                    <div class="value-display" id="massValue">20 M☉</div>
+                </div>
+                <div class="control-item" id="neuronsControl" style="display:none;">
+                    <label>Réseau (neurones)</label>
+                    <input type="range" id="neuronsSlider" min="20" max="80" step="10" value="50">
+                    <div class="value-display" id="neuronsValue">50 neurones</div>
+                </div>
+            </div>
+            
+            <div class="button-row">
+                <button onclick="resetSim()" class="action-btn success">🔄 Reset</button>
+                <button onclick="toggleAnim()" class="action-btn">⏯️ Play/Pause</button>
+                <button id="trailsBtn" onclick="toggleTrails()" class="action-btn">✨ Traces</button>
+                <button id="gridBtn" onclick="toggleGrid()" class="action-btn">📐 Grille</button>
+                <button id="collapseBtn" onclick="startCollapse()" class="action-btn danger" style="display:none;">💥 Effondrement</button>
+                <button id="perturbBtn" onclick="perturbNetwork()" class="action-btn purple" style="display:none;">⚡ Perturber</button>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric">
+                    <div class="metric-value" id="m1">-</div>
+                    <div class="metric-label" id="l1">Métrique 1</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="m2">-</div>
+                    <div class="metric-label" id="l2">Métrique 2</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="m3">-</div>
+                    <div class="metric-label" id="l3">Métrique 3</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="m4">-</div>
+                    <div class="metric-label" id="l4">Métrique 4</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls-panel">
+            <div class="info-panel">
+                <div class="info-title" id="infoTitle">📐 Modèle Physique</div>
+                <div class="info-text" id="infoContent">Chargement...</div>
+            </div>
+        </div>
+        
+        <div class="canvas-wrapper extra-canvas" id="extraCanvasWrapper" style="display: none;">
+            <div class="canvas-title" id="extraTitle">Visualisation Analytique</div>
+            <canvas id="canvasExtra" width="1200" height="350" style="background:#050510;"></canvas>
+        </div>
+
+        <div class="share-box">
+            <button class="export-btn" onclick="exportData()">📤 EXPORTER DONNÉES CSV</button>
+            <div style="margin-top:14px;">
+                <a href="https://zenodo.org/communities/aether-cosmology" target="_blank"
+                   style="color:#00d4ff;font-size:0.9em;text-decoration:none;opacity:0.8;">
+                    🔬 zenodo.org/communities/aether-cosmology — Papers I–IX
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ZENODO DOIS
+        const zenodoDOIs = {
+            solar:     'https://zenodo.org/records/17819679',  // Paper I : Foundations, Screening, H0
+            p9:        'https://zenodo.org/records/17819679',  // Paper I (contexte cosmologique TNO)
+            galaxy:    'https://zenodo.org/records/17844551',  // Paper III : Large-Scale Structure, JWST
+            blackhole: 'https://zenodo.org/records/18471407',  // Paper VI : Event-Projected Gravity
+            brain:     'https://zenodo.org/records/19139925'   // Paper VII : Kuramoto Synchronization
+        };
+        
+        // STATE
+        let mode = 'solar';
+        let time = 0, timeSpeed = 1.0, zoom = 1.0, animating = true, showTrails = true, showGrid = false;
+        let beta = 0.095, mu = 1.018, mass = 20, numNeurons = 50;
+        let collapsing = false, phase = 'STABLE', bhRadius = 1e6, bhDensity = 1.0;
+        let selectedPlanet = null;
+        let perturbTimer = 0;      // counts down after perturbation (in sim time units)
+        const PERTURB_DURATION = 3.0; // sim time units of weakened coupling
+        let syncHistory = [];      // [{t, r_tstu, r_gr}] for real-time graph
+        const SYNC_HISTORY_MAX = 400;
+        
+        // CONTEXTS
+        const ctxL = document.getElementById('canvasLeft').getContext('2d');
+        const ctxR = document.getElementById('canvasRight').getContext('2d');
+        const ctxE = document.getElementById('canvasExtra').getContext('2d');
+
+        // DATA - COMPLETE SOLAR SYSTEM (9 planets!)
+        const planets = [
+            {name: "Mercure", a: 0.387, spd: 0.241, color: "#999", size: 3, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
+            {name: "Vénus", a: 0.723, spd: 0.615, color: "#ffcc66", size: 5, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
+            {name: "Terre", a: 1.000, spd: 1.000, color: "#4488ff", size: 5, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
+            {name: "Mars", a: 1.524, spd: 1.881, color: "#ff6644", size: 4, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
+            {name: "Jupiter", a: 5.203, spd: 11.86, color: "#ffaa44", size: 10, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
+            {name: "Saturne", a: 9.537, spd: 29.46, color: "#eecc88", size: 9, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
+            {name: "Uranus", a: 19.19, spd: 84.01, color: "#88ddff", size: 7, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
+            {name: "Neptune", a: 30.07, spd: 164.8, color: "#4466ff", size: 7, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
+            {name: "Pluton", a: 39.48, spd: 248.0, color: "#ccaa88", size: 2, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]}
+        ];
+        
+        let p9 = {
+            d: 520,
+            spd_tstu: 0.00025, 
+            spd_gr: 0.00015, 
+            a_tstu: 0, 
+            a_gr: 0, 
+            trailL: [], 
+            trailR: []
+        };
+        
+        // TNO objects data: [name, semi-major axis AU, observed argument of perihelion deg, color]
+        const tnoObjects = [
+            { name: "Sedna",     a: 506,  peri_obs: 311, color: "#ff6644" },
+            { name: "2012VP₁₁₃",a: 262,  peri_obs: 293, color: "#ff9944" },
+            { name: "2015TG₃₈₇",a: 1190, peri_obs: 118, color: "#ffcc44" },
+            { name: "2013SY₉₉", a: 735,  peri_obs: 32,  color: "#ff4488" },
+            { name: "Leleākūhonua",a:1085,peri_obs: 117, color: "#ff88cc" },
+            { name: "2014SR₃₄₉",a: 300,  peri_obs: 341, color: "#cc44ff" },
+        ];
+        // Compute perihelion clustering angle (mean of observed)
+        const tnoMeanObs = tnoObjects.reduce((s, o) => s + o.peri_obs, 0) / tnoObjects.length;
+        // For animation: each TNO orbits slowly, we show TSTU vs standard prediction
+        tnoObjects.forEach(o => {
+            o.theta = Math.random() * Math.PI * 2; // current orbital angle
+            // TSTU: field tension biases perihelion clustering (phi tension in outer void)
+            o.peri_tstu = tnoMeanObs + (Math.random() - 0.5) * 30; // clustered by phi tension
+            o.peri_gr   = Math.random() * 360; // GR: random / needs Planet 9
+            o.ecc = 0.7 + Math.random() * 0.2; // high eccentricity TNOs
+        });
+        
+        let stars = [];
+        for(let i=0; i<400; i++) {
+            const r = Math.pow(Math.random(), 0.5) * 50;
+            stars.push({
+                r: r, 
+                theta_tstu: Math.random() * Math.PI * 2, 
+                theta_gr: Math.random() * Math.PI * 2
+            });
+        }
+        
+        // BLACK HOLE ACCRETION DISK PARTICLES
+        let accretionParticles = [];
+        for(let i=0; i<100; i++) {
+            accretionParticles.push({
+                r: 50 + Math.random() * 200,
+                theta: Math.random() * Math.PI * 2,
+                speed: 0.02 + Math.random() * 0.03
+            });
+        }
+        
+        let neurons = [];
+        function initNeurons(n) {
+            neurons = [];
+            for(let i=0; i<n; i++) {
+                const angle = (2 * Math.PI * i) / n;
+                const radius = 200;
+                neurons.push({
+                    x: Math.cos(angle) * radius,
+                    y: Math.sin(angle) * radius,
+                    phase_tstu: Math.random() * 2 * Math.PI,
+                    phase_gr: Math.random() * 2 * Math.PI,
+                    omega: 1.0 + (Math.random() - 0.5) * 0.4, // spread ±0.2 rad/s
+                    connections: []
+                });
+            }
+            // Full connectivity for Kuramoto (each neuron connected to all others)
+            for(let i=0; i<neurons.length; i++) {
+                for(let j=0; j<neurons.length; j++) {
+                    if(i !== j) neurons[i].connections.push(j);
+                }
+            }
+        }
+        initNeurons(numNeurons);
+        
+        // PHYSICS
+        const G = 6.674e-11, c = 3e8, M_sun = 2e30;
+        const galaxyMass = 1e12, galaxyRadius = 50;
+        
+        function screeningRadius(b) { return 0.1 / b; }
+        
+        function phiField(r, b, m, scale = 1.0) {
+            const rs = screeningRadius(b) * scale;
+            if(r < 0.01) r = 0.01;
+            const yukawa = Math.exp(-b * m * r / rs);
+            return 1.0 + (b * b / 6) * yukawa;
+        }
+        
+        function effectiveGravity(r, b, m, scale = 1.0) {
+            const phi = phiField(r, b, m, scale);
+            const rs = screeningRadius(b) * scale;
+            const dphi = -(b * b / 6) * (b * m / rs) * Math.exp(-b * m * r / rs);
+            return 1.0 + 2 * b * b * dphi / phi;
+        }
+        
+        function schwarzschildRadius(M) {
+            return 2 * G * M * M_sun / (c * c);
+        }
+        
+        function rotationVelocityTSTU(r, Menc, b, m) {
+            const geff = effectiveGravity(r, b, m, 10);
+            return Math.sqrt(Menc * geff / r);
+        }
+        
+        function rotationVelocityKepler(r, Menc) {
+            return Math.sqrt(Menc / r);
+        }
+        
+        function rotationVelocityObserved(r) {
+            return 200 + 20 * Math.sin(r / 10);
+        }
+        
+        // ÆTHER TENSION
+        function calculateAetherTension() {
+            if(mode === 'solar') return 15 + (beta / 0.2) * 20;
+            else if(mode === 'p9') return 50 + ((mu - 1.0) / 0.05) * 25;
+            else if(mode === 'galaxy') return 75 + ((mu - 1.0) / 0.05) * 20;
+            else if(mode === 'blackhole') {
+                if(phase === 'BLACK_HOLE') return 100;
+                return 30 + (bhDensity / 1e10) * 70;
+            } else {
+                const coupling = beta * mu;
+                return 40 + coupling * 200;
+            }
+        }
+        
+        function updateAetherGauge() {
+            const tension = calculateAetherTension();
+            const fill = document.getElementById('gaugeFill');
+            const text = document.getElementById('gaugeText');
+            fill.style.width = tension + '%';
+            
+            if(tension < 35) {
+                text.textContent = 'ÉCRANTAGE (Solaire)';
+                fill.style.background = 'linear-gradient(90deg, #0088cc, #00aaff)';
+            } else if(tension < 60) {
+                text.textContent = 'TRANSITION (Planète 9)';
+                fill.style.background = 'linear-gradient(90deg, #0088cc, #00d4ff, #00ffff)';
+            } else if(tension < 85) {
+                text.textContent = 'TENSION (Galaxie)';
+                fill.style.background = 'linear-gradient(90deg, #00d4ff, #00ffff, #88ffff)';
+            } else {
+                text.textContent = 'MAXIMUM (Vide Restauré)';
+                fill.style.background = 'linear-gradient(90deg, #00ffff, #ffffff)';
+            }
+        }
+        
+        // GRID
+        function drawAetherGrid(ctx, isTSTU) {
+            if(!showGrid) return;
+            const w = ctx.canvas.width, h = ctx.canvas.height;
+            const spacing = 40;
+            
+            ctx.save();
+            ctx.strokeStyle = 'rgba(0, 212, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            for(let x = 0; x < w; x += spacing) {
+                ctx.beginPath();
+                for(let y = 0; y < h; y += spacing / 10) {
+                    let dx = x, dy = y;
+                    if(isTSTU && mode === 'solar') {
+                        const dist = Math.sqrt((dx - w/2)**2 + (dy - h/2)**2);
+                        const deform = 15 * beta / (1 + dist / 100);
+                        dy += deform;
+                    }
+                    if(y === 0) ctx.moveTo(dx, dy);
+                    else ctx.lineTo(dx, dy);
+                }
+                ctx.stroke();
+            }
+            
+            for(let y = 0; y < h; y += spacing) {
+                ctx.beginPath();
+                for(let x = 0; x < w; x += spacing / 10) {
+                    let dx = x, dy = y;
+                    if(isTSTU && mode === 'solar') {
+                        const dist = Math.sqrt((dx - w/2)**2 + (dy - h/2)**2);
+                        const deform = 15 * beta / (1 + dist / 100);
+                        dx += deform;
+                    }
+                    if(x === 0) ctx.moveTo(dx, dy);
+                    else ctx.lineTo(dx, dy);
+                }
+                ctx.stroke();
+            }
+            ctx.restore();
+        }
+        
+        // UI LISTENERS
+        document.getElementById('speedSlider').addEventListener('input', e => {
+            timeSpeed = parseFloat(e.target.value);
+            document.getElementById('speedValue').innerText = timeSpeed.toFixed(1) + '×';
+        });
+        document.getElementById('betaSlider').addEventListener('input', e => {
+            beta = parseFloat(e.target.value);
+            document.getElementById('betaValue').innerText = beta.toFixed(3);
+        });
+        document.getElementById('muSlider').addEventListener('input', e => {
+            mu = parseFloat(e.target.value);
+            document.getElementById('muValue').innerText = mu.toFixed(3);
+        });
+        document.getElementById('zoomSlider').addEventListener('input', e => {
+            zoom = parseFloat(e.target.value);
+            document.getElementById('zoomValue').innerText = zoom.toFixed(1) + '×';
+        });
+        document.getElementById('massSlider').addEventListener('input', e => {
+            mass = parseFloat(e.target.value);
+            document.getElementById('massValue').innerText = mass + ' M☉';
+        });
+        document.getElementById('neuronsSlider').addEventListener('input', e => {
+            numNeurons = parseInt(e.target.value);
+            document.getElementById('neuronsValue').innerText = numNeurons + ' neurones';
+            if(mode === 'brain') initNeurons(numNeurons);
+        });
+
+        function switchMode(newMode) {
+            mode = newMode;
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            const btnId = 'btn' + newMode.charAt(0).toUpperCase() + newMode.slice(1).replace('hole', 'Hole').replace('brain', 'Brain');
+            const btn = document.getElementById(btnId);
+            if(btn) btn.classList.add('active');
+            
+            document.getElementById('zenodoLeft').href = zenodoDOIs[mode];
+            document.getElementById('zenodoRight').href = zenodoDOIs[mode];
+            
+            resetSim();
+            updateUI();
+        }
+
+        function toggleAnim() { animating = !animating; }
+        function toggleTrails() { 
+            showTrails = !showTrails; 
+            planets.forEach(p => { p.trailL = []; p.trailR = []; });
+            p9.trailL = []; p9.trailR = [];
+        }
+        function toggleGrid() { showGrid = !showGrid; }
+        function startCollapse() { collapsing = true; animating = true; }
+        function perturbNetwork() {
+            // Fully randomize ALL phases — dramatic disruption
+            neurons.forEach(n => {
+                n.phase_tstu = Math.random() * 2 * Math.PI;
+                n.phase_gr   = Math.random() * 2 * Math.PI;
+            });
+            // Trigger recovery period: coupling temporarily weakened (simulates acute perturbation)
+            perturbTimer = PERTURB_DURATION;
+        }
+
+        function resetSim() {
+            time = 0;
+            planets.forEach(p => {
+                p.theta_tstu = Math.random() * Math.PI * 2;
+                p.theta_gr = p.theta_tstu;
+                p.trailL = []; p.trailR = [];
+            });
+            p9.a_tstu = 0; p9.a_gr = 0; p9.trailL = []; p9.trailR = [];
+            tnoObjects.forEach(o => { o.theta = Math.random() * Math.PI * 2; });
+            collapsing = false; bhRadius = 1e6; bhDensity = 1.0; phase = 'STABLE';
+            selectedPlanet = null;
+            perturbTimer = 0;
+            syncHistory = [];
+            initNeurons(numNeurons);
+            document.getElementById('timelineFill').style.width = '0%';
+        }
+
+        function updateUI() {
+            const extra = document.getElementById('extraCanvasWrapper');
+            const massCtrl = document.getElementById('massControl');
+            const neuronsCtrl = document.getElementById('neuronsControl');
+            const colBtn = document.getElementById('collapseBtn');
+            const pertBtn = document.getElementById('perturbBtn');
+            const legend = document.getElementById('legendLeft');
+
+            massCtrl.style.display = 'none';
+            neuronsCtrl.style.display = 'none';
+            colBtn.style.display = 'none';
+            pertBtn.style.display = 'none';
+            extra.style.display = 'none';
+            legend.style.display = 'block';
+            document.getElementById('trailsBtn').style.display = 'inline-block';
+            document.getElementById('gridBtn').style.display = 'inline-block';
+
+            if(mode === 'solar') {
+                document.getElementById('titleLeft').innerText = '🔵 ÆTHER/TSTU (9 planètes)';
+                document.getElementById('titleRight').innerText = '⚪ Relativité Générale';
+                document.getElementById('l1').innerText = "Précession Mercure (″/siècle)";
+                document.getElementById('l2').innerText = "Rayon Screening (AU)";
+                document.getElementById('l3').innerText = "Déviation (%)";
+                document.getElementById('l4').innerText = "Années";
+                
+                document.getElementById('infoTitle').innerText = '☉ Système Solaire Complet';
+                document.getElementById('infoContent').innerHTML = 
+                    'Visualisation complète du système solaire (Mercure → Pluton). Le champ scalaire φ est <strong>écranté</strong> ' +
+                    'près du Soleil (β < 0.1) mais sa tension augmente progressivement vers les planètes externes. ' +
+                    'Observez les différences orbitales TSTU vs GR, particulièrement visibles pour les planètes lointaines.';
+                    
+                updatePlanetLegend();
+            } else if(mode === 'p9') {
+                document.getElementById('titleLeft').innerText = '🔵 ÆTHER/TSTU (Clustering φ)';
+                document.getElementById('titleRight').innerText = '⚪ GR Standard (besoin P9)';
+                document.getElementById('l1').innerText = "Objets TNO affichés";
+                document.getElementById('l2').innerText = "Clustering observé (°)";
+                document.getElementById('l3').innerText = "Clustering ÆTHER (°)";
+                document.getElementById('l4').innerText = "Tension φ externe";
+                
+                document.getElementById('infoTitle').innerText = '🔭 Anomalies TNO — Clustering sans Planète 9';
+                document.getElementById('infoContent').innerHTML = 
+                    'Les objets trans-neptuniens extrêmes (Sedna, VP₁₁₃…) ont leurs périhélies <strong>regroupées</strong> (~300°). ' +
+                    'La GR standard ne peut expliquer ce clustering sans invoquer une Planète 9 hypothétique (non observée). ' +
+                    'ÆTHER/TSTU explique ce regroupement par la <strong>tension accrue du champ φ dans le vide externe</strong> (μ > 1 au-delà de Neptune) ' +
+                    'qui brise la symétrie orbitale et attire naturellement les périhélies vers une direction privilégiée — <em>sans masse supplémentaire</em>.';
+                
+                document.getElementById('legendItemsLeft').innerHTML = 
+                    '<div class="legend-item" style="color:#00d4ff;">● Flèches = direction des périhélies</div>' +
+                    '<div class="legend-item" style="color:#aaa;">● Zone bleue = clustering prédit par φ</div>' +
+                    '<div class="legend-item" style="color:#ff4444;">● Zone rouge = incertitude GR (P9 requise)</div>';
+            } else if(mode === 'galaxy') {
+                document.getElementById('titleLeft').innerText = '🌀 ÆTHER (Pas de Matière Noire)';
+                document.getElementById('titleRight').innerText = '⚫ Modèle Matière Noire';
+                extra.style.display = 'block';
+                document.getElementById('extraTitle').innerText = "📊 Courbes de Rotation: Kepler vs Observé vs ÆTHER";
+                document.getElementById('l1').innerText = "v @ 10 kpc (km/s)";
+                document.getElementById('l2').innerText = "Masse Manquante (%)";
+                document.getElementById('l3').innerText = "Correction ÆTHER (%)";
+                document.getElementById('l4').innerText = "Temps (Myr)";
+                legend.style.display = 'none';
+                
+                document.getElementById('infoTitle').innerText = '🌀 Rotation Galactique';
+                document.getElementById('infoContent').innerHTML = 
+                    'Dans les halos galactiques et vides cosmiques, φ est <strong>tendu</strong> (μ > 1), ' +
+                    'modifiant la gravité aux grandes échelles. ÆTHER/TSTU explique les courbes de rotation plates ' +
+                    '<strong>sans nécessiter de matière noire</strong>.';
+            } else if(mode === 'blackhole') {
+                document.getElementById('titleLeft').innerText = '🕳️ Trou Noir ÆTHER';
+                document.getElementById('titleRight').innerText = '⚫ Trou Noir Standard';
+                extra.style.display = 'block';
+                massCtrl.style.display = 'block';
+                colBtn.style.display = 'inline-block';
+                document.getElementById('extraTitle').innerText = "📊 Profil Champ Scalaire φ(r) et Densité ρ(r)";
+                legend.style.display = 'none';
+                document.getElementById('l1').innerText = "Rayon (km)";
+                document.getElementById('l2').innerText = "Densité (ρ/ρ₀)";
+                document.getElementById('l3').innerText = "φ/φ₀";
+                document.getElementById('l4').innerText = "R_s (km)";
+                
+                document.getElementById('infoTitle').innerText = '🕳️ Formation Trou Noir - Animation Visuelle';
+                document.getElementById('infoContent').innerHTML = 
+                    '<strong>Cliquez "💥 Effondrement" pour déclencher l\'animation.</strong> Observez : ' +
+                    '(1) Étoile massive en rotation, (2) Compression progressive avec disque d\'accrétion, ' +
+                    '(3) Formation horizon des événements, (4) Phase finale avec jets polaires. ' +
+                    'Le champ φ → φ₀ (restauration vide) élimine la singularité infinie.';
+            } else {
+                document.getElementById('trailsBtn').style.display = 'none';
+                document.getElementById('gridBtn').style.display = 'none';
+                document.getElementById('titleLeft').innerText = '🧠 Conscience ÆTHER (Synchronisé)';
+                document.getElementById('titleRight').innerText = '⚪ Oscillateurs Indépendants (Chaos)';
+                extra.style.display = 'block';
+                neuronsCtrl.style.display = 'block';
+                pertBtn.style.display = 'inline-block';
+                document.getElementById('extraTitle').innerText = "📊 Paramètre d'Ordre de Synchronisation";
+                legend.style.display = 'none';
+                document.getElementById('l1').innerText = "Ordre Sync (r)";
+                document.getElementById('l2').innerText = "Couplage (K)";
+                document.getElementById('l3').innerText = "État Cohérence";
+                document.getElementById('l4').innerText = "Temps (ms)";
+                
+                document.getElementById('infoTitle').innerText = '🧠 Émergence de la Conscience — Modèle Kuramoto × ÆTHER';
+                document.getElementById('infoContent').innerHTML = 
+                    '<strong>Principe :</strong> Le réseau de N oscillateurs (neurones) échange une force de couplage K. ' +
+                    'En dessous du seuil critique K<sub>c</sub> ≈ 0.25, chaque neurone tourne à sa propre fréquence → <em>chaos</em>. ' +
+                    'Au-dessus, ils se verrouillent en phase → <em>conscience émergente</em> (r → 1).<br><br>' +
+                    '<strong>β (couplage scalaire) :</strong> contrôle l\'amplitude du champ φ. Augmenter β augmente K_TSTU et accélère la synchronisation.<br>' +
+                    '<strong>μ (tension cosmologique) :</strong> contrôle la portée du champ. Augmenter μ amplifie le couplage inter-neurones.<br><br>' +
+                    '<strong>Panneau gauche (ÆTHER) :</strong> K_TSTU = 0.6 + β×μ×8 ≫ K<sub>c</sub> → synchronisation robuste. ' +
+                    'Cliquez <em>"⚡ Perturber"</em> pour randomiser toutes les phases : le réseau chute en chaos puis <strong>récupère</strong> grâce au champ φ.<br>' +
+                    '<strong>Panneau droit (Standard) :</strong> K_GR = 0.08 &lt; K<sub>c</sub> → chaos permanent, aucune conscience émergente possible.';
+            }
+        }
+        
+        function updatePlanetLegend() {
+            const container = document.getElementById('legendItemsLeft');
+            container.innerHTML = '';
+            
+            planets.forEach((p, i) => {
+                const item = document.createElement('div');
+                item.className = 'legend-item';
+                if(selectedPlanet === i) item.classList.add('selected');
+                item.onclick = () => {
+                    selectedPlanet = (selectedPlanet === i) ? null : i;
+                    updatePlanetLegend();
+                };
+                item.innerHTML = `<span style="color:${p.color}">●</span> ${p.name}`;
+                container.appendChild(item);
+            });
+        }
+        
+        // UPDATE PHYSICS
+        function updateSolar(dt) {
+            planets.forEach(p => {
+                const geff = effectiveGravity(p.a, beta, mu, 1.0);
+                const omega_tstu = Math.sqrt(geff / Math.pow(p.a, 3));
+                p.theta_tstu += omega_tstu * dt;
+                
+                const omega_gr = Math.sqrt(1.0 / Math.pow(p.a, 3));
+                p.theta_gr += omega_gr * dt;
+                
+                const x_t = p.a * Math.cos(p.theta_tstu);
+                const y_t = p.a * Math.sin(p.theta_tstu);
+                const x_g = p.a * Math.cos(p.theta_gr);
+                const y_g = p.a * Math.sin(p.theta_gr);
+                
+                p.trailL.push({x: x_t, y: y_t});
+                p.trailR.push({x: x_g, y: y_g});
+                
+                const maxTrail = p.a > 10 ? 100 : 150;
+                if(p.trailL.length > maxTrail) p.trailL.shift();
+                if(p.trailR.length > maxTrail) p.trailR.shift();
+            });
+        }
+        
+        function updateP9(dt) {
+            // Animate TNO objects slowly along their orbits
+            tnoObjects.forEach(o => {
+                o.theta += 0.0002 * dt * (500 / o.a); // slower for farther objects
+            });
+        }
+        
+        function updateGalaxy(dt) {
+            stars.forEach(s => {
+                const Menc = galaxyMass * Math.pow(s.r / galaxyRadius, 1.5);
+                const v_tstu = rotationVelocityTSTU(s.r, Menc, beta, mu);
+                const omega_t = v_tstu / s.r;
+                s.theta_tstu += omega_t * dt * 0.0005;
+                
+                const v_dm = rotationVelocityObserved(s.r);
+                const omega_g = v_dm / s.r;
+                s.theta_gr += omega_g * dt * 0.0005;
+            });
+        }
+        
+        function updateBlackHole(dt) {
+            // Update accretion particles
+            accretionParticles.forEach(p => {
+                p.theta += p.speed * dt;
+                if(collapsing) {
+                    p.r -= 2 * dt;
+                    if(p.r < 10) p.r = 250;
+                }
+            });
+            
+            if(!collapsing) return;
+            const rs = schwarzschildRadius(mass);
+            if(bhRadius > rs * 1.5) {
+                phase = 'COLLAPSING';
+                bhRadius -= 5e4 * dt;
+                bhDensity *= Math.pow(1.01, dt * 100);
+            } else if(bhRadius > rs * 1.05) {
+                phase = 'HORIZON';
+                bhRadius -= 1e4 * dt;
+                bhDensity *= Math.pow(1.05, dt * 100);
+            } else {
+                phase = 'BLACK_HOLE';
+                bhRadius = rs;
+                bhDensity = 1e10;
+                // Keep particles animating even after collapse
+            }
+        }
+        
+        function updateBrain(dt) {
+            // Decay perturbation timer
+            if(perturbTimer > 0) perturbTimer -= dt;
+            
+            // K_tstu: supercritical under ÆTHER. During perturbation, coupling drops temporarily.
+            const perturbFactor = perturbTimer > 0 ? Math.max(0.05, perturbTimer / PERTURB_DURATION) : 1.0;
+            const K_tstu = (0.6 + beta * mu * 8) * perturbFactor;
+            const K_gr = 0.08; // always sub-critical
+            const N = neurons.length;
+            
+            neurons.forEach((n, i) => {
+                let coupling_tstu = 0;
+                n.connections.forEach(j => {
+                    coupling_tstu += Math.sin(neurons[j].phase_tstu - n.phase_tstu);
+                });
+                n.phase_tstu += (n.omega + (K_tstu / N) * coupling_tstu) * dt;
+                
+                let coupling_gr = 0;
+                n.connections.forEach(j => {
+                    coupling_gr += Math.sin(neurons[j].phase_gr - n.phase_gr);
+                });
+                n.phase_gr += (n.omega + (K_gr / N) * coupling_gr) * dt;
+            });
+            
+            // Record sync history for graph
+            let sx_t = 0, sy_t = 0, sx_g = 0, sy_g = 0;
+            neurons.forEach(n => {
+                sx_t += Math.cos(n.phase_tstu); sy_t += Math.sin(n.phase_tstu);
+                sx_g += Math.cos(n.phase_gr);   sy_g += Math.sin(n.phase_gr);
+            });
+            const r_tstu = Math.sqrt(sx_t**2 + sy_t**2) / N;
+            const r_gr   = Math.sqrt(sx_g**2 + sy_g**2) / N;
+            syncHistory.push({ t: time * 100, r_tstu, r_gr, perturbed: perturbTimer > 0 });
+            if(syncHistory.length > SYNC_HISTORY_MAX) syncHistory.shift();
+        }
+        
+        // DRAW FUNCTIONS
+        function drawSolar(ctx, isTSTU) {
+            const w = ctx.canvas.width, h = ctx.canvas.height;
+            const cx = w / 2, cy = h / 2;
+            
+            // Auto-scale for outer planets (Pluton at 39.5 AU)
+            const maxA = 40;
+            const scale = (Math.min(w, h) / 2 - 60) / maxA * zoom;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+            drawAetherGrid(ctx, isTSTU);
+            
+            if(isTSTU) {
+                for(let r = 1; r < maxA; r += 3) {
+                    const phi = phiField(r, beta, mu, 1.0);
+                    const intensity = Math.min(100, (phi - 1.0) * 4000);
+                    ctx.strokeStyle = `rgba(0, ${intensity}, 255, 0.06)`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r * scale, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+            
+            if(showTrails) {
+                planets.forEach(p => {
+                    const trail = isTSTU ? p.trailL : p.trailR;
+                    if(trail.length < 2) return;
+                    ctx.strokeStyle = (isTSTU ? p.color : '#ccc') + '30';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(cx + trail[0].x * scale, cy + trail[0].y * scale);
+                    for(let i = 1; i < trail.length; i++) {
+                        ctx.lineTo(cx + trail[i].x * scale, cy + trail[i].y * scale);
+                    }
+                    ctx.stroke();
+                });
+            }
+            
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 14);
+            grad.addColorStop(0, '#ffff00');
+            grad.addColorStop(1, '#ff8800');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            planets.forEach((p, i) => {
+                const theta = isTSTU ? p.theta_tstu : p.theta_gr;
+                const x = cx + p.a * scale * Math.cos(theta);
+                const y = cy + p.a * scale * Math.sin(theta);
+                
+                if(selectedPlanet === i && isTSTU) {
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(x, y, p.size + 3, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                
+                ctx.fillStyle = isTSTU ? p.color : '#ccc';
+                ctx.beginPath();
+                ctx.arc(x, y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Labels for outer planets
+                if(p.a > 5 && isTSTU) {
+                    ctx.fillStyle = p.color;
+                    ctx.font = '10px Arial';
+                    ctx.fillText(p.name.substring(0,3), x + p.size + 2, y);
+                }
+            });
+        }
+        
+        function drawP9(ctx, isTSTU) {
+            const w = ctx.canvas.width, h = ctx.canvas.height;
+            const cx = w / 2, cy = h / 2;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+            drawAetherGrid(ctx, isTSTU);
+            
+            // Draw Sun
+            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 12);
+            grad.addColorStop(0, '#ffff00');
+            grad.addColorStop(1, '#ff8800');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Neptune orbit reference
+            const nepScale = (Math.min(w,h)/2 - 60) / 1200;
+            ctx.strokeStyle = 'rgba(68,102,255,0.25)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4,6]);
+            ctx.beginPath();
+            ctx.arc(cx, cy, 30 * nepScale, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = '#4466ff';
+            ctx.font = '10px Arial';
+            ctx.fillText('Neptune', cx + 30 * nepScale + 3, cy);
+            
+            // Draw each TNO
+            tnoObjects.forEach(o => {
+                const peri = isTSTU ? (o.peri_tstu * Math.PI / 180) : (o.peri_gr * Math.PI / 180);
+                
+                // Draw elliptical orbit (simplified: show perihelion direction)
+                const rPerih = o.a * (1 - o.ecc);
+                const rAph   = o.a * (1 + o.ecc);
+                const scaleOrb = Math.min(w,h)/2 / (rAph * 1.05) * nepScale * 30;
+                
+                // Perihelion direction arrow
+                const pLen = Math.min(50, rPerih * scaleOrb);
+                ctx.strokeStyle = o.color + (isTSTU ? 'bb' : '55');
+                ctx.lineWidth = isTSTU ? 2 : 1;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(cx + Math.cos(peri) * pLen, cy + Math.sin(peri) * pLen);
+                ctx.stroke();
+                
+                // Current position of the TNO
+                const r_now = o.a * (1 - o.ecc * o.ecc) / (1 + o.ecc * Math.cos(o.theta - peri));
+                const drawR = Math.min(r_now * scaleOrb, Math.min(w,h)/2 - 20);
+                const px = cx + Math.cos(o.theta) * drawR;
+                const py = cy + Math.sin(o.theta) * drawR;
+                
+                ctx.fillStyle = o.color;
+                ctx.beginPath();
+                ctx.arc(px, py, isTSTU ? 5 : 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+                if(isTSTU) {
+                    ctx.fillStyle = o.color;
+                    ctx.font = '9px Arial';
+                    ctx.fillText(o.name, px + 6, py);
+                }
+            });
+            
+            // Show clustering analysis
+            if(isTSTU) {
+                // TSTU: perihelions clustered by phi tension
+                ctx.fillStyle = 'rgba(0,212,255,0.12)';
+                ctx.beginPath();
+                const clusterAngle = tnoMeanObs * Math.PI / 180;
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, 55, clusterAngle - 0.35, clusterAngle + 0.35);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#00d4ff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.fillStyle = '#00d4ff';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText('Zone clustering φ-ÆTHER', cx + 60, cy - 60);
+                ctx.font = '10px Arial';
+                ctx.fillStyle = '#aaa';
+                ctx.fillText('Tension φ > 1 (vide externe)', cx + 60, cy - 45);
+                ctx.fillText('→ pas de planète nécessaire', cx + 60, cy - 30);
+            } else {
+                // Standard: perihelions scattered, needs Planet 9
+                ctx.fillStyle = '#ff4444';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText('Périhélies dispersés (GR)', cx - w/2 + 20, 35);
+                ctx.font = '10px Arial';
+                ctx.fillStyle = '#aaa';
+                ctx.fillText('→ Planète 9 requise (non observée)', cx - w/2 + 20, 52);
+                
+                // Show hypothetical P9 zone
+                ctx.strokeStyle = 'rgba(255,68,68,0.3)';
+                ctx.lineWidth = 8;
+                ctx.setLineDash([12,8]);
+                ctx.beginPath();
+                ctx.arc(cx, cy, w/2 - 40, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(255,68,68,0.15)';
+                ctx.beginPath();
+                ctx.arc(cx, cy, w/2 - 40, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#ff4444';
+                ctx.font = '11px Arial';
+                ctx.fillText('? Zone Planète 9 hypothétique', cx - 80, cy + w/2 - 55);
+            }
+        }
+        
+        function drawGalaxy(ctx, isTSTU) {
+            const w = ctx.canvas.width, h = ctx.canvas.height;
+            const cx = w / 2, cy = h / 2;
+            const scale = 6.5 * zoom;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+            drawAetherGrid(ctx, isTSTU);
+            
+            const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 25);
+            coreGrad.addColorStop(0, '#ffff88');
+            coreGrad.addColorStop(0.6, '#ffaa44');
+            coreGrad.addColorStop(1, '#000000');
+            ctx.fillStyle = coreGrad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 25, 0, Math.PI * 2);
+            ctx.fill();
+            
+            if(isTSTU) {
+                for(let r = 5; r < galaxyRadius; r += 4) {
+                    const phi = phiField(r, beta, mu, 10);
+                    const intensity = Math.min(120, (phi - 1.0) * 2500);
+                    ctx.strokeStyle = `rgba(0, ${intensity}, 255, 0.04)`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r * scale, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            } else {
+                for(let r = 10; r < galaxyRadius * 1.8; r += 8) {
+                    ctx.strokeStyle = 'rgba(100, 100, 100, 0.03)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r * scale, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
+            
+            stars.forEach(s => {
+                const theta = isTSTU ? s.theta_tstu : s.theta_gr;
+                const x = cx + s.r * scale * Math.cos(theta);
+                const y = cy + s.r * scale * Math.sin(theta);
+                ctx.fillStyle = isTSTU ? 'rgba(0, 212, 255, 0.7)' : 'rgba(200, 200, 200, 0.6)';
+                ctx.beginPath();
+                ctx.arc(x, y, 1.3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        function drawBlackHole(ctx, isTSTU) {
+            const w = ctx.canvas.width, h = ctx.canvas.height;
+            const cx = w / 2, cy = h / 2;
+            const maxR = 1e7;
+            const scale = (w / 2 - 80) / Math.log10(maxR);
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+            drawAetherGrid(ctx, isTSTU);
+            
+            // ACCRETION DISK ANIMATION
+            if(isTSTU && collapsing) {
+                accretionParticles.forEach(p => {
+                    const logR = Math.log10(p.r * 1000);
+                    const pixR = logR * scale;
+                    const x = cx + pixR * Math.cos(p.theta);
+                    const y = cy + pixR * Math.sin(p.theta);
+                    
+                    const intensity = Math.min(1, p.r / 200);
+                    ctx.fillStyle = `rgba(255, ${100 + intensity * 100}, 0, ${intensity})`;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+            
+            for(let i = 1; i <= 15; i++) {
+                const r = Math.pow(10, i * Math.log10(maxR) / 15);
+                const rho = bhDensity * Math.pow(bhRadius / r, 3);
+                const phi = phiField(r, rho, beta);
+                const intensity = Math.min(200, (phi - 1.0) * 400);
+                const logR = Math.log10(r);
+                const pixR = logR * scale;
+                ctx.strokeStyle = `rgba(0, ${intensity}, 255, 0.15)`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(cx, cy, pixR, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+            
+            const rs = schwarzschildRadius(mass);
+            if(rs < maxR) {
+                const logRs = Math.log10(rs);
+                const pixRs = logRs * scale;
+                ctx.strokeStyle = '#ff0000';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([8, 4]);
+                ctx.beginPath();
+                ctx.arc(cx, cy, pixRs, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            
+            const logRad = Math.log10(bhRadius);
+            const pixRad = logRad * scale;
+            
+            if(phase === 'BLACK_HOLE') {
+                // BLACK HOLE WITH JETS
+                if(isTSTU) {
+                    // Polar jets
+                    ctx.strokeStyle = 'rgba(0, 212, 255, 0.6)';
+                    ctx.lineWidth = 15;
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy - pixRad);
+                    ctx.lineTo(cx, cy - pixRad - 80);
+                    ctx.moveTo(cx, cy + pixRad);
+                    ctx.lineTo(cx, cy + pixRad + 80);
+                    ctx.stroke();
+                }
+                
+                const bhGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pixRad * 1.5);
+                bhGrad.addColorStop(0, '#000000');
+                bhGrad.addColorStop(0.6, '#000000');
+                bhGrad.addColorStop(0.85, '#ff4400');
+                bhGrad.addColorStop(1, '#ffaa00');
+                ctx.fillStyle = bhGrad;
+                ctx.beginPath();
+                ctx.arc(cx, cy, pixRad * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                ctx.arc(cx, cy, pixRad, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                const starGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pixRad);
+                starGrad.addColorStop(0, collapsing ? '#ffff00' : '#ffff88');
+                starGrad.addColorStop(0.7, collapsing ? '#ff8800' : '#ffaa44');
+                starGrad.addColorStop(1, collapsing ? '#ff0000' : '#ff6600');
+                ctx.fillStyle = starGrad;
+                ctx.beginPath();
+                ctx.arc(cx, cy, pixRad, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // PHASE LABEL ON CANVAS
+            if(isTSTU) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(10, 10, 180, 40);
+                ctx.strokeStyle = '#00d4ff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(10, 10, 180, 40);
+                
+                ctx.fillStyle = phase === 'BLACK_HOLE' ? '#00ff00' : (phase === 'HORIZON' ? '#ffaa00' : '#00d4ff');
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText('PHASE: ' + phase, 20, 35);
+            }
+        }
+        
+        function drawBrain(ctx, isTSTU) {
+            const w = ctx.canvas.width, h = ctx.canvas.height;
+            const cx = w / 2, cy = h / 2;
+            
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+            drawAetherGrid(ctx, isTSTU);
+            
+            // Calculate sync order for color coding
+            let sumX = 0, sumY = 0;
+            neurons.forEach(n => {
+                const phase = isTSTU ? n.phase_tstu : n.phase_gr;
+                sumX += Math.cos(phase);
+                sumY += Math.sin(phase);
+            });
+            const syncOrder = Math.sqrt(sumX**2 + sumY**2) / neurons.length;
+            
+            // Connections with sync-based opacity
+            const connOpacity = isTSTU ? (syncOrder * 0.3) : 0.1;
+            ctx.strokeStyle = isTSTU ? `rgba(0, 212, 255, ${connOpacity})` : 'rgba(100, 100, 100, 0.1)';
+            ctx.lineWidth = 1;
+            neurons.forEach((n, i) => {
+                n.connections.forEach(j => {
+                    ctx.beginPath();
+                    ctx.moveTo(cx + n.x, cy + n.y);
+                    ctx.lineTo(cx + neurons[j].x, cy + neurons[j].y);
+                    ctx.stroke();
+                });
+            });
+            
+            // Neurons with color coding
+            neurons.forEach(n => {
+                const phase = isTSTU ? n.phase_tstu : n.phase_gr;
+                
+                // Color code by sync status (TSTU only)
+                let color;
+                if(isTSTU) {
+                    if(syncOrder < 0.3) {
+                        // Chaos - Red
+                        color = `hsl(0, 100%, 50%)`;
+                    } else if(syncOrder < 0.7) {
+                        // Transition - Yellow
+                        color = `hsl(60, 100%, 50%)`;
+                    } else {
+                        // Synchronized - Green
+                        color = `hsl(120, 100%, 50%)`;
+                    }
+                } else {
+                    // Standard - grayscale based on phase
+                    const brightness = 50 + 30 * Math.cos(phase);
+                    color = `hsl(0, 0%, ${brightness}%)`;
+                }
+                
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(cx + n.x, cy + n.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+            
+            // STATUS BOX ON CANVAS (TSTU only)
+            if(isTSTU) {
+                const K_tstu_cur = (0.6 + beta * mu * 8) * (perturbTimer > 0 ? Math.max(0.05, perturbTimer / PERTURB_DURATION) : 1.0);
+                const isPerturbed = perturbTimer > 0;
+                
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+                ctx.fillRect(10, 10, 240, 105);
+                ctx.strokeStyle = isPerturbed ? '#ff4444' : '#00d4ff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(10, 10, 240, 105);
+                
+                ctx.fillStyle = '#00d4ff';
+                ctx.font = 'bold 13px Arial';
+                ctx.fillText('ÉTAT SYNCHRONISATION:', 20, 30);
+                
+                let status, statusColor;
+                if(syncOrder < 0.3) { status = 'CHAOS 🔴'; statusColor = '#ff4444'; }
+                else if(syncOrder < 0.7) { status = 'TRANSITION 🟡'; statusColor = '#ffaa00'; }
+                else { status = 'SYNCHRONISÉ 🟢'; statusColor = '#00ff00'; }
+                
+                ctx.fillStyle = statusColor;
+                ctx.font = 'bold 17px Arial';
+                ctx.fillText(status, 20, 54);
+                
+                ctx.fillStyle = '#aaa';
+                ctx.font = '11px Arial';
+                ctx.fillText(`r = ${syncOrder.toFixed(3)}   |   K = ${K_tstu_cur.toFixed(3)}`, 20, 73);
+                
+                if(isPerturbed) {
+                    ctx.fillStyle = '#ff6644';
+                    ctx.font = 'bold 11px Arial';
+                    ctx.fillText(`⚡ PERTURBATION — récupération en cours…`, 20, 90);
+                    ctx.fillStyle = '#ff4444';
+                    ctx.fillRect(20, 98, Math.max(0, (perturbTimer / PERTURB_DURATION)) * 200, 6);
+                } else {
+                    ctx.fillStyle = '#888';
+                    ctx.font = '11px Arial';
+                    ctx.fillText(`K_c ≈ 0.25  |  K_TSTU >> K_c → stable`, 20, 90);
+                }
+            }
+        }
+        
+        function drawExtraCanvas() {
+            if(mode === 'galaxy') drawRotationCurves();
+            else if(mode === 'blackhole') drawPhiProfile();
+            else if(mode === 'brain') drawSyncOrder();
+        }
+        
+        function drawRotationCurves() {
+            const w = ctxE.canvas.width, h = ctxE.canvas.height;
+            const m = 50;
+            
+            ctxE.fillStyle = '#050510';
+            ctxE.fillRect(0, 0, w, h);
+            
+            ctxE.strokeStyle = '#444';
+            ctxE.lineWidth = 2;
+            ctxE.beginPath();
+            ctxE.moveTo(m, h - m);
+            ctxE.lineTo(w - m, h - m);
+            ctxE.moveTo(m, h - m);
+            ctxE.lineTo(m, m);
+            ctxE.stroke();
+            
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.font = '14px Arial';
+            ctxE.fillText('Rayon (kpc)', w / 2 - 40, h - 15);
+            ctxE.save();
+            ctxE.translate(15, h / 2);
+            ctxE.rotate(-Math.PI / 2);
+            ctxE.fillText('Vitesse (km/s)', 0, 0);
+            ctxE.restore();
+            
+            const rmax = 50, vmax = 300, n = 150;
+            
+            ctxE.strokeStyle = '#888';
+            ctxE.lineWidth = 2;
+            ctxE.setLineDash([5, 5]);
+            ctxE.beginPath();
+            for(let i = 1; i <= n; i++) {
+                const r = (rmax / n) * i;
+                const Menc = galaxyMass * Math.pow(r / galaxyRadius, 1.5);
+                const v = rotationVelocityKepler(r, Menc) * 200;
+                const x = m + (w - 2 * m) * (r / rmax);
+                const y = h - m - (h - 2 * m) * (v / vmax);
+                if(i === 1) ctxE.moveTo(x, y);
+                else ctxE.lineTo(x, y);
+            }
+            ctxE.stroke();
+            ctxE.setLineDash([]);
+            
+            ctxE.strokeStyle = '#ffaa00';
+            ctxE.lineWidth = 3;
+            ctxE.beginPath();
+            for(let i = 1; i <= n; i++) {
+                const r = (rmax / n) * i;
+                const v = rotationVelocityObserved(r);
+                const x = m + (w - 2 * m) * (r / rmax);
+                const y = h - m - (h - 2 * m) * (v / vmax);
+                if(i === 1) ctxE.moveTo(x, y);
+                else ctxE.lineTo(x, y);
+            }
+            ctxE.stroke();
+            
+            ctxE.strokeStyle = '#00d4ff';
+            ctxE.lineWidth = 3;
+            ctxE.beginPath();
+            for(let i = 1; i <= n; i++) {
+                const r = (rmax / n) * i;
+                const Menc = galaxyMass * Math.pow(r / galaxyRadius, 1.5);
+                const v = rotationVelocityTSTU(r, Menc, beta, mu) * 200;
+                const x = m + (w - 2 * m) * (r / rmax);
+                const y = h - m - (h - 2 * m) * (v / vmax);
+                if(i === 1) ctxE.moveTo(x, y);
+                else ctxE.lineTo(x, y);
+            }
+            ctxE.stroke();
+            
+            ctxE.fillStyle = '#888';
+            ctxE.fillText('--- Kepler', w - 230, 25);
+            ctxE.fillStyle = '#ffaa00';
+            ctxE.fillText('— Observé', w - 230, 45);
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.fillText('— ÆTHER', w - 230, 65);
+        }
+        
+        function drawPhiProfile() {
+            const w = ctxE.canvas.width, h = ctxE.canvas.height;
+            const m = 50;
+            
+            ctxE.fillStyle = '#050510';
+            ctxE.fillRect(0, 0, w, h);
+            
+            ctxE.strokeStyle = '#444';
+            ctxE.lineWidth = 2;
+            ctxE.beginPath();
+            ctxE.moveTo(m, h - m);
+            ctxE.lineTo(w - m, h - m);
+            ctxE.moveTo(m, h - m);
+            ctxE.lineTo(m, m);
+            ctxE.stroke();
+            
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.font = '14px Arial';
+            ctxE.fillText('r (km)', w / 2 - 20, h - 15);
+            ctxE.save();
+            ctxE.translate(15, h / 2);
+            ctxE.rotate(-Math.PI / 2);
+            ctxE.fillText('φ/φ₀ & ρ/ρ₀', 0, 0);
+            ctxE.restore();
+            
+            const rmax = bhRadius * 10, n = 200;
+            
+            ctxE.strokeStyle = '#00d4ff';
+            ctxE.lineWidth = 3;
+            ctxE.beginPath();
+            for(let i = 0; i <= n; i++) {
+                const r = (rmax / n) * i;
+                const rho = (r < bhRadius) ? bhDensity : bhDensity * Math.pow(bhRadius / r, 3);
+                const phi = phiField(r, rho, beta);
+                const x = m + (w - 2 * m) * (r / rmax);
+                const y = h - m - (h - 2 * m) * ((phi - 0.9) / 0.2);
+                if(i === 0) ctxE.moveTo(x, y);
+                else ctxE.lineTo(x, y);
+            }
+            ctxE.stroke();
+            
+            ctxE.strokeStyle = '#ff6600';
+            ctxE.lineWidth = 3;
+            ctxE.beginPath();
+            for(let i = 0; i <= n; i++) {
+                const r = (rmax / n) * i;
+                const rho = (r < bhRadius) ? bhDensity : bhDensity * Math.pow(bhRadius / r, 3);
+                const rhoNorm = Math.min(1.0, rho / (bhDensity * 10));
+                const x = m + (w - 2 * m) * (r / rmax);
+                const y = h - m - (h - 2 * m) * rhoNorm;
+                if(i === 0) ctxE.moveTo(x, y);
+                else ctxE.lineTo(x, y);
+            }
+            ctxE.stroke();
+            
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.fillText('— φ(r)', w - 150, 25);
+            ctxE.fillStyle = '#ff6600';
+            ctxE.fillText('— ρ(r)', w - 150, 45);
+        }
+        
+        function drawSyncOrder() {
+            const w = ctxE.canvas.width, h = ctxE.canvas.height;
+            const m = 55;
+            
+            ctxE.fillStyle = '#050510';
+            ctxE.fillRect(0, 0, w, h);
+            
+            // Axes
+            ctxE.strokeStyle = '#444';
+            ctxE.lineWidth = 2;
+            ctxE.beginPath();
+            ctxE.moveTo(m, h - m); ctxE.lineTo(w - m, h - m);
+            ctxE.moveTo(m, h - m); ctxE.lineTo(m, m);
+            ctxE.stroke();
+            
+            // Y-axis labels
+            ctxE.fillStyle = '#666';
+            ctxE.font = '11px Arial';
+            for(let v = 0; v <= 1; v += 0.25) {
+                const y = h - m - (h - 2*m) * v;
+                ctxE.fillStyle = '#666';
+                ctxE.fillText(v.toFixed(2), 5, y + 4);
+                ctxE.strokeStyle = 'rgba(255,255,255,0.05)';
+                ctxE.lineWidth = 1;
+                ctxE.beginPath(); ctxE.moveTo(m, y); ctxE.lineTo(w-m, y); ctxE.stroke();
+            }
+            
+            // Critical threshold line K_c
+            const yKc = h - m - (h - 2*m) * 0.5;
+            ctxE.strokeStyle = 'rgba(255,200,0,0.4)';
+            ctxE.lineWidth = 1;
+            ctxE.setLineDash([6,4]);
+            ctxE.beginPath(); ctxE.moveTo(m, yKc); ctxE.lineTo(w-m, yKc); ctxE.stroke();
+            ctxE.setLineDash([]);
+            ctxE.fillStyle = '#ffcc00';
+            ctxE.font = '11px Arial';
+            ctxE.fillText('Seuil critique K_c', m + 6, yKc - 4);
+            
+            // Axis labels
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.font = '13px Arial';
+            ctxE.fillText('Temps (ms)', w/2 - 35, h - 10);
+            ctxE.save();
+            ctxE.translate(14, h/2 + 40);
+            ctxE.rotate(-Math.PI/2);
+            ctxE.fillText("Paramètre d'Ordre r(t)", 0, 0);
+            ctxE.restore();
+            
+            // Title
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.font = 'bold 13px Arial';
+            ctxE.fillText('Évolution de la Synchronisation en Temps Réel', m + 10, 22);
+            
+            if(syncHistory.length < 2) return;
+            
+            // Draw perturbation zones (red background bands)
+            let inPerturb = false, perturbStart = 0;
+            syncHistory.forEach((pt, i) => {
+                const x = m + (w - 2*m) * (i / SYNC_HISTORY_MAX);
+                if(pt.perturbed && !inPerturb) { inPerturb = true; perturbStart = x; }
+                if(!pt.perturbed && inPerturb) {
+                    inPerturb = false;
+                    ctxE.fillStyle = 'rgba(255,50,50,0.08)';
+                    ctxE.fillRect(perturbStart, m, x - perturbStart, h - 2*m);
+                    ctxE.strokeStyle = 'rgba(255,80,80,0.3)';
+                    ctxE.lineWidth = 1;
+                    ctxE.beginPath(); ctxE.moveTo(perturbStart, m); ctxE.lineTo(perturbStart, h-m); ctxE.stroke();
+                    ctxE.fillStyle = 'rgba(255,100,100,0.7)';
+                    ctxE.font = '10px Arial';
+                    ctxE.fillText('⚡', perturbStart + 2, m + 14);
+                }
+            });
+            if(inPerturb) {
+                const lastX = m + (w - 2*m) * (syncHistory.length / SYNC_HISTORY_MAX);
+                ctxE.fillStyle = 'rgba(255,50,50,0.08)';
+                ctxE.fillRect(perturbStart, m, lastX - perturbStart, h - 2*m);
+            }
+            
+            // Draw GR line (red/gray, always low)
+            ctxE.strokeStyle = 'rgba(200,80,80,0.7)';
+            ctxE.lineWidth = 2;
+            ctxE.beginPath();
+            syncHistory.forEach((pt, i) => {
+                const x = m + (w - 2*m) * (i / SYNC_HISTORY_MAX);
+                const y = h - m - (h - 2*m) * pt.r_gr;
+                i === 0 ? ctxE.moveTo(x, y) : ctxE.lineTo(x, y);
+            });
+            ctxE.stroke();
+            
+            // Draw TSTU line (cyan, climbs to sync, dips on perturb then recovers)
+            ctxE.strokeStyle = '#00d4ff';
+            ctxE.lineWidth = 2.5;
+            ctxE.beginPath();
+            syncHistory.forEach((pt, i) => {
+                const x = m + (w - 2*m) * (i / SYNC_HISTORY_MAX);
+                const y = h - m - (h - 2*m) * pt.r_tstu;
+                i === 0 ? ctxE.moveTo(x, y) : ctxE.lineTo(x, y);
+            });
+            ctxE.stroke();
+            
+            // Current value dots
+            const last = syncHistory[syncHistory.length - 1];
+            const lx = m + (w - 2*m) * ((syncHistory.length - 1) / SYNC_HISTORY_MAX);
+            
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.beginPath();
+            ctxE.arc(lx, h - m - (h - 2*m) * last.r_tstu, 5, 0, Math.PI*2);
+            ctxE.fill();
+            
+            ctxE.fillStyle = '#ff6666';
+            ctxE.beginPath();
+            ctxE.arc(lx, h - m - (h - 2*m) * last.r_gr, 4, 0, Math.PI*2);
+            ctxE.fill();
+            
+            // Legend
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.font = '12px Arial';
+            ctxE.fillText('— ÆTHER (K > K_c) : synchronisation robuste', m + 10, h - m - (h - 2*m) * 0.9 - 5);
+            ctxE.fillStyle = '#ff6666';
+            ctxE.fillText('— Standard (K < K_c) : chaos permanent', m + 10, h - m - (h - 2*m) * 0.08 + 12);
+        }
+        
+        // METRICS
+        function updateMetrics() {
+            if(mode === 'solar') {
+                const merc = planets[0];
+                const dtheta = (merc.theta_tstu - merc.theta_gr) * (180 / Math.PI) * 3600 * 100;
+                document.getElementById('m1').textContent = dtheta.toFixed(2);
+                document.getElementById('m2').textContent = screeningRadius(beta).toFixed(3);
+                
+                let totDev = 0;
+                planets.forEach(p => totDev += Math.abs(p.theta_tstu - p.theta_gr));
+                const avgDev = (totDev / planets.length) * (100 / (2 * Math.PI));
+                document.getElementById('m3').textContent = avgDev.toFixed(3);
+                document.getElementById('m4').textContent = (time / (2 * Math.PI)).toFixed(1);
+                
+                const progress = (time % (2 * Math.PI * 10)) / (2 * Math.PI * 10) * 100;
+                document.getElementById('timelineFill').style.width = progress + '%';
+                document.getElementById('timeDisplay').textContent = (time / (2 * Math.PI)).toFixed(1) + ' années';
+            } else if(mode === 'p9') {
+                document.getElementById('m1').textContent = tnoObjects.length;
+                document.getElementById('m2').textContent = tnoMeanObs.toFixed(1) + "°";
+                // Spread of TSTU clustered perihelions
+                const tstuspread = tnoObjects.reduce((s, o) => s + Math.abs(o.peri_tstu - tnoMeanObs), 0) / tnoObjects.length;
+                document.getElementById('m3').textContent = "±" + tstuspread.toFixed(1) + "°";
+                const phiExt = phiField(200, beta, mu, 1.0);
+                document.getElementById('m4').textContent = phiExt.toFixed(4);
+                
+                const progress = (time % 100) / 100 * 100;
+                document.getElementById('timelineFill').style.width = progress + '%';
+                document.getElementById('timeDisplay').textContent = (time * 10).toFixed(1) + ' années';
+            } else if(mode === 'galaxy') {
+                const Menc = galaxyMass * Math.pow(10 / galaxyRadius, 1.5);
+                const v_tstu = rotationVelocityTSTU(10, Menc, beta, mu) * 200;
+                document.getElementById('m1').textContent = v_tstu.toFixed(0);
+                
+                const v_kep = rotationVelocityKepler(10, Menc) * 200;
+                const v_obs = rotationVelocityObserved(10);
+                const missing = ((v_obs - v_kep) / v_obs) * 100;
+                document.getElementById('m2').textContent = missing.toFixed(1);
+                
+                const corr = ((v_tstu - v_kep) / v_kep) * 100;
+                document.getElementById('m3').textContent = corr.toFixed(1);
+                document.getElementById('m4').textContent = (time * 10).toFixed(1);
+                
+                const progress = (time % 100) / 100 * 100;
+                document.getElementById('timelineFill').style.width = progress + '%';
+                document.getElementById('timeDisplay').textContent = (time * 10).toFixed(1) + ' Myr';
+            } else if(mode === 'blackhole') {
+                document.getElementById('m1').textContent = (bhRadius / 1000).toFixed(1);
+                document.getElementById('m2').textContent = bhDensity.toExponential(1);
+                
+                const phi = phiField(0, bhDensity, beta);
+                document.getElementById('m3').textContent = phi.toFixed(3);
+                
+                const rs = schwarzschildRadius(mass);
+                document.getElementById('m4').textContent = (rs / 1000).toFixed(1);
+                
+                const progress = collapsing ? Math.min(100, (1 - bhRadius / 1e6) * 100) : 0;
+                document.getElementById('timelineFill').style.width = progress + '%';
+                document.getElementById('timeDisplay').textContent = collapsing ? 'Effondrement...' : phase;
+            } else {
+                let sumX_tstu = 0, sumY_tstu = 0;
+                neurons.forEach(n => {
+                    sumX_tstu += Math.cos(n.phase_tstu);
+                    sumY_tstu += Math.sin(n.phase_tstu);
+                });
+                const r_tstu = Math.sqrt(sumX_tstu**2 + sumY_tstu**2) / neurons.length;
+                
+                document.getElementById('m1').textContent = r_tstu.toFixed(3);
+                const K = 0.6 + beta * mu * 8;
+                document.getElementById('m2').textContent = K.toFixed(3);
+                
+                let status;
+                if(r_tstu < 0.3) status = 'CHAOS 🔴';
+                else if(r_tstu < 0.7) status = 'TRANSITION 🟡';
+                else status = 'SYNCHRONISÉ 🟢';
+                document.getElementById('m3').textContent = status;
+                
+                document.getElementById('m4').textContent = (time * 100).toFixed(0);
+                
+                const progress = (time % 10) / 10 * 100;
+                document.getElementById('timelineFill').style.width = progress + '%';
+                document.getElementById('timeDisplay').textContent = (time * 100).toFixed(0) + ' ms';
+            }
+        }
+        
+        // MAIN LOOP
+        function animate() {
+            if(animating) {
+                const dt = 0.01 * timeSpeed;
+                time += dt;
+                
+                if(mode === 'solar') updateSolar(dt);
+                else if(mode === 'p9') updateP9(dt);
+                else if(mode === 'galaxy') updateGalaxy(dt);
+                else if(mode === 'blackhole') updateBlackHole(dt);
+                else updateBrain(dt);
+            }
+            
+            if(mode === 'solar') {
+                drawSolar(ctxL, true);
+                drawSolar(ctxR, false);
+            } else if(mode === 'p9') {
+                drawP9(ctxL, true);
+                drawP9(ctxR, false);
+            } else if(mode === 'galaxy') {
+                drawGalaxy(ctxL, true);
+                drawGalaxy(ctxR, false);
+                drawExtraCanvas();
+            } else if(mode === 'blackhole') {
+                drawBlackHole(ctxL, true);
+                drawBlackHole(ctxR, false);
+                drawExtraCanvas();
+            } else {
+                drawBrain(ctxL, true);
+                drawBrain(ctxR, false);
+                drawExtraCanvas();
+            }
+            
+            updateMetrics();
+            updateAetherGauge();
+            requestAnimationFrame(animate);
+        }
+
+        function exportData() {
+            let csv = "temps,x_tstu,y_tstu,x_gr,y_gr\n";
+            if(mode === 'p9') {
+                for(let i=0; i<p9.trailL.length; i++) {
+                    if(p9.trailR[i]) {
+                        csv += `${(i*0.025).toFixed(3)},${p9.trailL[i].x.toFixed(2)},${p9.trailL[i].y.toFixed(2)},${p9.trailR[i].x.toFixed(2)},${p9.trailR[i].y.toFixed(2)}\n`;
+                    }
+                }
+            } else if(mode === 'solar') {
+                planets.forEach(p => {
+                    csv += `\n# ${p.name}\n`;
+                    for(let i=0; i<p.trailL.length; i++) {
+                        if(p.trailR[i]) {
+                            csv += `${(i*0.025).toFixed(3)},${p.trailL[i].x.toFixed(2)},${p.trailL[i].y.toFixed(2)},${p.trailR[i].x.toFixed(2)},${p.trailR[i].y.toFixed(2)}\n`;
+                        }
+                    }
+                });
+            }
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+            a.download = `aether_${mode}_data.csv`;
+            a.click();
+        }
+
+        // INIT
+        updateUI();
+        animate();
+    </script>
+</body>
+</html>
