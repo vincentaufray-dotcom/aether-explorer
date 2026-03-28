@@ -797,6 +797,7 @@
                 <button id="perturbBtn" onclick="perturbNetwork()" class="action-btn purple" style="display:none;">⚡ <span id="lblPerturb">Perturber</span></button>
                 <button id="jwstBtn" onclick="launchJWST()" class="action-btn danger" style="display:none;">🚀 <span id="lblJwstBtn">Lancer la Course</span></button>
                 <button id="aetheronBtn" onclick="launchAetheron()" class="action-btn" style="display:none;background:linear-gradient(135deg,#aa00ff,#6600cc);">⚛️ <span id="lblAetheronBtn">Lancer Ætheron</span></button>
+                <button id="screeningBtn" onclick="cycleScreening()" class="action-btn" style="display:none;background:linear-gradient(135deg,#004488,#006622);">🌍 <span id="lblScreeningBtn">Screening: Cosmologique</span></button>
                 <button onclick="openMeth()" class="action-btn" style="background:linear-gradient(135deg,#004488,#006699);">🔬 <span id="lblMeth">Méthodologie</span></button>
             </div>
             
@@ -1853,6 +1854,7 @@
             document.getElementById('gridBtn').style.display = 'inline-block';
             document.getElementById('jwstBtn').style.display = 'none';
             document.getElementById('aetheronBtn').style.display = 'none';
+            document.getElementById('screeningBtn').style.display = 'none';
 
             if(mode === 'solar') {
                 document.getElementById('titleLeft').innerText = t.solar_titleL;
@@ -1952,6 +1954,7 @@
                 extra.style.display = 'block';
                 document.getElementById('extraTitle').innerText = t.aetheron_extraTitle;
                 document.getElementById('aetheronBtn').style.display = 'inline-block';
+                document.getElementById('screeningBtn').style.display = 'inline-block';
                 legend.style.display = 'none';
                 document.getElementById('l1').innerText = t.aetheron_m1;
                 document.getElementById('l2').innerText = t.aetheron_m2;
@@ -3287,41 +3290,66 @@
         const AE_DX   = 2 * AE_L / AE_N;
         const AE_DT   = 0.01;
         const AE_M2   = 1.0;    // m²
-        const AE_LAM  = -1.5;   // λ < 0
+        const AE_LAM  = -1.5;   // λ < 0 (base)
         const AE_G    = 1.0;    // g > 0
         const AE_A0   = 0.9;    // Gaussian amplitude
         const AE_SIG  = 3.0;    // Gaussian width
         const AE_HIST_MAX = 600;
 
-        let aePhi  = new Float64Array(AE_N);  // field values
-        let aePhi0 = new Float64Array(AE_N);  // previous step (leapfrog)
-        let aeTime = 0;
-        let aeRunning = false;
-        let aeTimeSeries = [];   // {t, val} central field value
-        let aeSpectrum = [];     // FFT power spectrum
+        // Screening regimes (Addendum IV, Table 2)
+        // Le potentiel reste stable (λ_eff ~1) dans tous les régimes.
+        // Le screening modifie β_eff → coupling → profil spatial de l'oscillon
+        // Simulé ici par différentes CI (A0, sigma) donnant différentes fréquences
+        const AE_REGIMES = [
+            { key: 'cosmo', label: '🌌 Cosmologique',  betaEff: 8.8e-2, lambdaEff: 1.1,  color: '#00d4ff', omegaRef: 1.47, A0: 0.9,  sig: 3.0 },
+            { key: 'earth', label: '🌍 Terre (screené)',betaEff: 4.2e-8, lambdaEff: 1.1,  color: '#44ff88', omegaRef: 0.62, A0: 0.35, sig: 8.0 },
+            { key: 'solar', label: '☀️ Soleil (screené)',betaEff: 9.0e-8,lambdaEff: 1.1,  color: '#ffcc00', omegaRef: 0.62, A0: 0.30, sig: 10.0 }
+        ];
+        let aeRegimeIdx = 0; // current regime index
+
+        function aeLambdaEff() { return AE_REGIMES[aeRegimeIdx].lambdaEff; }
 
         function aeVprime(phi) {
+            // Potentiel sextique stable — même forme dans tous les régimes
+            // Le screening est reflété dans les CI (A0, sigma), pas dans V(phi)
             return AE_M2 * phi + AE_LAM * phi * phi * phi + AE_G * phi * phi * phi * phi * phi;
         }
 
+        let aePhi  = new Float64Array(AE_N);
+        let aePhi0 = new Float64Array(AE_N);
+        let aeTime = 0;
+        let aeRunning = false;
+        let aeFrameCount = 0;
+        let aeTimeSeries = [];
+        let aeSpectrum = [];
+        let aeSpecDtSub = AE_DT; // dt between DFT samples
+        let aeSpecN = 64;        // DFT length used
+
         function initAetheron() {
             aeTime = 0;
+            aeFrameCount = 0;
             aeTimeSeries = [];
             aeSpectrum = [];
+            aeSpecDtSub = AE_DT;
+            aeSpecN = 64;
+            const reg = AE_REGIMES[aeRegimeIdx];
+            const A0  = reg.A0;
+            const sig = reg.sig;
             for (let i = 0; i < AE_N; i++) {
                 const x = -AE_L + i * AE_DX;
-                aePhi[i]  = AE_A0 * Math.exp(-(x * x) / (AE_SIG * AE_SIG));
-                // Initial velocity = 0 → phi_prev = phi (leapfrog bootstrap)
+                aePhi[i]  = A0 * Math.exp(-(x * x) / (sig * sig));
                 aePhi0[i] = aePhi[i];
             }
             aeRunning = false;
         }
         initAetheron();
 
+        let aeFrameCount_removed = null; // placeholder removed
+
         function updateAetheron(dt) {
             if (!aeRunning) return;
-            // Run multiple leapfrog steps per animation frame
-            const stepsPerFrame = 4;
+            aeFrameCount++;
+            const stepsPerFrame = 12; // faster convergence to stationary regime
             for (let s = 0; s < stepsPerFrame; s++) {
                 const phiNew = new Float64Array(AE_N);
                 for (let i = 0; i < AE_N; i++) {
@@ -3331,31 +3359,53 @@
                     const force = laplacian - aeVprime(aePhi[i]);
                     phiNew[i] = 2 * aePhi[i] - aePhi0[i] + AE_DT * AE_DT * force;
                 }
+
+                // NaN/Infinity guard — auto-reset if simulation blows up
+                if (!isFinite(phiNew[Math.floor(AE_N / 2)])) {
+                    console.warn('Ætheron: divergence detected, resetting');
+                    initAetheron();
+                    return;
+                }
+
                 aePhi0 = aePhi;
                 aePhi  = phiNew;
                 aeTime += AE_DT;
 
-                // Record central value
                 const center = aePhi[Math.floor(AE_N / 2)];
                 if (aeTimeSeries.length >= AE_HIST_MAX) aeTimeSeries.shift();
                 aeTimeSeries.push({ t: aeTime, val: center });
             }
 
-            // Recompute FFT spectrum periodically (every 20 frames worth)
-            if (aeTimeSeries.length >= 64) {
+            // Throttle DFT: only every 60 frames AND only when enough data
+            if (aeFrameCount % 60 === 0 && aeTimeSeries.length >= 64) {
                 const n = aeTimeSeries.length;
-                const re = new Float64Array(n);
-                const im2 = new Float64Array(n);
-                for (let i = 0; i < n; i++) re[i] = aeTimeSeries[i].val;
-                // Simple DFT (brute force, max 600 pts = acceptable)
-                const half = Math.floor(n / 2);
+                // Downsample to max 128 points
+                const dftN = Math.min(n, 128);
+                const step = Math.floor(n / dftN);
+                const reSub = new Float64Array(dftN);
+                // Compute mean and subtract (remove DC component)
+                let mean = 0;
+                for (let i = 0; i < dftN; i++) reSub[i] = aeTimeSeries[i * step].val;
+                for (let i = 0; i < dftN; i++) mean += reSub[i];
+                mean /= dftN;
+                for (let i = 0; i < dftN; i++) reSub[i] -= mean;
+                // Apply Hann window to reduce spectral leakage
+                for (let i = 0; i < dftN; i++) {
+                    reSub[i] *= 0.5 * (1 - Math.cos(2 * Math.PI * i / (dftN - 1)));
+                }
+                // DFT
+                const half = Math.floor(dftN / 2);
                 aeSpectrum = [];
+                // Store dt between samples for correct frequency axis
+                const dtSub = step * AE_DT;
+                aeSpecDtSub = dtSub;
+                aeSpecN = dftN;
                 for (let k = 0; k < half; k++) {
                     let sumR = 0, sumI = 0;
-                    for (let i2 = 0; i2 < n; i2++) {
-                        const angle = -2 * Math.PI * k * i2 / n;
-                        sumR += re[i2] * Math.cos(angle);
-                        sumI += re[i2] * Math.sin(angle);
+                    for (let i2 = 0; i2 < dftN; i2++) {
+                        const angle = -2 * Math.PI * k * i2 / dftN;
+                        sumR += reSub[i2] * Math.cos(angle);
+                        sumI += reSub[i2] * Math.sin(angle);
                     }
                     aeSpectrum.push(sumR * sumR + sumI * sumI);
                 }
@@ -3363,16 +3413,14 @@
         }
 
         function aeGetMetrics() {
-            // Find peak frequency
-            let peakIdx = 0, peakVal = 0;
+            let peakIdx = 1, peakVal = 0;
             for (let i = 1; i < aeSpectrum.length; i++) {
                 if (aeSpectrum[i] > peakVal) { peakVal = aeSpectrum[i]; peakIdx = i; }
             }
-            const n = aeTimeSeries.length;
-            const dt = AE_DT;
-            const omega_peak = n > 0 ? (peakIdx / n) * (2 * Math.PI / dt) : 0;
+            // Correct frequency: f_k = k / (N * dtSub), omega = 2pi*f_k
+            const omega_peak = aeSpecN > 0 ? (peakIdx / aeSpecN) * (2 * Math.PI / aeSpecDtSub) : 0;
 
-            // Q factor: peak / FWHM (rough estimate from neighbors)
+            // Q factor from FWHM
             let halfPow = peakVal / 2;
             let lo = peakIdx, hi = peakIdx;
             while (lo > 0 && aeSpectrum[lo] > halfPow) lo--;
@@ -3380,7 +3428,7 @@
             const fwhm = Math.max(1, hi - lo);
             const Q = peakIdx / fwhm;
 
-            // Count harmonics (peaks at ~2×, 3×, 4×, 5× base freq ±20%)
+            // Count harmonics
             let harmonics = 0;
             if (peakIdx > 2) {
                 for (let h = 2; h <= 5; h++) {
@@ -3394,14 +3442,13 @@
                 }
             }
 
-            // Core energy (|x| < 5)
+            // Core energy
             let eCore = 0, eTotal = 0;
             for (let i = 0; i < AE_N; i++) {
                 const x = -AE_L + i * AE_DX;
-                const kineticApprox = 0; // simplified: just potential
                 const v = 0.5 * AE_M2 * aePhi[i] ** 2 + 0.25 * AE_LAM * aePhi[i] ** 4 + (1/6) * AE_G * aePhi[i] ** 6;
-                eTotal += v;
-                if (Math.abs(x) < 5) eCore += v;
+                eTotal += Math.abs(v);
+                if (Math.abs(x) < 5) eCore += Math.abs(v);
             }
             const Qosc = eTotal > 0.001 ? eCore / eTotal : 0;
 
@@ -3434,12 +3481,15 @@
                 ctx.moveTo(mx, my + ph); ctx.lineTo(mx + pw, my + ph);
                 ctx.stroke();
 
+                // Dynamic Y scale based on regime amplitude
+                const yRange = Math.max(0.15, AE_REGIMES[aeRegimeIdx].A0 * 1.6);
+
                 // Y-axis labels
-                for (let v = -1.5; v <= 1.5; v += 0.5) {
-                    const y = my + ph / 2 - (v / 1.5) * (ph / 2);
+                for (let v = -yRange; v <= yRange + 0.001; v += yRange / 2) {
+                    const y = my + ph / 2 - (v / yRange) * (ph / 2);
                     ctx.fillStyle = '#445';
                     ctx.font = '10px Arial';
-                    ctx.fillText(v.toFixed(1), 5, y + 4);
+                    ctx.fillText(v.toFixed(2), 2, y + 4);
                     ctx.strokeStyle = 'rgba(255,255,255,0.04)';
                     ctx.lineWidth = 1;
                     ctx.beginPath(); ctx.moveTo(mx, y); ctx.lineTo(mx + pw, y); ctx.stroke();
@@ -3471,7 +3521,7 @@
                     ctx.beginPath();
                     for (let i = 0; i < AE_N; i++) {
                         const px2 = mx + (i / AE_N) * pw;
-                        const py2 = my + ph / 2 - (aePhi[i] / 1.5) * (ph / 2);
+                        const py2 = my + ph / 2 - (aePhi[i] / yRange) * (ph / 2);
                         i === 0 ? ctx.moveTo(px2, py2) : ctx.lineTo(px2, py2);
                     }
                     ctx.stroke();
@@ -3482,7 +3532,7 @@
                     ctx.moveTo(mx, my + ph / 2);
                     for (let i = 0; i < AE_N; i++) {
                         const px2 = mx + (i / AE_N) * pw;
-                        const py2 = my + ph / 2 - (aePhi[i] / 1.5) * (ph / 2);
+                        const py2 = my + ph / 2 - (aePhi[i] / yRange) * (ph / 2);
                         ctx.lineTo(px2, py2);
                     }
                     ctx.lineTo(mx + pw, my + ph / 2);
@@ -3504,6 +3554,11 @@
                 ctx.fillStyle = '#00d4ff';
                 ctx.font = 'bold 13px Arial';
                 ctx.fillText('⚛️ Champ ΔM — φ(x, t)', mx + 10, my - 8);
+                // Regime indicator
+                const reg = AE_REGIMES[aeRegimeIdx];
+                ctx.fillStyle = reg.color;
+                ctx.font = '11px Arial';
+                ctx.fillText(reg.label + '  β_eff=' + reg.betaEff.toExponential(1) + '  A₀=' + reg.A0 + ' σ=' + reg.sig, mx + 10, my + 8);
                 ctx.fillStyle = '#888';
                 ctx.font = '11px Arial';
                 ctx.fillText('x (unités sim.)', mx + pw / 2 - 30, my + ph + 32);
@@ -3667,6 +3722,18 @@
             ctxE.font = 'bold 12px Arial';
             ctxE.fillText('Spectre de Puissance S̃(ω) — Modes harmoniques', spLeft + 10, mTop - 8);
 
+            // Regime badge
+            const reg = AE_REGIMES[aeRegimeIdx];
+            ctxE.fillStyle = reg.color;
+            ctxE.font = 'bold 11px Arial';
+            ctxE.fillText(`Régime actif : ${reg.label}  |  β_eff = ${reg.betaEff.toExponential(1)}  |  ω_ref = ${reg.omegaRef}`, spLeft + 10, mTop + 10);
+
+            // Maturity warning
+            const mature = aeTime > 40;
+            ctxE.fillStyle = mature ? 'rgba(0,255,100,0.7)' : 'rgba(255,180,0,0.8)';
+            ctxE.font = '10px Arial';
+            ctxE.fillText(mature ? `✅ Régime stationnaire (t=${aeTime.toFixed(0)})` : `⏳ Attendre t>40 pour spectre fiable (t=${aeTime.toFixed(0)})`, spLeft + 10, mTop + 24);
+
             if (aeSpectrum.length > 10) {
                 const maxPow = Math.max(...aeSpectrum.slice(1));
                 if (maxPow > 0) {
@@ -3731,6 +3798,15 @@
         }
 
         function launchAetheron() {
+            initAetheron();
+            aeRunning = true;
+        }
+
+        function cycleScreening() {
+            aeRegimeIdx = (aeRegimeIdx + 1) % AE_REGIMES.length;
+            const r = AE_REGIMES[aeRegimeIdx];
+            document.getElementById('lblScreeningBtn').textContent = 'Screening: ' + r.label;
+            // Restart sim with new regime
             initAetheron();
             aeRunning = true;
         }
@@ -3876,14 +3952,16 @@
                 csv += `# N=${AE_N} points, L=${AE_L}, dx=${AE_DX.toFixed(4)}, dt=${AE_DT}\n\n`;
                 csv += `t,phi_centre\n`;
                 aeTimeSeries.forEach(pt => {
-                    csv += `${pt.t.toFixed(3)},${pt.val.toFixed(6)}\n`;
+                    if (isFinite(pt.val))
+                        csv += `${pt.t.toFixed(3)},${pt.val.toFixed(6)}\n`;
                 });
                 if(aeSpectrum.length > 0) {
-                    csv += `\n# Spectre de puissance S̃(ω)\nomega_k,power\n`;
-                    const n = aeTimeSeries.length || 1;
+                    csv += `\n# Spectre de puissance S̃(ω) — moyenne soustraite, fenêtre Hann\nomega_rad_per_unit,power\n`;
                     aeSpectrum.forEach((pow, k) => {
-                        const omega = (k / n) * (2 * Math.PI / AE_DT);
-                        csv += `${omega.toFixed(4)},${pow.toExponential(4)}\n`;
+                        if (isFinite(pow)) {
+                            const omega = (k / aeSpecN) * (2 * Math.PI / aeSpecDtSub);
+                            csv += `${omega.toFixed(4)},${pow.toExponential(4)}\n`;
+                        }
                     });
                 }
             } else {
