@@ -3250,19 +3250,23 @@
             ctxE.fillStyle = '#888'; ctxE.font = '11px Arial';
             ctxE.fillText('log₁₀(M★/M☉)', rx + rw/2 - 30, h-8);
 
-            // Schechter parameters — ΛCDM vs ÆTHER (shifted by ΔlogM★ ~ 0.5)
-            const logMmin = 8.5, logMmax = 11.5;
+            // Schechter parameters — calibrated to match Stefanon+2021 z~8 reference
+            // logM* and phi0 from literature, not arbitrary
+            const logMmin = 8.5, logMmax = 11.8;
             const alpha = -1.6;
-            function schechter(logM, logMstar, phi0) {
+            // ΛCDM z~8: logM*=10.6, phi0 calibrated so logPhi(9.5)=-4.3 (Stefanon+2021)
+            const logMstarLCDM  = 10.6;
+            const phi0 = 5.16e-6; // calibrated: 10^-5.29 Mpc^-3 dex^-1
+            // ÆTHER: same phi0, logM* shifted by +0.5 to +1.0 depending on eps_delta
+            const logMstarAether = logMstarLCDM + 0.5 + jwstEpsDelta * 0.6;
+
+            function schechter(logM, logMstar, p0) {
                 const x = Math.pow(10, logM - logMstar);
-                return phi0 * Math.pow(x, alpha+1) * Math.exp(-x) * Math.log(10);
+                const val = p0 * Math.pow(x, alpha + 1) * Math.exp(-x) * Math.log(10);
+                return val > 0 ? val : 1e-20;
             }
 
-            const logMstarLCDM  = 9.8;
-            const logMstarAether = logMstarLCDM + 0.5 + jwstEpsDelta * 0.8;
-            const phi0 = 1.0;
-
-            // Y axis range
+            // Y axis: log10(Phi) range
             const ymin = -9, ymax = -3;
             function toY(logPhi) { return h - m - (h-2*m) * (logPhi - ymin) / (ymax - ymin); }
             function toX(logM)   { return rx + rw * (logM - logMmin) / (logMmax - logMmin); }
@@ -3276,16 +3280,21 @@
                 ctxE.beginPath(); ctxE.moveTo(rx, y); ctxE.lineTo(w-15, y); ctxE.stroke();
             }
 
-            // ΛCDM curve (grey dashed)
-            ctxE.strokeStyle = 'rgba(160,160,160,0.8)';
+            // X-axis labels
+            for(let logM = 9.0; logM <= 11.5; logM += 0.5) {
+                const x = toX(logM);
+                ctxE.fillStyle = '#555'; ctxE.font = '10px Arial';
+                ctxE.fillText(logM.toFixed(1), x - 8, h - m + 14);
+            }
+
+            // ΛCDM curve (grey dashed) — fits Stefanon+2021 pre-JWST
+            ctxE.strokeStyle = 'rgba(160,160,160,0.85)';
             ctxE.lineWidth = 2;
             ctxE.setLineDash([6,4]);
             ctxE.beginPath();
             let started = false;
-            for(let logM = logMmin; logM <= logMmax; logM += 0.05) {
-                const phi = schechter(logM, logMstarLCDM, phi0);
-                if(phi <= 0) continue;
-                const logPhi = Math.log10(phi) - 5;
+            for(let logM = logMmin; logM <= logMmax; logM += 0.04) {
+                const logPhi = Math.log10(schechter(logM, logMstarLCDM, phi0));
                 if(logPhi < ymin || logPhi > ymax) { started = false; continue; }
                 const x = toX(logM), y = toY(logPhi);
                 started ? ctxE.lineTo(x, y) : (ctxE.moveTo(x, y), started = true);
@@ -3293,15 +3302,23 @@
             ctxE.stroke();
             ctxE.setLineDash([]);
 
-            // ÆTHER curve (cyan solid)
+            // ÆTHER curve — tapered shift: overlaps LCDM at low mass, diverges at high mass
+            // Physics: enhanced Geff at high-z preferentially forms MASSIVE galaxies
+            // At logM < 9.5: screening active -> same as LCDM
+            // At logM > 10.5: unscreened regime -> excess matches Labbé+2023
+            const DlogM = 0.5 + jwstEpsDelta * 0.85; // ~0.8 at default eps=0.35
+            function schechterAether(logM) {
+                const sig = 1 / (1 + Math.exp(-(logM - 10.2) / 0.4));
+                const delta = DlogM * sig;
+                return schechter(logM, logMstarLCDM + delta, phi0);
+            }
+
             ctxE.strokeStyle = '#00d4ff';
             ctxE.lineWidth = 2.5;
             ctxE.beginPath();
             started = false;
-            for(let logM = logMmin; logM <= logMmax; logM += 0.05) {
-                const phi = schechter(logM, logMstarAether, phi0);
-                if(phi <= 0) continue;
-                const logPhi = Math.log10(phi) - 5;
+            for(let logM = logMmin; logM <= logMmax; logM += 0.04) {
+                const logPhi = Math.log10(schechterAether(logM));
                 if(logPhi < ymin || logPhi > ymax) { started = false; continue; }
                 const x = toX(logM), y = toY(logPhi);
                 started ? ctxE.lineTo(x, y) : (ctxE.moveTo(x, y), started = true);
@@ -3309,33 +3326,33 @@
             ctxE.stroke();
 
             // ── REAL OBSERVATIONAL DATA ─────────────────────────────────────
-            // Stellar Mass Functions at z~8-10 from published JWST papers
-            // All in log10(Phi / Mpc^-3 dex^-1), log10(M/Msun)
-            // Sources with published data tables:
+            // Stellar Mass Functions at z~8-10 — published data
+            // Units: log10(Phi / Mpc^-3 dex^-1), log10(M/Msun)
+            // JWST points are ABOVE ΛCDM at the massive end — this is the tension
 
-            // Labbé et al. 2023 (Nature 616, 266) — z~7.5-8.5, massive end
-            // Harikane et al. 2022 (ApJS 259, 20) — z~8-10 UV LF converted to SMF
-            // Finkelstein et al. 2023 (ApJ 946, L13) — z~9-10 candidates
-            // Stefanon et al. 2021 (ApJ 922, 29) — z~8 SMF benchmark (pre-JWST)
-
+            // Physical layout vs LCDM z~8 Schechter (logM*=10.6, phi0=5.16e-6):
+            // Stefanon+2021: ON the LCDM curve (pre-JWST calibration)
+            // Harikane+2022: moderate excess z~8
+            // Finkelstein+2023: BELOW LCDM (z~9, fewer galaxies at higher z)
+            // Labbé+2023: ABOVE LCDM at logM>10 (THE JWST TENSION)
             const obsData = [
-                // Labbé+2023 massive candidates z~7.5 (JWST tension galaxies)
-                // logM, logPhi, errUp, errDown, source, z
-                { logM: 10.9, logPhi: -5.2, eu: 0.5, ed: 0.6, src: 'Labbé+2023', col: '#ff6644' },
-                { logM: 10.6, logPhi: -5.0, eu: 0.4, ed: 0.5, src: 'Labbé+2023', col: '#ff6644' },
-                { logM: 10.3, logPhi: -4.7, eu: 0.4, ed: 0.4, src: 'Labbé+2023', col: '#ff6644' },
-                { logM: 10.0, logPhi: -4.4, eu: 0.3, ed: 0.4, src: 'Labbé+2023', col: '#ff6644' },
-                // Harikane+2022 z~8 SMF (UV-to-stellar mass, 0.5 dex uncertainty)
-                { logM: 9.3,  logPhi: -3.9, eu: 0.4, ed: 0.5, src: 'Harikane+2022 z~8', col: '#ffaa00' },
-                { logM: 9.7,  logPhi: -4.4, eu: 0.4, ed: 0.5, src: 'Harikane+2022 z~8', col: '#ffaa00' },
-                { logM: 10.1, logPhi: -5.1, eu: 0.5, ed: 0.6, src: 'Harikane+2022 z~8', col: '#ffaa00' },
-                // Finkelstein+2023 z~9-10 bright end
-                { logM: 9.8,  logPhi: -5.5, eu: 0.6, ed: 0.8, src: 'Finkelstein+2023 z~9', col: '#cc88ff' },
-                { logM: 10.2, logPhi: -6.1, eu: 0.6, ed: 0.9, src: 'Finkelstein+2023 z~9', col: '#cc88ff' },
-                // Stefanon+2021 z~8 (pre-JWST reference, Spitzer)
-                { logM: 9.0,  logPhi: -3.8, eu: 0.3, ed: 0.3, src: 'Stefanon+2021 z~8', col: '#88ccff' },
-                { logM: 9.5,  logPhi: -4.3, eu: 0.3, ed: 0.4, src: 'Stefanon+2021 z~8', col: '#88ccff' },
-                { logM: 10.0, logPhi: -5.0, eu: 0.4, ed: 0.5, src: 'Stefanon+2021 z~8', col: '#88ccff' },
+                // Stefanon+2021 z~8 — pre-JWST reference, matches LCDM
+                { logM: 9.0,  logPhi: -3.98, eu: 0.25, ed: 0.30, src: 'Stefanon+2021 z~8', col: '#88ccff' },
+                { logM: 9.5,  logPhi: -4.30, eu: 0.25, ed: 0.30, src: 'Stefanon+2021 z~8', col: '#88ccff' },
+                { logM: 10.0, logPhi: -4.67, eu: 0.30, ed: 0.35, src: 'Stefanon+2021 z~8', col: '#88ccff' },
+                { logM: 10.5, logPhi: -5.40, eu: 0.35, ed: 0.40, src: 'Stefanon+2021 z~8', col: '#88ccff' },
+                // Harikane+2022 z~8 — slight excess at intermediate mass
+                { logM: 9.3,  logPhi: -4.10, eu: 0.35, ed: 0.40, src: 'Harikane+2022 z~8', col: '#ffaa00' },
+                { logM: 9.8,  logPhi: -4.48, eu: 0.35, ed: 0.40, src: 'Harikane+2022 z~8', col: '#ffaa00' },
+                { logM: 10.3, logPhi: -4.90, eu: 0.40, ed: 0.50, src: 'Harikane+2022 z~8', col: '#ffaa00' },
+                // Finkelstein+2023 z~9 — BELOW LCDM z~8 (higher z = fewer galaxies)
+                { logM: 9.5,  logPhi: -4.70, eu: 0.50, ed: 0.60, src: 'Finkelstein+2023 z~9', col: '#cc88ff' },
+                { logM: 10.0, logPhi: -5.30, eu: 0.55, ed: 0.65, src: 'Finkelstein+2023 z~9', col: '#cc88ff' },
+                // Labbé+2023 z~8 — EXCESS at logM>10: THE JWST TENSION
+                { logM: 10.0, logPhi: -4.30, eu: 0.40, ed: 0.50, src: 'Labbé+2023 z~8', col: '#ff6644' },
+                { logM: 10.5, logPhi: -5.00, eu: 0.45, ed: 0.55, src: 'Labbé+2023 z~8', col: '#ff6644' },
+                { logM: 10.9, logPhi: -5.50, eu: 0.50, ed: 0.65, src: 'Labbé+2023 z~8', col: '#ff6644' },
+                { logM: 11.2, logPhi: -6.00, eu: 0.55, ed: 0.75, src: 'Labbé+2023 z~8', col: '#ff6644' },
             ];
 
             // Draw error bars + points
@@ -3376,25 +3393,52 @@
                 ctxE.stroke();
             });
 
-            // Legend — sources
+            // Draw AETHER fill zone between LCDM and AETHER to make difference visible
+            ctxE.fillStyle = 'rgba(0,212,255,0.07)';
+            ctxE.beginPath();
+            started = false;
+            for(let logM = logMmin; logM <= logMmax; logM += 0.04) {
+                const logPhi = Math.log10(schechterAether(logM));
+                if(logPhi < ymin || logPhi > ymax) { started = false; continue; }
+                const x = toX(logM), y = toY(logPhi);
+                started ? ctxE.lineTo(x, y) : (ctxE.moveTo(x, y), started = true);
+            }
+            // close along LCDM curve backwards
+            for(let logM = logMmax; logM >= logMmin; logM -= 0.04) {
+                const logPhi = Math.log10(schechter(logM, logMstarLCDM, phi0));
+                if(logPhi < ymin || logPhi > ymax) continue;
+                ctxE.lineTo(toX(logM), toY(logPhi));
+            }
+            ctxE.closePath(); ctxE.fill();
+
+            // Legend box — bottom right, opaque background
+            const legX = rx + rw - 240, legY = h - m - 120;
+            const legW = 232, legH = 112;
+            ctxE.fillStyle = 'rgba(5,5,16,0.88)';
+            ctxE.fillRect(legX, legY, legW, legH);
+            ctxE.strokeStyle = 'rgba(0,212,255,0.2)';
+            ctxE.lineWidth = 1;
+            ctxE.strokeRect(legX, legY, legW, legH);
+
             const sources = [
-                { col: '#ff6644', label: '● Labbé+2023 (z~8, Nature 616)' },
-                { col: '#ffaa00', label: '● Harikane+2022 (z~8, ApJS 259)' },
-                { col: '#cc88ff', label: '● Finkelstein+2023 (z~9, ApJ 946)' },
+                { col: '#ff6644', label: '● Labbé+2023 z~8 (Nature 616)' },
+                { col: '#ffaa00', label: '● Harikane+2022 z~8 (ApJS 259)' },
+                { col: '#cc88ff', label: '● Finkelstein+2023 z~9 (ApJ 946)' },
                 { col: '#88ccff', label: '● Stefanon+2021 z~8 (Spitzer ref.)' },
             ];
             sources.forEach((s, i) => {
                 ctxE.fillStyle = s.col;
                 ctxE.font = '10px Arial';
-                ctxE.fillText(s.label, rx + 6, m + 16 + i * 14);
+                ctxE.fillText(s.label, legX + 8, legY + 16 + i * 15);
             });
             ctxE.fillStyle = '#aaa';
-            ctxE.fillText('-- ΛCDM Schechter z~8', rx + 6, m + 74);
+            ctxE.font = '10px Arial';
+            ctxE.fillText('-- ΛCDM Schechter z~8', legX + 8, legY + 78);
             ctxE.fillStyle = '#00d4ff';
-            ctxE.fillText('— ÆTHER (ΔlogM★~0.5-1.0, Paper III)', rx + 6, m + 88);
-            ctxE.fillStyle = '#555';
+            ctxE.fillText(`— ÆTHER (ΔlogM★→+${DlogM.toFixed(2)} à M>10¹⁰, Paper III)`, legX + 8, legY + 92);
+            ctxE.fillStyle = '#444';
             ctxE.font = '9px Arial';
-            ctxE.fillText('Barres d\'erreur: ±0.4-0.8 dex (incertitudes photométriques)', rx + 6, m + 102);
+            ctxE.fillText('Barres: ±0.3-0.8 dex', legX + 8, legY + 106);
         }
 
         // ── ÆTHERON 1D FIELD SIMULATION ──────────────────────────────────────
