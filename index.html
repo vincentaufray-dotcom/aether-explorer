@@ -371,6 +371,122 @@
         
         .extra-canvas { margin-top: 15px; }
         
+        /* METHODOLOGY MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px 20px;
+            overflow-y: auto;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: linear-gradient(135deg, #080818, #0d0d25);
+            border: 2px solid #00d4ff;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 860px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 0 60px rgba(0,212,255,0.3);
+        }
+        .modal-close {
+            position: absolute;
+            top: 14px; right: 18px;
+            background: none;
+            border: none;
+            color: #00d4ff;
+            font-size: 1.6em;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #fff; }
+        .modal-title {
+            color: #00d4ff;
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .modal-subtitle {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 22px;
+            border-bottom: 1px solid rgba(0,212,255,0.2);
+            padding-bottom: 12px;
+        }
+        .modal-section { margin-bottom: 22px; }
+        .modal-section-title {
+            color: #00d4ff;
+            font-size: 1em;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .modal-section-title::before {
+            content: '';
+            display: inline-block;
+            width: 3px; height: 16px;
+            background: #00d4ff;
+            border-radius: 2px;
+        }
+        .modal-text {
+            color: #ccc;
+            font-size: 0.88em;
+            line-height: 1.7;
+        }
+        .modal-eq {
+            background: rgba(0,212,255,0.07);
+            border-left: 3px solid #00d4ff;
+            border-radius: 0 8px 8px 0;
+            padding: 10px 16px;
+            margin: 8px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.92em;
+            color: #88eeff;
+        }
+        .modal-limit {
+            background: rgba(255,150,0,0.08);
+            border-left: 3px solid #ffaa00;
+            border-radius: 0 8px 8px 0;
+            padding: 10px 16px;
+            margin: 8px 0;
+            font-size: 0.88em;
+            color: #ffcc88;
+        }
+        .modal-doi {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,100,200,0.2);
+            border: 1px solid #00d4ff;
+            border-radius: 8px;
+            padding: 8px 14px;
+            color: #00d4ff;
+            text-decoration: none;
+            font-size: 0.85em;
+            margin: 4px;
+            transition: all 0.2s;
+        }
+        .modal-doi:hover { background: rgba(0,100,200,0.4); }
+        .modal-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.78em;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+        .tag-quantitative { background: rgba(0,200,100,0.2); color: #00ff88; border: 1px solid #00ff88; }
+        .tag-qualitative  { background: rgba(255,165,0,0.2);  color: #ffaa00; border: 1px solid #ffaa00; }
+        .tag-exploratory  { background: rgba(180,0,255,0.2);  color: #cc88ff; border: 1px solid #cc88ff; }
+        .tag-nbody        { background: rgba(0,180,255,0.2);  color: #00d4ff; border: 1px solid #00d4ff; }
+        
         .share-box { 
             text-align: center; 
             margin-top: 20px; 
@@ -391,6 +507,152 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 0, 255, 0.5);
         }
+
+        /* GUIDED TOUR */
+        .tour-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            pointer-events: none;
+        }
+        .tour-overlay.active { display: block; }
+
+        /* Spotlight: dark vignette around edges, clear center */
+        .tour-spotlight {
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 45% at 50% 42%,
+                transparent 55%, rgba(0,0,0,0.82) 100%);
+            pointer-events: none;
+        }
+
+        /* Tour card */
+        .tour-card {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(680px, 94vw);
+            background: linear-gradient(135deg, #08081a, #0d1030);
+            border: 2px solid #00d4ff;
+            border-radius: 16px;
+            padding: 22px 26px 18px;
+            box-shadow: 0 0 50px rgba(0,212,255,0.35);
+            pointer-events: all;
+            animation: tourSlideUp 0.35s ease;
+        }
+        @keyframes tourSlideUp {
+            from { opacity:0; transform: translateX(-50%) translateY(20px); }
+            to   { opacity:1; transform: translateX(-50%) translateY(0); }
+        }
+        .tour-progress {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 14px;
+            align-items: center;
+        }
+        .tour-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: rgba(0,212,255,0.25);
+            border: 1px solid rgba(0,212,255,0.4);
+            transition: all 0.3s;
+        }
+        .tour-dot.active {
+            background: #00d4ff;
+            box-shadow: 0 0 8px #00d4ff;
+            width: 22px;
+            border-radius: 4px;
+        }
+        .tour-step-label {
+            margin-left: auto;
+            color: #00d4ff;
+            font-size: 0.78em;
+            opacity: 0.7;
+        }
+        .tour-mode-badge {
+            display: inline-block;
+            background: rgba(0,212,255,0.15);
+            border: 1px solid #00d4ff;
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 0.78em;
+            color: #00d4ff;
+            margin-bottom: 8px;
+        }
+        .tour-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+        .tour-text {
+            color: #ccc;
+            font-size: 0.88em;
+            line-height: 1.65;
+            margin-bottom: 16px;
+        }
+        .tour-text strong { color: #00d4ff; }
+        .tour-insight {
+            background: rgba(0,212,255,0.07);
+            border-left: 3px solid #00d4ff;
+            border-radius: 0 8px 8px 0;
+            padding: 8px 14px;
+            font-size: 0.83em;
+            color: #88ddff;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+        .tour-timer-bar {
+            height: 3px;
+            background: rgba(0,212,255,0.15);
+            border-radius: 2px;
+            margin-bottom: 14px;
+            overflow: hidden;
+        }
+        .tour-timer-fill {
+            height: 100%;
+            background: #00d4ff;
+            border-radius: 2px;
+            transition: width 0.1s linear;
+        }
+        .tour-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .tour-btn {
+            padding: 8px 18px;
+            border-radius: 7px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.88em;
+            transition: all 0.2s;
+        }
+        .tour-btn-skip {
+            background: none;
+            color: #666;
+            border: 1px solid #333;
+        }
+        .tour-btn-skip:hover { color: #aaa; border-color: #666; }
+        .tour-btn-prev {
+            background: rgba(0,212,255,0.1);
+            color: #00d4ff;
+            border: 1px solid #00d4ff;
+        }
+        .tour-btn-prev:hover { background: rgba(0,212,255,0.25); }
+        .tour-btn-next {
+            background: linear-gradient(135deg, #00d4ff, #0088cc);
+            color: white;
+        }
+        .tour-btn-next:hover { box-shadow: 0 4px 15px rgba(0,212,255,0.5); }
+        .tour-btn-finish {
+            background: linear-gradient(135deg, #00ff88, #00aa55);
+            color: #000;
+        }
     </style>
 </head>
 <body>
@@ -408,14 +670,22 @@
         </div>
         <h1>🌌 ÆTHER Universe Explorer</h1>
         <div class="tagline" id="tagline">De la Cosmologie à la Conscience | Simulateur Physique Multi-Échelles</div>
-        <div style="margin-top:8px;">
+        <div style="margin-top:10px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button onclick="startTour()" id="tourBtn"
+                style="display:inline-flex;align-items:center;gap:7px;
+                       background:linear-gradient(135deg,rgba(0,212,255,0.15),rgba(0,100,200,0.15));
+                       border:1px solid #00d4ff;color:#00d4ff;padding:7px 18px;
+                       border-radius:20px;font-size:0.88em;cursor:pointer;font-weight:700;
+                       transition:all 0.3s;">
+                ▶ <span id="lblTourBtn">Visite Guidée (3 min)</span>
+            </button>
             <a href="https://zenodo.org/communities/aether-cosmology" target="_blank" 
                style="display:inline-flex;align-items:center;gap:7px;background:rgba(0,212,255,0.1);border:1px solid #00d4ff;
                       color:#00d4ff;padding:6px 16px;border-radius:20px;font-size:0.88em;text-decoration:none;
                       transition:all 0.3s;" 
                onmouseover="this.style.background='rgba(0,212,255,0.25)'" 
                onmouseout="this.style.background='rgba(0,212,255,0.1)'">
-                🔬 Communauté Zenodo — Papers I–IX disponibles
+                🔬 <span id="lblZenodoCommunity">Communauté Zenodo — Papers I–IX</span>
             </a>
         </div>
     </div>
@@ -523,6 +793,7 @@
                 <button id="collapseBtn" onclick="startCollapse()" class="action-btn danger" style="display:none;">💥 <span id="lblCollapse">Effondrement</span></button>
                 <button id="perturbBtn" onclick="perturbNetwork()" class="action-btn purple" style="display:none;">⚡ <span id="lblPerturb">Perturber</span></button>
                 <button id="jwstBtn" onclick="launchJWST()" class="action-btn danger" style="display:none;">🚀 <span id="lblJwstBtn">Lancer la Course</span></button>
+                <button onclick="openMeth()" class="action-btn" style="background:linear-gradient(135deg,#004488,#006699);">🔬 <span id="lblMeth">Méthodologie</span></button>
             </div>
             
             <div class="metrics-grid">
@@ -565,6 +836,34 @@
                     🔬 zenodo.org/communities/aether-cosmology — Papers I–IX
                 </a>
             </div>
+        </div>
+    </div>
+
+    <!-- GUIDED TOUR OVERLAY -->
+    <div class="tour-overlay" id="tourOverlay">
+        <div class="tour-spotlight"></div>
+        <div class="tour-card">
+            <div class="tour-progress" id="tourProgress"></div>
+            <div class="tour-mode-badge" id="tourBadge">☉ Solaire</div>
+            <div class="tour-title" id="tourTitle">Titre</div>
+            <div class="tour-text" id="tourText">Texte</div>
+            <div class="tour-insight" id="tourInsight">Insight</div>
+            <div class="tour-timer-bar"><div class="tour-timer-fill" id="tourTimerFill" style="width:100%"></div></div>
+            <div class="tour-buttons">
+                <button class="tour-btn tour-btn-skip" onclick="endTour()" id="tourSkip">✕ Passer</button>
+                <button class="tour-btn tour-btn-prev" onclick="tourPrev()" id="tourPrevBtn">← Précédent</button>
+                <button class="tour-btn tour-btn-next" onclick="tourNext()" id="tourNextBtn">Suivant →</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- METHODOLOGY MODAL -->
+    <div class="modal-overlay" id="methModal" onclick="if(event.target===this)closeMeth()">
+        <div class="modal-box">
+            <button class="modal-close" onclick="closeMeth()">✕</button>
+            <div class="modal-title" id="methTitle">🔬 Méthodologie Scientifique</div>
+            <div class="modal-subtitle" id="methSubtitle">Équations · Hypothèses · Limites · Références</div>
+            <div id="methContent"></div>
         </div>
     </div>
     
@@ -623,9 +922,9 @@
                 bh_infoText:'<strong>Cliquez "💥 Effondrement" pour lancer l\'animation.</strong><br><br>🔵 <strong>Panneau ÆTHER :</strong> φ → φ₀ (vide restauré), singularité évitée, jets polaires.<br><br>⚫ <strong>Panneau Standard :</strong> ρ → ∞ au centre — singularité nue, GR échoue.',
                 brain_titleL:'🧠 Conscience ÆTHER (Synchronisé)', brain_titleR:'⚪ Oscillateurs Indépendants (Chaos)',
                 brain_extraTitle:'📊 Paramètre d\'Ordre de Synchronisation',
-                brain_m1:'Ordre Sync (r)', brain_m2:'Couplage (K)', brain_m3:'État Cohérence', brain_m4:'Temps (ms)',
-                brain_infoTitle:'🧠 Émergence de la Conscience — Modèle Kuramoto × ÆTHER',
-                brain_infoText:'<strong>Principe :</strong> Réseau de N oscillateurs avec couplage K. En dessous de K<sub>c</sub> ≈ 0.25 → <em>chaos</em>. Au-dessus → <em>conscience émergente</em>.<br><br><strong>β</strong> contrôle l\'amplitude de φ, <strong>μ</strong> sa portée. Cliquez <em>"⚡ Perturber"</em> : le réseau chute puis <strong>récupère</strong>.',
+                brain_m1:'Ordre Sync (r)', brain_m2:'K_eff (Hz)', brain_m3:'État Cohérence', brain_m4:'Temps (ms)',
+                brain_infoTitle:'🧠 Émergence de la Conscience — Kuramoto × ÆTHER (Paper VII)',
+                brain_infoText:'<strong>Paper VII :</strong> N neurones pyramidaux L5 à 40 Hz (Δf=10.6 Hz, patch-clamp). K<sub>eff</sub>=33.3 Hz (ÆTHER) dérivé sans paramètre libre via D×Y_HH×τ_syn. K<sub>c</sub>=19.9 Hz (Strogatz numérique). Ratio K<sub>eff</sub>/K<sub>c</sub> ≈ <strong>2</strong> → criticité auto-organisée.<br><br>K_GR=8 Hz &lt; K<sub>c</sub> → chaos permanent. Cliquez <em>"⚡ Perturber"</em> : simule une rupture topologique (kétamine). Le réseau ÆTHER <strong>récupère</strong>.',
                 jwst_titleL:'🔵 ÆTHER — Geff = G×(1+ε∆)', jwst_titleR:'⚫ ΛCDM — Gravité Standard',
                 jwst_extraTitle:'📊 Course Cosmique : f_core(t) & Fonction de Masse Stellaire à z≈10',
                 jwst_m1:'f_core ÆTHER (%)', jwst_m2:'f_core ΛCDM (%)', jwst_m3:'Avance ÆTHER', jwst_m4:'Étape',
@@ -672,9 +971,9 @@
                 bh_infoText:'<strong>Click "💥 Collapse" to start.</strong><br><br>🔵 <strong>ÆTHER panel:</strong> φ → φ₀ (void restored), no singularity, polar jets.<br><br>⚫ <strong>Standard panel:</strong> ρ → ∞ at centre — naked singularity, GR breaks down.',
                 brain_titleL:'🧠 ÆTHER Consciousness (Synchronized)', brain_titleR:'⚪ Independent Oscillators (Chaos)',
                 brain_extraTitle:'📊 Synchronization Order Parameter',
-                brain_m1:'Sync Order (r)', brain_m2:'Coupling (K)', brain_m3:'Coherence State', brain_m4:'Time (ms)',
-                brain_infoTitle:'🧠 Emergence of Consciousness — Kuramoto × ÆTHER',
-                brain_infoText:'<strong>Principle:</strong> Network of N oscillators with coupling K. Below K<sub>c</sub> ≈ 0.25 → <em>chaos</em>. Above → <em>emergent consciousness</em>.<br><br><strong>β</strong> controls φ amplitude, <strong>μ</strong> its range. Click <em>"⚡ Perturb"</em>: network drops then <strong>recovers</strong>.',
+                brain_m1:'Sync Order (r)', brain_m2:'K_eff (Hz)', brain_m3:'Coherence State', brain_m4:'Time (ms)',
+                brain_infoTitle:'🧠 Emergence of Consciousness — Kuramoto × ÆTHER (Paper VII)',
+                brain_infoText:'<strong>Paper VII:</strong> N Layer-5 pyramidal neurons at 40 Hz (Δf=10.6 Hz, patch-clamp). K<sub>eff</sub>=33.3 Hz (ÆTHER) derived without free parameters via D×Y_HH×τ_syn. K<sub>c</sub>=19.9 Hz (numerical Strogatz). Ratio K<sub>eff</sub>/K<sub>c</sub> ≈ <strong>2</strong> → self-organised criticality.<br><br>K_GR=8 Hz &lt; K<sub>c</sub> → permanent chaos. Click <em>"⚡ Perturb"</em>: simulates topology breaking (ketamine). ÆTHER network <strong>recovers</strong>.',
                 jwst_titleL:'🔵 ÆTHER — Geff = G×(1+ε∆)', jwst_titleR:'⚫ ΛCDM — Standard Gravity',
                 jwst_extraTitle:'📊 Cosmic Race: f_core(t) & Stellar Mass Function at z≈10',
                 jwst_m1:'f_core ÆTHER (%)', jwst_m2:'f_core ΛCDM (%)', jwst_m3:'ÆTHER Advance', jwst_m4:'Step',
@@ -698,9 +997,350 @@
             document.getElementById('btnReset').textContent = t.btnReset;
             const expBtn = document.querySelector('.export-btn');
             if(expBtn) expBtn.textContent = t.exportBtn;
+            const methSpan = document.getElementById('lblMeth');
+            if(methSpan) methSpan.textContent = l === 'fr' ? 'Méthodologie' : 'Methodology';
+            const tourSpan = document.getElementById('lblTourBtn');
+            if(tourSpan) tourSpan.textContent = l === 'fr' ? 'Visite Guidée (3 min)' : 'Guided Tour (3 min)';
+            const zenodoSpan = document.getElementById('lblZenodoCommunity');
+            if(zenodoSpan) zenodoSpan.textContent = l === 'fr' ? 'Communauté Zenodo — Papers I–IX' : 'Zenodo Community — Papers I–IX';
             updateUI();
         }
-        
+
+        // ── METHODOLOGY MODAL ────────────────────────────────────────────────
+        const methData = {
+            solar: {
+                fr: {
+                    title: '☉ Système Solaire — Précession Orbitale TSTU vs GR',
+                    tag: '<span class="modal-tag tag-quantitative">Quantitatif</span>',
+                    equations: ['φ(r) = 1 + (β²/6) · exp(−β·μ·r / r_s)','r_s = 0.1 / β  (rayon de screening)','G_eff(r) = G · [1 + 2β² · ∂φ/φ]','ω_TSTU = √(G_eff / r³)   vs   ω_GR = √(G / r³)','Δθ_Mercure = (ω_TSTU − ω_GR) · t  → ″/siècle'],
+                    hypotheses: 'Orbites circulaires coplanaires. Screening chameleon actif près du Soleil (β &lt; 0.1). Paramètres issus du fit Pantheon+ : β = 0.095, μ = 1.018 (Paper II).',
+                    limits: 'Simulation 2D, pas d\'effets de marée ni de perturbations N-corps. La précession affichée est un effet cumulatif différentiel — non directement comparable aux 43″/siècle de la RG sans calibration temporelle.',
+                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — Fondations TSTU' },{ url:'https://zenodo.org/records/17834933', label:'Paper II — Fit Pantheon+ (β, μ)' }]
+                },
+                en: {
+                    title: '☉ Solar System — TSTU vs GR Orbital Precession',
+                    tag: '<span class="modal-tag tag-quantitative">Quantitative</span>',
+                    equations: ['φ(r) = 1 + (β²/6) · exp(−β·μ·r / r_s)','r_s = 0.1 / β  (screening radius)','G_eff(r) = G · [1 + 2β² · ∂φ/φ]','ω_TSTU = √(G_eff / r³)   vs   ω_GR = √(G / r³)','Δθ_Mercury = (ω_TSTU − ω_GR) · t  → ″/century'],
+                    hypotheses: 'Circular coplanar orbits. Chameleon screening active near the Sun (β &lt; 0.1). Parameters from Pantheon+ fit: β = 0.095, μ = 1.018 (Paper II).',
+                    limits: '2D simulation, no tidal effects or N-body perturbations. Displayed precession is a cumulative differential effect — not directly comparable to GR\'s 43″/century without temporal calibration.',
+                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — TSTU Foundations' },{ url:'https://zenodo.org/records/17834933', label:'Paper II — Pantheon+ Fit (β, μ)' }]
+                }
+            },
+            p9: {
+                fr: {
+                    title: '🔭 Anomalies TNO — Clustering des Périhélies',
+                    tag: '<span class="modal-tag tag-qualitative">Qualitatif</span>',
+                    equations: ['μ > 1 au-delà de Neptune (vide cosmique, screening faible)','φ_externe = 1 + (β²/6) · exp(−β·μ·r / r_s)  avec r ≫ r_s','Tension φ → brise la symétrie orbitale azimutale','Direction privilégiée ∝ ∇φ dans le plan du disque','Clustering observé : ω_périhélie ~ 300° (Sedna, VP₁₁₃…)'],
+                    hypotheses: 'Dans le vide externe (r > 30 UA), φ est en régime tendu non-écranté. La tension brise la symétrie azimutale et attire statistiquement les périhélies vers une direction privilégiée. Positions individuelles pseudo-aléatoires autour du clustering moyen observé.',
+                    limits: 'Modèle simplifié — pas de simulation orbite par orbite des 6 TNOs réels. Direction de clustering TSTU approximative (±30°). Une prédiction quantitative nécessiterait une intégration N-corps sur des milliards d\'années.',
+                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — Screening & Tension φ' },{ url:'https://zenodo.org/records/17844551', label:'Paper III — Structure à grande échelle' }]
+                },
+                en: {
+                    title: '🔭 TNO Anomalies — Perihelion Clustering',
+                    tag: '<span class="modal-tag tag-qualitative">Qualitative</span>',
+                    equations: ['μ > 1 beyond Neptune (cosmic void, weak screening)','φ_external = 1 + (β²/6) · exp(−β·μ·r / r_s)  with r ≫ r_s','φ tension → breaks azimuthal orbital symmetry','Preferred direction ∝ ∇φ in the disk plane','Observed clustering: ω_perihelion ~ 300° (Sedna, VP₁₁₃…)'],
+                    hypotheses: 'In the outer void (r > 30 AU), φ is in a tensioned unscreened regime. The tension breaks azimuthal symmetry and statistically attracts perihelia toward a preferred direction. Individual positions are pseudo-random around the observed mean.',
+                    limits: 'Simplified model — no orbit-by-orbit simulation of the 6 real TNOs. TSTU clustering direction is approximate (±30°). A quantitative prediction requires N-body integration over billions of years.',
+                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — Screening & φ Tension' },{ url:'https://zenodo.org/records/17844551', label:'Paper III — Large-Scale Structure' }]
+                }
+            },
+            galaxy: {
+                fr: {
+                    title: '🌀 Galaxie — Courbes de Rotation Sans Matière Noire',
+                    tag: '<span class="modal-tag tag-quantitative">Semi-quantitatif</span>',
+                    equations: ['v_Kepler(r) = √(G·M_enc(r) / r)','v_TSTU(r)   = √(G_eff(r) · M_enc(r) / r)','G_eff(r) = G · [1 + 2β² · ∂φ/φ]  avec μ > 1 dans le halo','M_enc(r) ∝ r^1.5  (profil baryonique)','v_obs ~ 200 + 20·sin(r/10)  km/s  (modèle empirique)'],
+                    hypotheses: 'Dans les halos galactiques, φ est tendu et amplifie G_eff. Courbe observée stylisée inspirée des galaxies spirales réelles. μ = 1.018 correspond au fit cosmologique (Paper II).',
+                    limits: 'Courbe observée simplifiée — non calibrée sur une galaxie spécifique. Pour une comparaison rigoureuse, utiliser les données HI de NGC 6946 ou UGC 2885. La correction ÆTHER est ici illustrative.',
+                    doi: [{ url:'https://zenodo.org/records/17844551', label:'Paper III — Structure & Rotation' },{ url:'https://zenodo.org/records/17815846', label:'Paper IV — Dynamique ΔM non-linéaire' }]
+                },
+                en: {
+                    title: '🌀 Galaxy — Rotation Curves Without Dark Matter',
+                    tag: '<span class="modal-tag tag-quantitative">Semi-quantitative</span>',
+                    equations: ['v_Kepler(r) = √(G·M_enc(r) / r)','v_TSTU(r)   = √(G_eff(r) · M_enc(r) / r)','G_eff(r) = G · [1 + 2β² · ∂φ/φ]  with μ > 1 in the halo','M_enc(r) ∝ r^1.5  (baryonic profile)','v_obs ~ 200 + 20·sin(r/10)  km/s  (empirical model)'],
+                    hypotheses: 'In galactic halos, φ is tensioned and amplifies G_eff. Stylized observed curve inspired by real spiral galaxies. μ = 1.018 from cosmological fit (Paper II).',
+                    limits: 'Simplified observed curve — not calibrated on a specific galaxy. For rigorous comparison, use HI rotation data from NGC 6946 or UGC 2885. The ÆTHER correction here is illustrative.',
+                    doi: [{ url:'https://zenodo.org/records/17844551', label:'Paper III — Structure & Rotation' },{ url:'https://zenodo.org/records/17815846', label:'Paper IV — Non-linear ΔM dynamics' }]
+                }
+            },
+            blackhole: {
+                fr: {
+                    title: '🕳️ Trou Noir — Formation & Singularité',
+                    tag: '<span class="modal-tag tag-qualitative">Qualitatif</span>',
+                    equations: ['R_s = 2·G·M / c²  (rayon de Schwarzschild)','ÆTHER : φ(r→0) → φ₀  (restauration du vide)','Standard : ρ(r→0) → ∞  (singularité nue)','Potentiel quartique-sextique : V(φ) = λ₄φ⁴ + λ₆φ⁶','Jets polaires ∝ énergie libérée lors de φ → φ₀'],
+                    hypotheses: 'Animation qualitative de l\'effondrement gravitationnel. Le mécanisme de restauration φ → φ₀ est prédit par le potentiel du Paper VI. L\'animation est illustrative — pas une solution numérique des équations d\'Einstein modifiées.',
+                    limits: 'Pas de simulation de relativité générale numérique. Formation des jets schématique. Une prédiction quantitative nécessiterait une intégration des équations de champ TSTU en métrique de Schwarzschild modifiée.',
+                    doi: [{ url:'https://zenodo.org/records/18471407', label:'Paper VI — Event-Projected Gravity' },{ url:'https://zenodo.org/records/17819679', label:'Paper I — Potentiel scalaire φ' }]
+                },
+                en: {
+                    title: '🕳️ Black Hole — Formation & Singularity',
+                    tag: '<span class="modal-tag tag-qualitative">Qualitative</span>',
+                    equations: ['R_s = 2·G·M / c²  (Schwarzschild radius)','ÆTHER: φ(r→0) → φ₀  (void restoration)','Standard: ρ(r→0) → ∞  (naked singularity)','Quartic-sextic potential: V(φ) = λ₄φ⁴ + λ₆φ⁶','Polar jets ∝ energy released as φ → φ₀'],
+                    hypotheses: 'Qualitative animation of gravitational collapse. The φ → φ₀ restoration mechanism is predicted by the quartic-sextic potential of Paper VI. The animation is illustrative — not a numerical solution of modified Einstein equations.',
+                    limits: 'No numerical GR simulation. Jet formation is schematic. A quantitative prediction requires integrating TSTU field equations in a modified Schwarzschild metric.',
+                    doi: [{ url:'https://zenodo.org/records/18471407', label:'Paper VI — Event-Projected Gravity' },{ url:'https://zenodo.org/records/17819679', label:'Paper I — Scalar potential φ' }]
+                }
+            },
+            brain: {
+                fr: {
+                    title: '🧠 Conscience — Synchronisation Kuramoto (Extension Exploratoire)',
+                    tag: '<span class="modal-tag tag-exploratory">Exploratoire</span>',
+                    equations: ['dθᵢ/dt = ωᵢ + (K/N) · Σⱼ sin(θⱼ − θᵢ)  [Kuramoto]',
+                        'K_eff = D · Y_HH · τ_syn = 33.3 Hz  (ÆTHER, Eq.8, Paper VII)',
+                        'D = r_a / (2ρ_i·c_m) ≈ 1.67×10⁻⁵ m²/s  (câble L5, patch-clamp)',
+                        'Y_HH = (∇ρ/ρ)² / 2 ≈ 4×10⁸ m⁻²  (gradient Hodgkin-Huxley)',
+                        'K_c analytique = (2/π)·Δω/√(2π) = 16.9 Hz  (Strogatz, Eq.9)',
+                        'K_c numérique = 19.9 Hz  (RK45, N=500, Paper VII §4.2)',
+                        'K_eff/K_c ≈ 2  → criticité auto-organisée (sans ajustement libre)',
+                        'K_GR = 8.0 Hz < K_c  → sous-critique, chaos permanent',
+                        'f_µ = 40 Hz, Δf = 10.6 Hz  (bande gamma L5, données patch-clamp)'],
+                    hypotheses: 'Hypothèse exploratoire : φ amplifie le couplage synaptique K via un mécanisme de gradient ionique (Paper VII). Ce module illustre une analogie formelle — il ne constitue pas une prédiction médicale ou neurologique.',
+                    limits: '⚠️ Extension hautement spéculative. Le lien entre φ cosmologique et dynamique neuronale est une hypothèse de travail non confirmée expérimentalement. Les prédictions falsifiables (test NMDA, épaisseur corticale) sont dans Paper VII — non encore testées.',
+                    doi: [{ url:'https://zenodo.org/records/19139925', label:'Paper VII — Kuramoto & Conscience' }]
+                },
+                en: {
+                    title: '🧠 Consciousness — Kuramoto Synchronization (Exploratory Extension)',
+                    tag: '<span class="modal-tag tag-exploratory">Exploratory</span>',
+                    equations: ['dθᵢ/dt = ωᵢ + (K/N) · Σⱼ sin(θⱼ − θᵢ)  [Kuramoto]',
+                        'K_eff = D · Y_HH · τ_syn = 33.3 Hz  (ÆTHER, Eq.8, Paper VII)',
+                        'D = r_a / (2ρ_i·c_m) ≈ 1.67×10⁻⁵ m²/s  (L5 cable, patch-clamp)',
+                        'Y_HH = (∇ρ/ρ)² / 2 ≈ 4×10⁸ m⁻²  (Hodgkin-Huxley gradient)',
+                        'K_c analytical = (2/π)·Δω/√(2π) = 16.9 Hz  (Strogatz, Eq.9)',
+                        'K_c numerical = 19.9 Hz  (RK45, N=500, Paper VII §4.2)',
+                        'K_eff/K_c ≈ 2  → self-organised criticality (no free parameters)',
+                        'K_GR = 8.0 Hz < K_c  → sub-critical, permanent chaos',
+                        'f_µ = 40 Hz, Δf = 10.6 Hz  (L5 gamma band, patch-clamp data)'],
+                    hypotheses: 'Exploratory hypothesis: φ amplifies synaptic coupling K via an ionic gradient mechanism (Paper VII). This module illustrates a formal analogy — it does not constitute a medical or neurological prediction.',
+                    limits: '⚠️ Highly speculative extension. The link between cosmological φ and neural dynamics is an unconfirmed working hypothesis. Falsifiable predictions (NMDA blockade, cortical thickness) are in Paper VII — not yet experimentally tested.',
+                    doi: [{ url:'https://zenodo.org/records/19139925', label:'Paper VII — Kuramoto & Consciousness' }]
+                }
+            },
+            jwst: {
+                fr: {
+                    title: '🔭 JWST — Course Cosmique N-body (Preuve de Concept)',
+                    tag: '<span class="modal-tag tag-nbody">N-body 2D</span>',
+                    equations: ['G_eff = G · (1 + ε∆)   avec ε∆ = 0.35 (régime non-écranté)','dvᵢ/dt = −Σⱼ G_eff · (xⱼ−xᵢ) / (|xⱼ−xᵢ|² + ε²)^(3/2)','f_core(t) = fraction de particules dans r < R_core = 1','Schechter : Φ(M★) ∝ (M★/M*★)^α · exp(−M★/M*★)','Décalage ÆTHER : ΔlogM*★ ~ 0.5–1.0 → accord JWST'],
+                    hypotheses: 'N = 300 particules, boîte 2D périodique L = 10, CI gaussiennes identiques. Intégration leapfrog (ε = 0.05, Δt = 0.025). Le mapping temps → redshift est indicatif (14 Gyr → z ≈ 0). Reproduit le mécanisme de l\'Appendice A, Paper III.',
+                    limits: 'Simulation 2D sans expansion cosmologique, sans baryons, sans feedback stellaire. Valeurs absolues de f_core non comparables directement aux données JWST. But : isoler le mécanisme gravitationnel pur.',
+                    doi: [{ url:'https://zenodo.org/records/17844551', label:'Paper III Addendum — JWST & Formation' },{ url:'https://zenodo.org/records/17819679', label:'Paper I — Cadre théorique TSTU' }]
+                },
+                en: {
+                    title: '🔭 JWST — N-body Cosmic Race (Proof of Concept)',
+                    tag: '<span class="modal-tag tag-nbody">N-body 2D</span>',
+                    equations: ['G_eff = G · (1 + ε∆)   with ε∆ = 0.35 (unscreened regime)','dvᵢ/dt = −Σⱼ G_eff · (xⱼ−xᵢ) / (|xⱼ−xᵢ|² + ε²)^(3/2)','f_core(t) = fraction of particles within r < R_core = 1','Schechter: Φ(M★) ∝ (M★/M*★)^α · exp(−M★/M*★)','ÆTHER shift: ΔlogM*★ ~ 0.5–1.0 → JWST agreement'],
+                    hypotheses: 'N = 300 particles, 2D periodic box L = 10, identical Gaussian ICs. Leapfrog integration (ε = 0.05, Δt = 0.025). Time → redshift mapping is indicative (14 Gyr → z ≈ 0). Reproduces Appendix A mechanism, Paper III.',
+                    limits: '2D simulation without cosmological expansion, baryons, or stellar feedback. Absolute f_core values not directly comparable to JWST data. Goal: isolate the pure gravitational mechanism.',
+                    doi: [{ url:'https://zenodo.org/records/17844551', label:'Paper III Addendum — JWST & Formation' },{ url:'https://zenodo.org/records/17819679', label:'Paper I — TSTU Theoretical Framework' }]
+                }
+            }
+        };
+
+        function openMeth() {
+            const l = lang;
+            const d = methData[mode] ? methData[mode][l] : null;
+            if(!d) return;
+            const eqLabel  = l==='fr' ? 'Équations utilisées'        : 'Equations used';
+            const hypLabel = l==='fr' ? 'Hypothèses & calibration'   : 'Hypotheses & calibration';
+            const limLabel = l==='fr' ? 'Limites du modèle'          : 'Model limitations';
+            const refLabel = l==='fr' ? 'Papers de référence'        : 'Reference papers';
+            document.getElementById('methTitle').innerHTML =
+                '🔬 ' + (l==='fr' ? 'Méthodologie Scientifique' : 'Scientific Methodology') + ' ' + d.tag;
+            document.getElementById('methSubtitle').textContent = d.title;
+            document.getElementById('methContent').innerHTML = `
+                <div class="modal-section">
+                    <div class="modal-section-title">${eqLabel}</div>
+                    ${d.equations.map(eq => `<div class="modal-eq">${eq}</div>`).join('')}
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">${hypLabel}</div>
+                    <div class="modal-text">${d.hypotheses}</div>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">${limLabel}</div>
+                    <div class="modal-limit">${d.limits}</div>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">${refLabel}</div>
+                    ${d.doi.map(r => `<a class="modal-doi" href="${r.url}" target="_blank">📄 ${r.label}</a>`).join('')}
+                    <a class="modal-doi" href="https://zenodo.org/communities/aether-cosmology" target="_blank">
+                        🔬 ${l==='fr' ? 'Communauté Zenodo — Papers I–IX' : 'Zenodo Community — Papers I–IX'}
+                    </a>
+                </div>`;
+            document.getElementById('methModal').classList.add('open');
+        }
+
+        function closeMeth() { document.getElementById('methModal').classList.remove('open'); }
+        document.addEventListener('keydown', e => { if(e.key === 'Escape') { closeMeth(); endTour(); } });
+
+        // ── GUIDED TOUR ──────────────────────────────────────────────────────
+        let tourStep = 0;
+        let tourTimer = null;
+        let tourTimeLeft = 0;
+        const TOUR_STEP_DURATION = 28; // seconds per step
+
+        const tourSteps = {
+            fr: [
+                {
+                    mode: 'solar',
+                    badge: '☉ Système Solaire',
+                    title: 'Le Champ φ au Cœur du Système Solaire',
+                    text: 'ÆTHER/TSTU postule un <strong>champ scalaire φ</strong> qui modifie la gravité selon la densité locale. Près du Soleil (densité élevée), φ est <strong>écranté</strong> — la gravité est quasi-standard, comme prédit par la RG. Ce mécanisme de screening "chameleon" est la clé : il explique pourquoi les tests solaires ne détectent pas le champ.',
+                    insight: 'Observez la différence progressive entre les orbites TSTU (gauche) et GR (droite). Elle s\'accumule lentement — exactement comme une précession de périhélie.'
+                },
+                {
+                    mode: 'p9',
+                    badge: '🔭 Anomalies TNO',
+                    title: 'Pas de Planète 9 — Une Tension du Vide',
+                    text: 'Au-delà de Neptune, la densité chute et le screening <strong>s\'éteint</strong>. Le champ φ entre en régime "tendu" (μ > 1) et brise la symétrie azimutale des orbites. Résultat : les périhélies des objets trans-neptuniens (Sedna, VP₁₁₃…) se <strong>regroupent naturellement</strong> vers ~300° — sans invoquer une planète massive non observée.',
+                    insight: 'Comparez la dispersion des flèches de périhélie : ÆTHER (gauche) montre un clustering cohérent. GR standard (droite) exige une Planète 9 inexistante.'
+                },
+                {
+                    mode: 'galaxy',
+                    badge: '🌀 Rotation Galactique',
+                    title: 'Courbes Plates Sans Matière Noire',
+                    text: 'Dans les halos galactiques, même logique : faible densité → φ non écranté → G_eff > G. La gravité effective est naturellement amplifiée aux grandes échelles. <strong>Les courbes de rotation plates s\'expliquent</strong> sans invoquer de matière noire hypothétique. Glissez μ vers 1.050 pour voir l\'effet en temps réel.',
+                    insight: 'Un seul mécanisme — le champ φ — explique à la fois le clustering TNO et les courbes de rotation. Les mêmes paramètres β et μ fonctionnent aux deux échelles.'
+                },
+                {
+                    mode: 'blackhole',
+                    badge: '🕳️ Trou Noir',
+                    title: 'La Singularité Évitée',
+                    text: 'La RG standard prédit une singularité ρ → ∞ au cœur du trou noir — une brisure des équations. ÆTHER prédit que le champ φ <strong>résiste à la compression infinie</strong> : en approchant r → 0, φ se restaure vers φ₀ (vide). Résultat : l\'énergie est expulsée sous forme de <strong>jets polaires</strong>, observés réellement dans les AGN. Cliquez "💥 Effondrement".',
+                    insight: 'Panneau gauche : horizon → jets → vide restauré. Panneau droit : singularité ρ → ∞, GR échoue. La différence est visible et physiquement fondamentale.'
+                },
+                {
+                    mode: 'jwst',
+                    badge: '🔭 JWST',
+                    title: 'Les Galaxies "Impossibles" Expliquées',
+                    text: 'Le JWST observe des galaxies massives à z ≳ 8–10 — trop tôt pour ΛCDM. ÆTHER prédit qu\'à haut redshift (régime non-écranté), G_eff = G×(1+ε∆) accélère l\'effondrement gravitationnel. Cliquez <strong>"🚀 Lancer la Course"</strong> : deux univers identiques évoluent — ÆTHER forme ses structures nettement plus tôt.',
+                    insight: 'Observez f_core(t) : la courbe cyan (ÆTHER) pic avant la courbe grise (ΛCDM). Ce décalage temporel, même modeste, suffit à expliquer les galaxies massives observées par JWST.'
+                },
+                {
+                    mode: 'brain',
+                    badge: '🧠 Conscience (Exploratoire)',
+                    title: 'De la Cosmologie à la Conscience',
+                    text: 'Extension hypothétique : le même invariant géométrique Y du champ φ peut coupler aux gradients ioniques des neurones pyramidaux L5. K_eff = D×Y_HH×τ_syn = <strong>33.3 Hz</strong> — deux fois K_c = 19.9 Hz. Le cortex se trouve naturellement à la <strong>criticité auto-organisée</strong>, sans paramètre libre. Cliquez "⚡ Perturber" pour simuler l\'anesthésie.',
+                    insight: '⚠️ Section exploratoire. Ce module illustre une analogie formelle — pas une prédiction médicale. Les deux prédictions falsifiables sont dans Paper VII (test NMDA, épaisseur corticale).'
+                }
+            ],
+            en: [
+                {
+                    mode: 'solar',
+                    badge: '☉ Solar System',
+                    title: 'The φ Field in the Solar System',
+                    text: 'ÆTHER/TSTU proposes a <strong>scalar field φ</strong> that modifies gravity according to local density. Near the Sun (high density), φ is <strong>screened</strong> — gravity is nearly standard, as GR predicts. This "chameleon" screening mechanism is the key: it explains why solar tests don\'t detect the field.',
+                    insight: 'Observe the progressive difference between TSTU orbits (left) and GR (right). It accumulates slowly — exactly like a perihelion precession.'
+                },
+                {
+                    mode: 'p9',
+                    badge: '🔭 TNO Anomalies',
+                    title: 'No Planet 9 — A Void Tension',
+                    text: 'Beyond Neptune, density drops and screening <strong>switches off</strong>. The φ field enters a "tensioned" regime (μ > 1) and breaks the azimuthal symmetry of orbits. Result: perihelia of trans-Neptunian objects (Sedna, VP₁₁₃…) <strong>naturally cluster</strong> toward ~300° — without invoking an unobserved massive planet.',
+                    insight: 'Compare perihelion arrow spread: ÆTHER (left) shows coherent clustering. Standard GR (right) requires a non-existent Planet 9.'
+                },
+                {
+                    mode: 'galaxy',
+                    badge: '🌀 Galactic Rotation',
+                    title: 'Flat Curves Without Dark Matter',
+                    text: 'In galactic halos, same logic: low density → unscreened φ → G_eff > G. Effective gravity is naturally amplified at large scales. <strong>Flat rotation curves are explained</strong> without invoking hypothetical dark matter. Slide μ toward 1.050 to see the effect in real time.',
+                    insight: 'One mechanism — the φ field — explains both TNO clustering and rotation curves. The same parameters β and μ work at both scales.'
+                },
+                {
+                    mode: 'blackhole',
+                    badge: '🕳️ Black Hole',
+                    title: 'The Avoided Singularity',
+                    text: 'Standard GR predicts a singularity ρ → ∞ at the black hole core — a breakdown of equations. ÆTHER predicts the φ field <strong>resists infinite compression</strong>: approaching r → 0, φ restores to φ₀ (void). Result: energy expelled as <strong>polar jets</strong>, actually observed in AGN. Click "💥 Collapse".',
+                    insight: 'Left panel: horizon → jets → void restored. Right panel: singularity ρ → ∞, GR fails. The difference is visible and physically fundamental.'
+                },
+                {
+                    mode: 'jwst',
+                    badge: '🔭 JWST',
+                    title: '"Impossible" Galaxies Explained',
+                    text: 'JWST observes massive galaxies at z ≳ 8–10 — too early for ΛCDM. ÆTHER predicts that at high redshift (unscreened regime), G_eff = G×(1+ε∆) accelerates gravitational collapse. Click <strong>"🚀 Launch the Race"</strong>: two identical universes evolve — ÆTHER forms structures noticeably earlier.',
+                    insight: 'Watch f_core(t): the cyan curve (ÆTHER) peaks before the grey curve (ΛCDM). This temporal shift, even modest, is sufficient to explain JWST massive galaxies.'
+                },
+                {
+                    mode: 'brain',
+                    badge: '🧠 Consciousness (Exploratory)',
+                    title: 'From Cosmology to Consciousness',
+                    text: 'Hypothetical extension: the same geometric invariant Y of the φ field may couple to ionic gradients of L5 pyramidal neurons. K_eff = D×Y_HH×τ_syn = <strong>33.3 Hz</strong> — twice K_c = 19.9 Hz. The cortex sits naturally at <strong>self-organised criticality</strong>, without free parameters. Click "⚡ Perturb" to simulate anaesthesia.',
+                    insight: '⚠️ Exploratory section. This module illustrates a formal analogy — not a medical prediction. Two falsifiable predictions are in Paper VII (NMDA test, cortical thickness).'
+                }
+            ]
+        };
+
+        function startTour() {
+            tourStep = 0;
+            document.getElementById('tourOverlay').classList.add('active');
+            renderTourStep();
+        }
+
+        function endTour() {
+            document.getElementById('tourOverlay').classList.remove('active');
+            if(tourTimer) { clearInterval(tourTimer); tourTimer = null; }
+        }
+
+        function tourNext() {
+            if(tourStep < tourSteps[lang].length - 1) {
+                tourStep++;
+                renderTourStep();
+            } else {
+                endTour();
+            }
+        }
+
+        function tourPrev() {
+            if(tourStep > 0) { tourStep--; renderTourStep(); }
+        }
+
+        function renderTourStep() {
+            const steps = tourSteps[lang];
+            const s = steps[tourStep];
+            const total = steps.length;
+
+            // Switch simulator mode
+            switchMode(s.mode);
+
+            // Progress dots
+            const prog = document.getElementById('tourProgress');
+            prog.innerHTML = steps.map((_, i) =>
+                `<div class="tour-dot ${i === tourStep ? 'active' : ''}"></div>`
+            ).join('') + `<span class="tour-step-label">${tourStep + 1} / ${total}</span>`;
+
+            document.getElementById('tourBadge').textContent = s.badge;
+            document.getElementById('tourTitle').textContent = s.title;
+            document.getElementById('tourText').innerHTML = s.text;
+            document.getElementById('tourInsight').innerHTML = s.insight;
+
+            // Skip / Prev / Next buttons
+            const skipBtn = document.getElementById('tourSkip');
+            const prevBtn = document.getElementById('tourPrevBtn');
+            const nextBtn = document.getElementById('tourNextBtn');
+            skipBtn.textContent = lang === 'fr' ? '✕ Passer' : '✕ Skip';
+            prevBtn.style.display = tourStep === 0 ? 'none' : 'inline-block';
+            prevBtn.textContent = lang === 'fr' ? '← Précédent' : '← Previous';
+
+            const isLast = tourStep === total - 1;
+            nextBtn.textContent = isLast
+                ? (lang === 'fr' ? '✅ Terminer' : '✅ Finish')
+                : (lang === 'fr' ? 'Suivant →' : 'Next →');
+            nextBtn.className = 'tour-btn ' + (isLast ? 'tour-btn-finish' : 'tour-btn-next');
+
+            // Timer bar
+            if(tourTimer) clearInterval(tourTimer);
+            tourTimeLeft = TOUR_STEP_DURATION;
+            document.getElementById('tourTimerFill').style.width = '100%';
+            tourTimer = setInterval(() => {
+                tourTimeLeft -= 0.1;
+                const pct = Math.max(0, tourTimeLeft / TOUR_STEP_DURATION * 100);
+                document.getElementById('tourTimerFill').style.width = pct + '%';
+                if(tourTimeLeft <= 0) {
+                    clearInterval(tourTimer);
+                    tourTimer = null;
+                    tourNext();
+                }
+            }, 100);
+        }
+
         // STATE
         let mode = 'solar';
         let time = 0, timeSpeed = 1.0, zoom = 1.0, animating = true, showTrails = true, showGrid = false;
@@ -709,6 +1349,15 @@
         let selectedPlanet = null;
         let perturbTimer = 0;      // counts down after perturbation (in sim time units)
         const PERTURB_DURATION = 3.0; // sim time units of weakened coupling
+        // ── Paper VII physical constants (Layer-5 pyramidal neurons, 40 Hz gamma band)
+        const K_EFF_HZ  = 33.3;  // ÆTHER effective coupling (H-H + τ_syn=5ms), Eq.(8)
+        const K_C_NUM   = 19.9;  // Numerical K_c (RK45, N=500), Paper VII §4.2
+        const K_C_ANAL  = 16.9;  // Analytical K_c (Strogatz), Eq.(9)
+        const K_GR_HZ   = 8.0;   // Sub-critical standard (< K_c/2), permanent chaos
+        const OMEGA_MU  = 2 * Math.PI * 40;   // 40 Hz mean frequency (rad/s)
+        const OMEGA_SIG = 2 * Math.PI * 10.6; // Δf = 10.6 Hz spread (rad/s), patch-clamp
+        // Simulation timescale: 1 sim-unit = 1 ms (consistent with τ_syn)
+        const SIM_MS_PER_UNIT = 1.0;
         let syncHistory = [];      // [{t, r_tstu, r_gr}] for real-time graph
         const SYNC_HISTORY_MAX = 400;
 
@@ -874,16 +1523,23 @@
             for(let i=0; i<n; i++) {
                 const angle = (2 * Math.PI * i) / n;
                 const radius = 200;
+                // Box-Muller for Gaussian frequency distribution
+                // Paper VII §4.2: f_µ = 40 Hz, Δf = 10.6 Hz (patch-clamp L5)
+                const u1 = Math.max(1e-10, Math.random()), u2 = Math.random();
+                const gauss = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+                const omega_hz = 40 + gauss * 10.6;        // Hz
+                const omega_rad = 2 * Math.PI * omega_hz;  // rad/s → divide by 1000 for ms
                 neurons.push({
                     x: Math.cos(angle) * radius,
                     y: Math.sin(angle) * radius,
                     phase_tstu: Math.random() * 2 * Math.PI,
-                    phase_gr: Math.random() * 2 * Math.PI,
-                    omega: 1.0 + (Math.random() - 0.5) * 0.4, // spread ±0.2 rad/s
+                    phase_gr:   Math.random() * 2 * Math.PI,
+                    omega: omega_rad / 1000,  // rad/ms (sim unit = 1 ms)
+                    omega_hz,
                     connections: []
                 });
             }
-            // Full connectivity for Kuramoto (each neuron connected to all others)
+            // Full connectivity for Kuramoto (each neuron coupled to all others)
             for(let i=0; i<neurons.length; i++) {
                 for(let j=0; j<neurons.length; j++) {
                     if(i !== j) neurons[i].connections.push(j);
@@ -1304,27 +1960,29 @@
         function updateBrain(dt) {
             // Decay perturbation timer
             if(perturbTimer > 0) perturbTimer -= dt;
-            
-            // K_tstu: supercritical under ÆTHER. During perturbation, coupling drops temporarily.
+
+            // Paper VII §4: K_eff = 33.3 Hz, K_c_num = 19.9 Hz → ratio ≈ 2 (self-organised criticality)
+            // During perturbation: K temporarily reduced to simulate topology breaking (anaesthesia)
             const perturbFactor = perturbTimer > 0 ? Math.max(0.05, perturbTimer / PERTURB_DURATION) : 1.0;
-            const K_tstu = (0.6 + beta * mu * 8) * perturbFactor;
-            const K_gr = 0.08; // always sub-critical
+            // Convert Hz to rad/ms (sim unit = 1 ms): K[rad/ms] = K[Hz] * 2π / 1000
+            const K_tstu = (K_EFF_HZ * 2 * Math.PI / 1000) * perturbFactor; // 33.3 Hz → supercritical
+            const K_gr   = K_GR_HZ  * 2 * Math.PI / 1000;                   // 8.0 Hz  → sub-critical
             const N = neurons.length;
-            
+
             neurons.forEach((n, i) => {
                 let coupling_tstu = 0;
                 n.connections.forEach(j => {
                     coupling_tstu += Math.sin(neurons[j].phase_tstu - n.phase_tstu);
                 });
                 n.phase_tstu += (n.omega + (K_tstu / N) * coupling_tstu) * dt;
-                
+
                 let coupling_gr = 0;
                 n.connections.forEach(j => {
                     coupling_gr += Math.sin(neurons[j].phase_gr - n.phase_gr);
                 });
                 n.phase_gr += (n.omega + (K_gr / N) * coupling_gr) * dt;
             });
-            
+
             // Record sync history for graph
             let sx_t = 0, sy_t = 0, sx_g = 0, sy_g = 0;
             neurons.forEach(n => {
@@ -1835,14 +2493,15 @@
             
             // STATUS BOX ON CANVAS (TSTU only)
             if(isTSTU) {
-                const K_tstu_cur = (0.6 + beta * mu * 8) * (perturbTimer > 0 ? Math.max(0.05, perturbTimer / PERTURB_DURATION) : 1.0);
+                const perturbFactor = perturbTimer > 0 ? Math.max(0.05, perturbTimer / PERTURB_DURATION) : 1.0;
+                const K_cur_hz = K_EFF_HZ * perturbFactor;
                 const isPerturbed = perturbTimer > 0;
                 
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-                ctx.fillRect(10, 10, 240, 105);
+                ctx.fillRect(10, 10, 260, 112);
                 ctx.strokeStyle = isPerturbed ? '#ff4444' : '#00d4ff';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(10, 10, 240, 105);
+                ctx.strokeRect(10, 10, 260, 112);
                 
                 ctx.fillStyle = '#00d4ff';
                 ctx.font = 'bold 13px Arial';
@@ -1859,18 +2518,19 @@
                 
                 ctx.fillStyle = '#aaa';
                 ctx.font = '11px Arial';
-                ctx.fillText(`r = ${syncOrder.toFixed(3)}   |   K = ${K_tstu_cur.toFixed(3)}`, 20, 73);
+                ctx.fillText(`r = ${syncOrder.toFixed(3)}   |   K = ${K_cur_hz.toFixed(1)} Hz`, 20, 73);
+                ctx.fillText(`K_eff = ${K_EFF_HZ} Hz  |  K_c = ${K_C_NUM} Hz  |  ratio ≈ ${(K_EFF_HZ/K_C_NUM).toFixed(1)}`, 20, 88);
                 
                 if(isPerturbed) {
                     ctx.fillStyle = '#ff6644';
                     ctx.font = 'bold 11px Arial';
-                    ctx.fillText(`⚡ PERTURBATION — récupération en cours…`, 20, 90);
+                    ctx.fillText(`⚡ PERTURBATION — récupération…`, 20, 104);
                     ctx.fillStyle = '#ff4444';
-                    ctx.fillRect(20, 98, Math.max(0, (perturbTimer / PERTURB_DURATION)) * 200, 6);
+                    ctx.fillRect(20, 110, Math.max(0, (perturbTimer / PERTURB_DURATION)) * 220, 5);
                 } else {
                     ctx.fillStyle = '#888';
                     ctx.font = '11px Arial';
-                    ctx.fillText(`K_c ≈ 0.25  |  K_TSTU >> K_c → stable`, 20, 90);
+                    ctx.fillText(`K_eff/K_c ≈ 2 → criticité auto-organisée (Paper VII)`, 20, 104);
                 }
             }
         }
@@ -2047,7 +2707,8 @@
                 ctxE.beginPath(); ctxE.moveTo(m, y); ctxE.lineTo(w-m, y); ctxE.stroke();
             }
             
-            // Critical threshold line K_c
+            // Critical threshold line K_c (Paper VII: K_c_num = 19.9 Hz → normalized to [0,1] for r axis)
+            // We draw a label, not a K-axis threshold (r axis is [0,1])
             const yKc = h - m - (h - 2*m) * 0.5;
             ctxE.strokeStyle = 'rgba(255,200,0,0.4)';
             ctxE.lineWidth = 1;
@@ -2056,7 +2717,7 @@
             ctxE.setLineDash([]);
             ctxE.fillStyle = '#ffcc00';
             ctxE.font = '11px Arial';
-            ctxE.fillText('Seuil critique K_c', m + 6, yKc - 4);
+            ctxE.fillText('Seuil critique r = 0.5', m + 6, yKc - 4);
             
             // Axis labels
             ctxE.fillStyle = '#00d4ff';
@@ -2137,9 +2798,9 @@
             // Legend
             ctxE.fillStyle = '#00d4ff';
             ctxE.font = '12px Arial';
-            ctxE.fillText('— ÆTHER (K > K_c) : synchronisation robuste', m + 10, h - m - (h - 2*m) * 0.9 - 5);
+            ctxE.fillText(`— ÆTHER  K_eff=${K_EFF_HZ}Hz > K_c=${K_C_NUM}Hz  (ratio≈${(K_EFF_HZ/K_C_NUM).toFixed(1)}, Paper VII)`, m + 10, h - m - (h - 2*m) * 0.9 - 5);
             ctxE.fillStyle = '#ff6666';
-            ctxE.fillText('— Standard (K < K_c) : chaos permanent', m + 10, h - m - (h - 2*m) * 0.08 + 12);
+            ctxE.fillText(`— Standard  K=${K_GR_HZ}Hz < K_c  →  chaos permanent`, m + 10, h - m - (h - 2*m) * 0.08 + 12);
         }
         
         // METRICS
@@ -2222,8 +2883,8 @@
                 const r_tstu = Math.sqrt(sumX_tstu**2 + sumY_tstu**2) / neurons.length;
                 
                 document.getElementById('m1').textContent = r_tstu.toFixed(3);
-                const K = 0.6 + beta * mu * 8;
-                document.getElementById('m2').textContent = K.toFixed(3);
+                const K_cur = K_EFF_HZ * (perturbTimer > 0 ? Math.max(0.05, perturbTimer / PERTURB_DURATION) : 1.0);
+                document.getElementById('m2').textContent = K_cur.toFixed(1) + ' Hz';
                 
                 let status;
                 if(r_tstu < 0.3) status = 'CHAOS 🔴';
