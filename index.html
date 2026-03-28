@@ -190,6 +190,7 @@
             font-size: 0.72em;
             font-weight: 700;
             letter-spacing: 0.03em;
+            cursor: help;
         }
         .rigor-heuristic {
             background: rgba(255,165,0,0.12);
@@ -1867,11 +1868,17 @@
 
         function updateUI() {
             // ── Rigor badges ─────────────────────────────────────────────────
+            const BADGE_TIPS = {
+                heuristic:   { fr: 'Lois effectives φ(r) dérivées du cadre TSTU — non une résolution directe des équations d\'Einstein modifiées. Voir fiche Méthodologie.', en: 'Effective φ(r) laws derived from the TSTU framework — not a direct solution of modified Einstein equations. See Methodology.' },
+                numeric:     { fr: 'Résolution numérique rigoureuse : équations différentielles discrétisées, schéma symplectique, conservation de l\'énergie vérifiée.', en: 'Rigorous numerical solution: discretised differential equations, symplectic scheme, energy conservation verified.' },
+                analytic:    { fr: 'Prédiction analytique du Paper VIII — courbe Q(ω) obtenue par méthode de tir (RK45) sur l\'équation radiale. Testable en laboratoire (¹⁶⁴Dy, résonance Feshbach).', en: 'Analytical prediction from Paper VIII — Q(ω) curve obtained by RK45 shooting method on the radial equation. Lab-testable (¹⁶⁴Dy, Feshbach resonance).' },
+                qualitative: { fr: 'Animation qualitative illustrant le mécanisme physique — non une résolution numérique des équations de champ TSTU en espace-temps courbe.', en: 'Qualitative animation illustrating the physical mechanism — not a numerical solution of TSTU field equations in curved spacetime.' },
+            };
             const BADGE = {
-                heuristic: (l) => `<span class="rigor-badge rigor-heuristic">⚠️ ${l==='fr'?'Lois effectives heuristiques':'Effective heuristic laws'}</span>`,
-                numeric:   (l) => `<span class="rigor-badge rigor-numeric">✅ ${l==='fr'?'Simulation numérique (N-body / PDE)':'Numerical simulation (N-body / PDE)'}</span>`,
-                analytic:  (l) => `<span class="rigor-badge rigor-analytic">📐 ${l==='fr'?'Prédiction analytique (Paper VIII)':'Analytical prediction (Paper VIII)'}</span>`,
-                qualitative:(l)=> `<span class="rigor-badge rigor-heuristic">⚠️ ${l==='fr'?'Illustration qualitative':'Qualitative illustration'}</span>`,
+                heuristic:   (l) => `<span class="rigor-badge rigor-heuristic" title="${BADGE_TIPS.heuristic[l]}">⚠️ ${l==='fr'?'Lois effectives heuristiques':'Effective heuristic laws'}</span>`,
+                numeric:     (l) => `<span class="rigor-badge rigor-numeric" title="${BADGE_TIPS.numeric[l]}">✅ ${l==='fr'?'Simulation numérique (N-body / PDE)':'Numerical simulation (N-body / PDE)'}</span>`,
+                analytic:    (l) => `<span class="rigor-badge rigor-analytic" title="${BADGE_TIPS.analytic[l]}">📐 ${l==='fr'?'Prédiction analytique (Paper VIII)':'Analytical prediction (Paper VIII)'}</span>`,
+                qualitative: (l) => `<span class="rigor-badge rigor-heuristic" title="${BADGE_TIPS.qualitative[l]}">⚠️ ${l==='fr'?'Illustration qualitative':'Qualitative illustration'}</span>`,
             };
             const rigorMap = {
                 solar:     { left: 'heuristic', right: 'heuristic' },
