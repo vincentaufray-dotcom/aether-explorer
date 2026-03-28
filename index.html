@@ -395,8 +395,19 @@
 </head>
 <body>
     <div class="header">
+        <div style="position:absolute;top:15px;right:20px;">
+            <button onclick="setLang('fr')" id="langFR"
+                style="background:rgba(0,212,255,0.2);border:1px solid #00d4ff;color:#00d4ff;
+                       padding:5px 12px;border-radius:6px 0 0 6px;cursor:pointer;font-weight:700;font-size:0.85em;transition:all 0.2s;">
+                FR
+            </button><button onclick="setLang('en')" id="langEN"
+                style="background:rgba(0,0,0,0.3);border:1px solid #00d4ff;border-left:none;color:#00d4ff;
+                       padding:5px 12px;border-radius:0 6px 6px 0;cursor:pointer;font-weight:700;font-size:0.85em;transition:all 0.2s;">
+                EN
+            </button>
+        </div>
         <h1>🌌 ÆTHER Universe Explorer</h1>
-        <div class="tagline">De la Cosmologie à la Conscience | Simulateur Physique Multi-Échelles</div>
+        <div class="tagline" id="tagline">De la Cosmologie à la Conscience | Simulateur Physique Multi-Échelles</div>
         <div style="margin-top:8px;">
             <a href="https://zenodo.org/communities/aether-cosmology" target="_blank" 
                style="display:inline-flex;align-items:center;gap:7px;background:rgba(0,212,255,0.1);border:1px solid #00d4ff;
@@ -409,31 +420,34 @@
         </div>
     </div>
 
-    <div class="mode-emploi">
-        <strong>Bienvenue dans l'Æther :</strong> Le vide n'est pas vide, c'est un milieu actif. Naviguez entre les échelles (Système Solaire Complet, Planète 9, Galaxie, Trou Noir, Conscience) pour observer comment la tension de l'Æther (paramètres β et μ) résout les anomalies de la physique standard.
+    <div class="mode-emploi" id="modeEmploi">
+        <strong id="welcomeStrong">Bienvenue dans l'Æther :</strong> <span id="welcomeText">Le vide n'est pas vide, c'est un milieu actif. Naviguez entre les échelles (Système Solaire, Anomalies TNO, Galaxie, Trou Noir, Conscience, JWST) pour observer comment la tension de l'Æther (paramètres β et μ) résout les anomalies de la physique standard.</span>
     </div>
     
     <div class="main-container">
         <div class="mode-selector">
             <button class="mode-btn active" id="btnSolar" onclick="switchMode('solar')">
-                <span class="mode-icon">☉</span> Solaire
+                <span class="mode-icon">☉</span> <span id="lblSolar">Solaire</span>
             </button>
             <button class="mode-btn" id="btnP9" onclick="switchMode('p9')">
-                <span class="mode-icon">🔭</span> Anomalies TNO
+                <span class="mode-icon">🔭</span> <span id="lblP9">Anomalies TNO</span>
             </button>
             <button class="mode-btn" id="btnGalaxy" onclick="switchMode('galaxy')">
-                <span class="mode-icon">🌀</span> Galaxie
+                <span class="mode-icon">🌀</span> <span id="lblGalaxy">Galaxie</span>
             </button>
             <button class="mode-btn" id="btnBlackHole" onclick="switchMode('blackhole')">
-                <span class="mode-icon">🕳️</span> Trou Noir
+                <span class="mode-icon">🕳️</span> <span id="lblBlackHole">Trou Noir</span>
             </button>
             <button class="mode-btn" id="btnBrain" onclick="switchMode('brain')">
-                <span class="mode-icon">🧠</span> Conscience
+                <span class="mode-icon">🧠</span> <span id="lblBrain">Conscience</span>
+            </button>
+            <button class="mode-btn" id="btnJwst" onclick="switchMode('jwst')">
+                <span class="mode-icon">🔭</span> <span id="lblJwst">JWST</span>
             </button>
         </div>
         
         <div class="aether-gauge">
-            <div class="gauge-label">⚡ Tension du Champ ÆTHER</div>
+            <div class="gauge-label" id="gaugeLabel">⚡ Tension du Champ ÆTHER</div>
             <div class="gauge-bar">
                 <div class="gauge-fill" id="gaugeFill" style="width: 15%;"></div>
                 <div class="gauge-text" id="gaugeText">ÉCRANTAGE SOLAIRE</div>
@@ -447,12 +461,12 @@
                 <canvas id="canvasLeft" width="650" height="650"></canvas>
                 
                 <div class="legend-panel" id="legendLeft">
-                    <div class="legend-title">Dynamique en temps réel - Cliquez pour focus</div>
+                    <div class="legend-title" id="legendTitle">Dynamique en temps réel — Cliquez pour focus</div>
                     <div class="legend-items" id="legendItemsLeft"></div>
                 </div>
                 
                 <div class="timeline-bar">
-                    <div class="timeline-label">Temps de simulation : <span id="timeDisplay">0</span></div>
+                    <div class="timeline-label"><span id="lblSimTime">Temps de simulation</span> : <span id="timeDisplay">0</span></div>
                     <div class="timeline-progress">
                         <div class="timeline-fill" id="timelineFill" style="width: 0%;"></div>
                     </div>
@@ -467,47 +481,48 @@
         </div>
         
         <div class="controls-panel">
-            <div class="controls-title">⚙️ Paramètres Physiques</div>
+            <div class="controls-title" id="controlsTitle">⚙️ Paramètres Physiques</div>
             <div class="controls-grid">
                 <div class="control-item">
-                    <label>Couplage β</label>
+                    <label id="lblBeta">Couplage β</label>
                     <input type="range" id="betaSlider" min="0.01" max="0.20" step="0.01" value="0.095">
                     <div class="value-display" id="betaValue">0.095</div>
                 </div>
                 <div class="control-item">
-                    <label>Cosmologique μ</label>
+                    <label id="lblMu">Cosmologique μ</label>
                     <input type="range" id="muSlider" min="1.000" max="1.050" step="0.001" value="1.018">
                     <div class="value-display" id="muValue">1.018</div>
                 </div>
                 <div class="control-item">
-                    <label>Vitesse d'écoulement</label>
+                    <label id="lblSpeed">Vitesse d'écoulement</label>
                     <input type="range" id="speedSlider" min="0.1" max="5" step="0.1" value="1.0">
                     <div class="value-display" id="speedValue">1.0×</div>
                 </div>
                 <div class="control-item">
-                    <label>Zoom</label>
+                    <label id="lblZoom">Zoom</label>
                     <input type="range" id="zoomSlider" min="0.2" max="5" step="0.1" value="1.0">
                     <div class="value-display" id="zoomValue">1.0×</div>
                 </div>
                 <div class="control-item" id="massControl" style="display:none;">
-                    <label>Masse (M☉)</label>
+                    <label id="lblMass">Masse (M☉)</label>
                     <input type="range" id="massSlider" min="5" max="50" step="1" value="20">
                     <div class="value-display" id="massValue">20 M☉</div>
                 </div>
                 <div class="control-item" id="neuronsControl" style="display:none;">
-                    <label>Réseau (neurones)</label>
+                    <label id="lblNeurons">Réseau (neurones)</label>
                     <input type="range" id="neuronsSlider" min="20" max="80" step="10" value="50">
                     <div class="value-display" id="neuronsValue">50 neurones</div>
                 </div>
             </div>
             
             <div class="button-row">
-                <button onclick="resetSim()" class="action-btn success">🔄 Reset (β=0.095 μ=1.018)</button>
+                <button onclick="resetSim()" class="action-btn success" id="btnReset">🔄 Reset (β=0.095 μ=1.018)</button>
                 <button onclick="toggleAnim()" class="action-btn">⏯️ Play/Pause</button>
-                <button id="trailsBtn" onclick="toggleTrails()" class="action-btn">✨ Traces</button>
-                <button id="gridBtn" onclick="toggleGrid()" class="action-btn">📐 Grille</button>
-                <button id="collapseBtn" onclick="startCollapse()" class="action-btn danger" style="display:none;">💥 Effondrement</button>
-                <button id="perturbBtn" onclick="perturbNetwork()" class="action-btn purple" style="display:none;">⚡ Perturber</button>
+                <button id="trailsBtn" onclick="toggleTrails()" class="action-btn">✨ <span id="lblTrails">Traces</span></button>
+                <button id="gridBtn" onclick="toggleGrid()" class="action-btn">📐 <span id="lblGrid">Grille</span></button>
+                <button id="collapseBtn" onclick="startCollapse()" class="action-btn danger" style="display:none;">💥 <span id="lblCollapse">Effondrement</span></button>
+                <button id="perturbBtn" onclick="perturbNetwork()" class="action-btn purple" style="display:none;">⚡ <span id="lblPerturb">Perturber</span></button>
+                <button id="jwstBtn" onclick="launchJWST()" class="action-btn danger" style="display:none;">🚀 <span id="lblJwstBtn">Lancer la Course</span></button>
             </div>
             
             <div class="metrics-grid">
@@ -556,12 +571,135 @@
     <script>
         // ZENODO DOIS
         const zenodoDOIs = {
-            solar:     'https://zenodo.org/records/17819679',  // Paper I : Foundations, Screening, H0
-            p9:        'https://zenodo.org/records/17819679',  // Paper I (contexte cosmologique TNO)
-            galaxy:    'https://zenodo.org/records/17844551',  // Paper III : Large-Scale Structure, JWST
-            blackhole: 'https://zenodo.org/records/18471407',  // Paper VI : Event-Projected Gravity
-            brain:     'https://zenodo.org/records/19139925'   // Paper VII : Kuramoto Synchronization
+            solar:     'https://zenodo.org/records/17819679',
+            p9:        'https://zenodo.org/records/17819679',
+            galaxy:    'https://zenodo.org/records/17844551',
+            blackhole: 'https://zenodo.org/records/18471407',
+            brain:     'https://zenodo.org/records/19139925',
+            jwst:      'https://zenodo.org/records/17844551'
         };
+
+        // ── LANGUAGE ─────────────────────────────────────────────────────────
+        let lang = 'fr';
+        const i18n = {
+            fr: {
+                tagline:'De la Cosmologie à la Conscience | Simulateur Physique Multi-Échelles',
+                welcomeStrong:'Bienvenue dans l\'Æther :',
+                welcomeText:'Le vide n\'est pas vide, c\'est un milieu actif. Naviguez entre les échelles (Système Solaire, Anomalies TNO, Galaxie, Trou Noir, Conscience, JWST) pour observer comment la tension de l\'Æther (paramètres β et μ) résout les anomalies de la physique standard.',
+                gaugeLabel:'⚡ Tension du Champ ÆTHER',
+                legendTitle:'Dynamique en temps réel — Cliquez pour focus',
+                lblSimTime:'Temps de simulation', controlsTitle:'⚙️ Paramètres Physiques',
+                lblBeta:'Couplage β', lblMu:'Cosmologique μ', lblSpeed:'Vitesse d\'écoulement',
+                lblZoom:'Zoom', lblMass:'Masse (M☉)', lblNeurons:'Réseau (neurones)',
+                btnReset:'🔄 Reset (β=0.095 μ=1.018)', lblTrails:'Traces', lblGrid:'Grille',
+                lblCollapse:'Effondrement', lblPerturb:'Perturber', lblJwstBtn:'Lancer la Course',
+                exportBtn:'📤 EXPORTER OBSERVABLES PHYSIQUES (CSV)',
+                lblSolar:'Solaire', lblP9:'Anomalies TNO', lblGalaxy:'Galaxie',
+                lblBlackHole:'Trou Noir', lblBrain:'Conscience', lblJwst:'JWST',
+                gaugeScreening:'ÉCRANTAGE (Solaire)', gaugeTrans:'TRANSITION (Anomalies TNO)',
+                gaugeTension:'TENSION (Galaxie)', gaugeMax:'MAXIMUM (Vide Restauré)',
+                solar_titleL:'🔵 ÆTHER/TSTU (9 planètes)', solar_titleR:'⚪ Relativité Générale',
+                solar_m1:'Précession Mercure (″/siècle)', solar_m2:'Rayon Screening (AU)',
+                solar_m3:'Déviation (%)', solar_m4:'Années', solar_infoTitle:'☉ Système Solaire Complet',
+                solar_infoText:'Visualisation complète du système solaire (Mercure → Pluton). Le champ scalaire φ est <strong>écranté</strong> près du Soleil (β &lt; 0.1) mais sa tension augmente progressivement vers les planètes externes.',
+                solar_legendTitle:'Dynamique en temps réel — Cliquez pour focus',
+                p9_titleL:'🔵 ÆTHER/TSTU (Clustering φ)', p9_titleR:'⚪ GR Standard (besoin P9)',
+                p9_m1:'Objets TNO affichés', p9_m2:'Clustering observé (°)',
+                p9_m3:'Clustering ÆTHER (°)', p9_m4:'Tension φ externe',
+                p9_infoTitle:'🔭 Anomalies TNO — Clustering sans Planète 9',
+                p9_infoText:'Les objets trans-neptuniens extrêmes (Sedna, VP₁₁₃…) ont leurs périhélies <strong>regroupées</strong> (~300°). ÆTHER/TSTU explique ce regroupement par la <strong>tension accrue du champ φ dans le vide externe</strong> — <em>sans masse supplémentaire</em>.',
+                p9_legendTitle:'Légende — objets TNO',
+                p9_leg1:'● Flèches = direction des périhélies', p9_leg2:'● Zone bleue = clustering prédit par φ', p9_leg3:'● Zone rouge = incertitude GR (P9 requise)',
+                gal_titleL:'🌀 ÆTHER (Pas de Matière Noire)', gal_titleR:'⚫ Modèle Matière Noire',
+                gal_extraTitle:'📊 Courbes de Rotation: Kepler vs Observé vs ÆTHER',
+                gal_m1:'v @ 10 kpc (km/s)', gal_m2:'Masse Manquante (%)',
+                gal_m3:'Correction ÆTHER (%)', gal_m4:'Temps (Myr)',
+                gal_infoTitle:'🌀 Rotation Galactique',
+                gal_infoText:'Dans les halos galactiques et vides cosmiques, φ est <strong>tendu</strong> (μ > 1). ÆTHER/TSTU explique les courbes de rotation plates <strong>sans nécessiter de matière noire</strong>.',
+                bh_titleL:'🕳️ Trou Noir ÆTHER', bh_titleR:'⚫ Trou Noir Standard',
+                bh_extraTitle:'📊 Profil Champ Scalaire φ(r) et Densité ρ(r)',
+                bh_m1:'Rayon (km)', bh_m2:'Densité (ρ/ρ₀)', bh_m3:'φ/φ₀', bh_m4:'R_s (km)',
+                bh_infoTitle:'🕳️ Formation Trou Noir — ÆTHER vs Standard',
+                bh_infoText:'<strong>Cliquez "💥 Effondrement" pour lancer l\'animation.</strong><br><br>🔵 <strong>Panneau ÆTHER :</strong> φ → φ₀ (vide restauré), singularité évitée, jets polaires.<br><br>⚫ <strong>Panneau Standard :</strong> ρ → ∞ au centre — singularité nue, GR échoue.',
+                brain_titleL:'🧠 Conscience ÆTHER (Synchronisé)', brain_titleR:'⚪ Oscillateurs Indépendants (Chaos)',
+                brain_extraTitle:'📊 Paramètre d\'Ordre de Synchronisation',
+                brain_m1:'Ordre Sync (r)', brain_m2:'Couplage (K)', brain_m3:'État Cohérence', brain_m4:'Temps (ms)',
+                brain_infoTitle:'🧠 Émergence de la Conscience — Modèle Kuramoto × ÆTHER',
+                brain_infoText:'<strong>Principe :</strong> Réseau de N oscillateurs avec couplage K. En dessous de K<sub>c</sub> ≈ 0.25 → <em>chaos</em>. Au-dessus → <em>conscience émergente</em>.<br><br><strong>β</strong> contrôle l\'amplitude de φ, <strong>μ</strong> sa portée. Cliquez <em>"⚡ Perturber"</em> : le réseau chute puis <strong>récupère</strong>.',
+                jwst_titleL:'🔵 ÆTHER — Geff = G×(1+ε∆)', jwst_titleR:'⚫ ΛCDM — Gravité Standard',
+                jwst_extraTitle:'📊 Course Cosmique : f_core(t) & Fonction de Masse Stellaire à z≈10',
+                jwst_m1:'f_core ÆTHER (%)', jwst_m2:'f_core ΛCDM (%)', jwst_m3:'Avance ÆTHER', jwst_m4:'Étape',
+                jwst_infoTitle:'🔭 JWST — Galaxies Massives à z≳8 (Paper III Addendum)',
+            },
+            en: {
+                tagline:'From Cosmology to Consciousness | Multi-Scale Physics Simulator',
+                welcomeStrong:'Welcome to the Æther:',
+                welcomeText:'The void is not empty — it is an active medium. Navigate between scales (Solar System, TNO Anomalies, Galaxy, Black Hole, Consciousness, JWST) to observe how Æther field tension (parameters β and μ) resolves anomalies of standard physics.',
+                gaugeLabel:'⚡ ÆTHER Field Tension',
+                legendTitle:'Real-time dynamics — Click to focus',
+                lblSimTime:'Simulation time', controlsTitle:'⚙️ Physical Parameters',
+                lblBeta:'Coupling β', lblMu:'Cosmological μ', lblSpeed:'Time speed',
+                lblZoom:'Zoom', lblMass:'Mass (M☉)', lblNeurons:'Network (neurons)',
+                btnReset:'🔄 Reset (β=0.095 μ=1.018)', lblTrails:'Trails', lblGrid:'Grid',
+                lblCollapse:'Collapse', lblPerturb:'Perturb', lblJwstBtn:'Launch the Race',
+                exportBtn:'📤 EXPORT PHYSICAL OBSERVABLES (CSV)',
+                lblSolar:'Solar', lblP9:'TNO Anomalies', lblGalaxy:'Galaxy',
+                lblBlackHole:'Black Hole', lblBrain:'Consciousness', lblJwst:'JWST',
+                gaugeScreening:'SCREENING (Solar)', gaugeTrans:'TRANSITION (TNO Anomalies)',
+                gaugeTension:'TENSION (Galaxy)', gaugeMax:'MAXIMUM (Void Restored)',
+                solar_titleL:'🔵 ÆTHER/TSTU (9 planets)', solar_titleR:'⚪ General Relativity',
+                solar_m1:'Mercury Precession (″/century)', solar_m2:'Screening Radius (AU)',
+                solar_m3:'Deviation (%)', solar_m4:'Years', solar_infoTitle:'☉ Complete Solar System',
+                solar_infoText:'Full solar system (Mercury → Pluto). The scalar field φ is <strong>screened</strong> near the Sun (β &lt; 0.1) but its tension increases toward outer planets.',
+                solar_legendTitle:'Real-time dynamics — Click to focus',
+                p9_titleL:'🔵 ÆTHER/TSTU (φ Clustering)', p9_titleR:'⚪ Standard GR (needs P9)',
+                p9_m1:'TNO objects shown', p9_m2:'Observed clustering (°)',
+                p9_m3:'ÆTHER clustering (°)', p9_m4:'φ external tension',
+                p9_infoTitle:'🔭 TNO Anomalies — Clustering without Planet 9',
+                p9_infoText:'Extreme trans-Neptunian objects (Sedna, VP₁₁₃…) have <strong>clustered</strong> perihelia (~300°). ÆTHER/TSTU explains this via <strong>enhanced φ field tension in the outer void</strong> — <em>without extra mass</em>.',
+                p9_legendTitle:'Legend — TNO objects',
+                p9_leg1:'● Arrows = perihelion directions', p9_leg2:'● Blue zone = φ-ÆTHER clustering', p9_leg3:'● Red zone = GR uncertainty (P9 needed)',
+                gal_titleL:'🌀 ÆTHER (No Dark Matter)', gal_titleR:'⚫ Dark Matter Model',
+                gal_extraTitle:'📊 Rotation Curves: Keplerian vs Observed vs ÆTHER',
+                gal_m1:'v @ 10 kpc (km/s)', gal_m2:'Missing Mass (%)',
+                gal_m3:'ÆTHER Correction (%)', gal_m4:'Time (Myr)',
+                gal_infoTitle:'🌀 Galactic Rotation',
+                gal_infoText:'In galactic halos and cosmic voids, φ is <strong>tensioned</strong> (μ > 1). ÆTHER/TSTU explains flat rotation curves <strong>without dark matter</strong>.',
+                bh_titleL:'🕳️ ÆTHER Black Hole', bh_titleR:'⚫ Standard Black Hole',
+                bh_extraTitle:'📊 Scalar Field Profile φ(r) and Density ρ(r)',
+                bh_m1:'Radius (km)', bh_m2:'Density (ρ/ρ₀)', bh_m3:'φ/φ₀', bh_m4:'R_s (km)',
+                bh_infoTitle:'🕳️ Black Hole Formation — ÆTHER vs Standard',
+                bh_infoText:'<strong>Click "💥 Collapse" to start.</strong><br><br>🔵 <strong>ÆTHER panel:</strong> φ → φ₀ (void restored), no singularity, polar jets.<br><br>⚫ <strong>Standard panel:</strong> ρ → ∞ at centre — naked singularity, GR breaks down.',
+                brain_titleL:'🧠 ÆTHER Consciousness (Synchronized)', brain_titleR:'⚪ Independent Oscillators (Chaos)',
+                brain_extraTitle:'📊 Synchronization Order Parameter',
+                brain_m1:'Sync Order (r)', brain_m2:'Coupling (K)', brain_m3:'Coherence State', brain_m4:'Time (ms)',
+                brain_infoTitle:'🧠 Emergence of Consciousness — Kuramoto × ÆTHER',
+                brain_infoText:'<strong>Principle:</strong> Network of N oscillators with coupling K. Below K<sub>c</sub> ≈ 0.25 → <em>chaos</em>. Above → <em>emergent consciousness</em>.<br><br><strong>β</strong> controls φ amplitude, <strong>μ</strong> its range. Click <em>"⚡ Perturb"</em>: network drops then <strong>recovers</strong>.',
+                jwst_titleL:'🔵 ÆTHER — Geff = G×(1+ε∆)', jwst_titleR:'⚫ ΛCDM — Standard Gravity',
+                jwst_extraTitle:'📊 Cosmic Race: f_core(t) & Stellar Mass Function at z≈10',
+                jwst_m1:'f_core ÆTHER (%)', jwst_m2:'f_core ΛCDM (%)', jwst_m3:'ÆTHER Advance', jwst_m4:'Step',
+                jwst_infoTitle:'🔭 JWST — Massive Galaxies at z≳8 (Paper III Addendum)',
+            }
+        };
+
+        function setLang(l) {
+            lang = l;
+            const t = i18n[l];
+            document.getElementById('langFR').style.background = l==='fr' ? 'rgba(0,212,255,0.35)' : 'rgba(0,0,0,0.3)';
+            document.getElementById('langEN').style.background = l==='en' ? 'rgba(0,212,255,0.35)' : 'rgba(0,0,0,0.3)';
+            const ids = ['tagline','welcomeStrong','welcomeText','gaugeLabel','legendTitle',
+                'lblSimTime','controlsTitle','lblBeta','lblMu','lblSpeed','lblZoom',
+                'lblMass','lblNeurons','lblTrails','lblGrid','lblCollapse','lblPerturb',
+                'lblJwstBtn','lblSolar','lblP9','lblGalaxy','lblBlackHole','lblBrain','lblJwst'];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if(el && t[id]) el.textContent = t[id];
+            });
+            document.getElementById('btnReset').textContent = t.btnReset;
+            const expBtn = document.querySelector('.export-btn');
+            if(expBtn) expBtn.textContent = t.exportBtn;
+            updateUI();
+        }
         
         // STATE
         let mode = 'solar';
@@ -573,6 +711,94 @@
         const PERTURB_DURATION = 3.0; // sim time units of weakened coupling
         let syncHistory = [];      // [{t, r_tstu, r_gr}] for real-time graph
         const SYNC_HISTORY_MAX = 400;
+
+        // JWST N-BODY STATE
+        const JWST_N = 300;
+        const JWST_L = 10.0;
+        const JWST_SIGMA = 1.2;   // Gaussian overdensity width
+        const JWST_EPS = 0.05;    // Plummer softening
+        const JWST_DT = 0.025;    // leapfrog timestep
+        const JWST_RCORE = 1.0;   // core radius for f_core diagnostic
+        const JWST_T_MAX = 500;   // steps ~ 14 Gyr
+        let jwstParticles = [];   // [{x,y,vx,vy}] shared initial conditions
+        let jwstAether = [];      // evolved with Geff = G*(1+epsDelta)
+        let jwstLCDM  = [];       // evolved with G standard
+        let jwstFcoreAether = []; // f_core history
+        let jwstFcoreLCDM   = [];
+        let jwstStep = 0;
+        let jwstRunning = false;
+        let jwstDone = false;
+        let jwstEpsDelta = 0.35;  // ΔM coupling enhancement (from paper: ε_Δ ~ 0.3–0.5)
+
+        function initJWST() {
+            jwstParticles = [];
+            // Gaussian overdensity centred at (L/2, L/2)
+            const cx = JWST_L / 2, cy = JWST_L / 2;
+            for(let i = 0; i < JWST_N; i++) {
+                // Box-Muller for Gaussian positions
+                const u1 = Math.random(), u2 = Math.random();
+                const r = JWST_SIGMA * Math.sqrt(-2 * Math.log(u1 + 1e-10));
+                const th = 2 * Math.PI * u2;
+                let x = cx + r * Math.cos(th);
+                let y = cy + r * Math.sin(th);
+                // clamp to box
+                x = Math.max(0.1, Math.min(JWST_L - 0.1, x));
+                y = Math.max(0.1, Math.min(JWST_L - 0.1, y));
+                jwstParticles.push({ x, y, vx: 0, vy: 0 });
+            }
+            // Deep copy for both universes — identical ICs
+            jwstAether = jwstParticles.map(p => ({ ...p }));
+            jwstLCDM   = jwstParticles.map(p => ({ ...p }));
+            jwstFcoreAether = [];
+            jwstFcoreLCDM   = [];
+            jwstStep = 0;
+            jwstRunning = false;
+            jwstDone = false;
+        }
+        initJWST();
+
+        function jwstFcore(particles) {
+            const cx = JWST_L / 2, cy = JWST_L / 2;
+            let count = 0;
+            particles.forEach(p => {
+                const dx = p.x - cx, dy = p.y - cy;
+                if(dx*dx + dy*dy < JWST_RCORE * JWST_RCORE) count++;
+            });
+            return count / JWST_N;
+        }
+
+        function jwstLeapStep(particles, Geff) {
+            const N = particles.length;
+            const ax = new Float64Array(N);
+            const ay = new Float64Array(N);
+            // Compute accelerations (Plummer softened, minimum-image PBC)
+            for(let i = 0; i < N; i++) {
+                for(let j = i + 1; j < N; j++) {
+                    let dx = particles[j].x - particles[i].x;
+                    let dy = particles[j].y - particles[i].y;
+                    // minimum image
+                    if(dx >  JWST_L/2) dx -= JWST_L;
+                    if(dx < -JWST_L/2) dx += JWST_L;
+                    if(dy >  JWST_L/2) dy -= JWST_L;
+                    if(dy < -JWST_L/2) dy += JWST_L;
+                    const r2 = dx*dx + dy*dy + JWST_EPS*JWST_EPS;
+                    const r3 = Math.pow(r2, 1.5);
+                    const f = Geff / r3;
+                    ax[i] += f * dx;  ay[i] += f * dy;
+                    ax[j] -= f * dx;  ay[j] -= f * dy;
+                }
+            }
+            // Leapfrog kick-drift
+            for(let i = 0; i < N; i++) {
+                particles[i].vx += ax[i] * JWST_DT;
+                particles[i].vy += ay[i] * JWST_DT;
+                particles[i].x  += particles[i].vx * JWST_DT;
+                particles[i].y  += particles[i].vy * JWST_DT;
+                // wrap PBC
+                particles[i].x = ((particles[i].x % JWST_L) + JWST_L) % JWST_L;
+                particles[i].y = ((particles[i].y % JWST_L) + JWST_L) % JWST_L;
+            }
+        }
         
         // CONTEXTS
         const ctxL = document.getElementById('canvasLeft').getContext('2d');
@@ -721,19 +947,19 @@
             const tension = calculateAetherTension();
             const fill = document.getElementById('gaugeFill');
             const text = document.getElementById('gaugeText');
+            const t = i18n[lang];
             fill.style.width = tension + '%';
-            
             if(tension < 35) {
-                text.textContent = 'ÉCRANTAGE (Solaire)';
+                text.textContent = t.gaugeScreening;
                 fill.style.background = 'linear-gradient(90deg, #0088cc, #00aaff)';
             } else if(tension < 60) {
-                text.textContent = 'TRANSITION (Anomalies TNO)';
+                text.textContent = t.gaugeTrans;
                 fill.style.background = 'linear-gradient(90deg, #0088cc, #00d4ff, #00ffff)';
             } else if(tension < 85) {
-                text.textContent = 'TENSION (Galaxie)';
+                text.textContent = t.gaugeTension;
                 fill.style.background = 'linear-gradient(90deg, #00d4ff, #00ffff, #88ffff)';
             } else {
-                text.textContent = 'MAXIMUM (Vide Restauré)';
+                text.textContent = t.gaugeMax;
                 fill.style.background = 'linear-gradient(90deg, #00ffff, #ffffff)';
             }
         }
@@ -829,6 +1055,11 @@
         }
         function toggleGrid() { showGrid = !showGrid; }
         function startCollapse() { collapsing = true; animating = true; }
+        function launchJWST() {
+            if(jwstDone) { initJWST(); }  // reset if already done
+            jwstRunning = true;
+            animating = true;
+        }
         function perturbNetwork() {
             // Fully randomize ALL phases — dramatic disruption
             neurons.forEach(n => {
@@ -857,6 +1088,7 @@
             perturbTimer = 0;
             syncHistory = [];
             initNeurons(numNeurons);
+            initJWST();
             document.getElementById('timelineFill').style.width = '0%';
 
             // Remettre β et μ aux valeurs du fit (Paper I & II)
@@ -875,6 +1107,7 @@
             const colBtn = document.getElementById('collapseBtn');
             const pertBtn = document.getElementById('perturbBtn');
             const legend = document.getElementById('legendLeft');
+            const t = i18n[lang];
 
             massCtrl.style.display = 'none';
             neuronsCtrl.style.display = 'none';
@@ -884,106 +1117,98 @@
             legend.style.display = 'block';
             document.getElementById('trailsBtn').style.display = 'inline-block';
             document.getElementById('gridBtn').style.display = 'inline-block';
+            document.getElementById('jwstBtn').style.display = 'none';
 
             if(mode === 'solar') {
-                document.getElementById('titleLeft').innerText = '🔵 ÆTHER/TSTU (9 planètes)';
-                document.getElementById('titleRight').innerText = '⚪ Relativité Générale';
-                document.getElementById('l1').innerText = "Précession Mercure (″/siècle)";
-                document.getElementById('l2').innerText = "Rayon Screening (AU)";
-                document.getElementById('l3').innerText = "Déviation (%)";
-                document.getElementById('l4').innerText = "Années";
-                
-                document.getElementById('infoTitle').innerText = '☉ Système Solaire Complet';
-                document.getElementById('infoContent').innerHTML = 
-                    'Visualisation complète du système solaire (Mercure → Pluton). Le champ scalaire φ est <strong>écranté</strong> ' +
-                    'près du Soleil (β < 0.1) mais sa tension augmente progressivement vers les planètes externes. ' +
-                    'Observez les différences orbitales TSTU vs GR, particulièrement visibles pour les planètes lointaines.';
-                    
+                document.getElementById('titleLeft').innerText = t.solar_titleL;
+                document.getElementById('titleRight').innerText = t.solar_titleR;
+                document.getElementById('l1').innerText = t.solar_m1;
+                document.getElementById('l2').innerText = t.solar_m2;
+                document.getElementById('l3').innerText = t.solar_m3;
+                document.getElementById('l4').innerText = t.solar_m4;
+                document.getElementById('infoTitle').innerText = t.solar_infoTitle;
+                document.getElementById('infoContent').innerHTML = t.solar_infoText;
                 updatePlanetLegend();
-                document.querySelector('#legendLeft .legend-title').innerText = 'Dynamique en temps réel — Cliquez pour focus';
+                document.querySelector('#legendLeft .legend-title').innerText = t.solar_legendTitle;
+
             } else if(mode === 'p9') {
-                document.getElementById('titleLeft').innerText = '🔵 ÆTHER/TSTU (Clustering φ)';
-                document.getElementById('titleRight').innerText = '⚪ GR Standard (besoin P9)';
-                document.getElementById('l1').innerText = "Objets TNO affichés";
-                document.getElementById('l2').innerText = "Clustering observé (°)";
-                document.getElementById('l3').innerText = "Clustering ÆTHER (°)";
-                document.getElementById('l4').innerText = "Tension φ externe";
-                
-                document.getElementById('infoTitle').innerText = '🔭 Anomalies TNO — Clustering sans Planète 9';
-                document.getElementById('infoContent').innerHTML = 
-                    'Les objets trans-neptuniens extrêmes (Sedna, VP₁₁₃…) ont leurs périhélies <strong>regroupées</strong> (~300°). ' +
-                    'La GR standard ne peut expliquer ce clustering sans invoquer une Planète 9 hypothétique (non observée). ' +
-                    'ÆTHER/TSTU explique ce regroupement par la <strong>tension accrue du champ φ dans le vide externe</strong> (μ > 1 au-delà de Neptune) ' +
-                    'qui brise la symétrie orbitale et attire naturellement les périhélies vers une direction privilégiée — <em>sans masse supplémentaire</em>.';
-                
-                document.getElementById('legendItemsLeft').innerHTML = 
-                    '<div class="legend-item" style="color:#00d4ff;">● Flèches = direction des périhélies</div>' +
-                    '<div class="legend-item" style="color:#aaa;">● Zone bleue = clustering prédit par φ</div>' +
-                    '<div class="legend-item" style="color:#ff4444;">● Zone rouge = incertitude GR (P9 requise)</div>';
-                document.querySelector('#legendLeft .legend-title').innerText = 'Légende — objets TNO';
+                document.getElementById('titleLeft').innerText = t.p9_titleL;
+                document.getElementById('titleRight').innerText = t.p9_titleR;
+                document.getElementById('l1').innerText = t.p9_m1;
+                document.getElementById('l2').innerText = t.p9_m2;
+                document.getElementById('l3').innerText = t.p9_m3;
+                document.getElementById('l4').innerText = t.p9_m4;
+                document.getElementById('infoTitle').innerText = t.p9_infoTitle;
+                document.getElementById('infoContent').innerHTML = t.p9_infoText;
+                document.getElementById('legendItemsLeft').innerHTML =
+                    `<div class="legend-item" style="color:#00d4ff;">${t.p9_leg1}</div>` +
+                    `<div class="legend-item" style="color:#aaa;">${t.p9_leg2}</div>` +
+                    `<div class="legend-item" style="color:#ff4444;">${t.p9_leg3}</div>`;
+                document.querySelector('#legendLeft .legend-title').innerText = t.p9_legendTitle;
+
             } else if(mode === 'galaxy') {
-                document.getElementById('titleLeft').innerText = '🌀 ÆTHER (Pas de Matière Noire)';
-                document.getElementById('titleRight').innerText = '⚫ Modèle Matière Noire';
+                document.getElementById('titleLeft').innerText = t.gal_titleL;
+                document.getElementById('titleRight').innerText = t.gal_titleR;
                 extra.style.display = 'block';
-                document.getElementById('extraTitle').innerText = "📊 Courbes de Rotation: Kepler vs Observé vs ÆTHER";
-                document.getElementById('l1').innerText = "v @ 10 kpc (km/s)";
-                document.getElementById('l2').innerText = "Masse Manquante (%)";
-                document.getElementById('l3').innerText = "Correction ÆTHER (%)";
-                document.getElementById('l4').innerText = "Temps (Myr)";
+                document.getElementById('extraTitle').innerText = t.gal_extraTitle;
+                document.getElementById('l1').innerText = t.gal_m1;
+                document.getElementById('l2').innerText = t.gal_m2;
+                document.getElementById('l3').innerText = t.gal_m3;
+                document.getElementById('l4').innerText = t.gal_m4;
                 legend.style.display = 'none';
-                
-                document.getElementById('infoTitle').innerText = '🌀 Rotation Galactique';
-                document.getElementById('infoContent').innerHTML = 
-                    'Dans les halos galactiques et vides cosmiques, φ est <strong>tendu</strong> (μ > 1), ' +
-                    'modifiant la gravité aux grandes échelles. ÆTHER/TSTU explique les courbes de rotation plates ' +
-                    '<strong>sans nécessiter de matière noire</strong>.';
+                document.getElementById('infoTitle').innerText = t.gal_infoTitle;
+                document.getElementById('infoContent').innerHTML = t.gal_infoText;
+
             } else if(mode === 'blackhole') {
-                document.getElementById('titleLeft').innerText = '🕳️ Trou Noir ÆTHER';
-                document.getElementById('titleRight').innerText = '⚫ Trou Noir Standard';
+                document.getElementById('titleLeft').innerText = t.bh_titleL;
+                document.getElementById('titleRight').innerText = t.bh_titleR;
                 extra.style.display = 'block';
                 massCtrl.style.display = 'block';
                 colBtn.style.display = 'inline-block';
-                document.getElementById('extraTitle').innerText = "📊 Profil Champ Scalaire φ(r) et Densité ρ(r)";
+                document.getElementById('extraTitle').innerText = t.bh_extraTitle;
                 legend.style.display = 'none';
-                document.getElementById('l1').innerText = "Rayon (km)";
-                document.getElementById('l2').innerText = "Densité (ρ/ρ₀)";
-                document.getElementById('l3').innerText = "φ/φ₀";
-                document.getElementById('l4').innerText = "R_s (km)";
-                
-                document.getElementById('infoTitle').innerText = '🕳️ Formation Trou Noir — ÆTHER vs Standard';
-                document.getElementById('infoContent').innerHTML = 
-                    '<strong>Cliquez "💥 Effondrement" pour lancer l\'animation.</strong><br><br>' +
-                    '🔵 <strong>Panneau ÆTHER :</strong> Le champ φ résiste à la compression infinie. ' +
-                    'À la formation de l\'horizon, φ → φ₀ (vide restauré) — la singularité est évitée. ' +
-                    'L\'énergie est expulsée sous forme de <em>jets polaires</em> (signature observationnelle réelle).<br><br>' +
-                    '⚫ <strong>Panneau Standard (GR) :</strong> L\'effondrement continue sans limite. ' +
-                    'La densité ρ → ∞ au centre — singularité nue. ' +
-                    'Les équations de la relativité générale <em>s\'effondrent</em> à ce point : c\'est une brisure de la physique connue.';
-            } else {
+                document.getElementById('l1').innerText = t.bh_m1;
+                document.getElementById('l2').innerText = t.bh_m2;
+                document.getElementById('l3').innerText = t.bh_m3;
+                document.getElementById('l4').innerText = t.bh_m4;
+                document.getElementById('infoTitle').innerText = t.bh_infoTitle;
+                document.getElementById('infoContent').innerHTML = t.bh_infoText;
+
+            } else if(mode === 'brain') {
                 document.getElementById('trailsBtn').style.display = 'none';
                 document.getElementById('gridBtn').style.display = 'none';
-                document.getElementById('titleLeft').innerText = '🧠 Conscience ÆTHER (Synchronisé)';
-                document.getElementById('titleRight').innerText = '⚪ Oscillateurs Indépendants (Chaos)';
+                document.getElementById('titleLeft').innerText = t.brain_titleL;
+                document.getElementById('titleRight').innerText = t.brain_titleR;
                 extra.style.display = 'block';
                 neuronsCtrl.style.display = 'block';
                 pertBtn.style.display = 'inline-block';
-                document.getElementById('extraTitle').innerText = "📊 Paramètre d'Ordre de Synchronisation";
+                document.getElementById('extraTitle').innerText = t.brain_extraTitle;
                 legend.style.display = 'none';
-                document.getElementById('l1').innerText = "Ordre Sync (r)";
-                document.getElementById('l2').innerText = "Couplage (K)";
-                document.getElementById('l3').innerText = "État Cohérence";
-                document.getElementById('l4').innerText = "Temps (ms)";
-                
-                document.getElementById('infoTitle').innerText = '🧠 Émergence de la Conscience — Modèle Kuramoto × ÆTHER';
-                document.getElementById('infoContent').innerHTML = 
-                    '<strong>Principe :</strong> Le réseau de N oscillateurs (neurones) échange une force de couplage K. ' +
-                    'En dessous du seuil critique K<sub>c</sub> ≈ 0.25, chaque neurone tourne à sa propre fréquence → <em>chaos</em>. ' +
-                    'Au-dessus, ils se verrouillent en phase → <em>conscience émergente</em> (r → 1).<br><br>' +
-                    '<strong>β (couplage scalaire) :</strong> contrôle l\'amplitude du champ φ. Augmenter β augmente K_TSTU et accélère la synchronisation.<br>' +
-                    '<strong>μ (tension cosmologique) :</strong> contrôle la portée du champ. Augmenter μ amplifie le couplage inter-neurones.<br><br>' +
-                    '<strong>Panneau gauche (ÆTHER) :</strong> K_TSTU = 0.6 + β×μ×8 ≫ K<sub>c</sub> → synchronisation robuste. ' +
-                    'Cliquez <em>"⚡ Perturber"</em> pour randomiser toutes les phases : le réseau chute en chaos puis <strong>récupère</strong> grâce au champ φ.<br>' +
-                    '<strong>Panneau droit (Standard) :</strong> K_GR = 0.08 &lt; K<sub>c</sub> → chaos permanent, aucune conscience émergente possible.';
+                document.getElementById('l1').innerText = t.brain_m1;
+                document.getElementById('l2').innerText = t.brain_m2;
+                document.getElementById('l3').innerText = t.brain_m3;
+                document.getElementById('l4').innerText = t.brain_m4;
+                document.getElementById('infoTitle').innerText = t.brain_infoTitle;
+                document.getElementById('infoContent').innerHTML = t.brain_infoText;
+
+            } else if(mode === 'jwst') {
+                document.getElementById('trailsBtn').style.display = 'none';
+                document.getElementById('gridBtn').style.display = 'none';
+                document.getElementById('titleLeft').innerText = t.jwst_titleL;
+                document.getElementById('titleRight').innerText = t.jwst_titleR;
+                extra.style.display = 'block';
+                document.getElementById('extraTitle').innerText = t.jwst_extraTitle;
+                document.getElementById('jwstBtn').style.display = 'inline-block';
+                legend.style.display = 'none';
+                document.getElementById('l1').innerText = t.jwst_m1;
+                document.getElementById('l2').innerText = t.jwst_m2;
+                document.getElementById('l3').innerText = t.jwst_m3;
+                document.getElementById('l4').innerText = t.jwst_m4 + ' / ' + JWST_T_MAX;
+                document.getElementById('infoTitle').innerText = t.jwst_infoTitle;
+                const jwstInfo = lang === 'fr'
+                    ? '<strong>Tension JWST :</strong> Le JWST observe des galaxies massives (M★ ≳ 10¹⁰ M☉) à z≳8–10, bien plus abondantes que prédit par ΛCDM.<br><br><strong>Solution ÆTHER :</strong> G<sub>eff</sub> = G×(1+ε∆). Les surdensités s\'effondrent <em>plus tôt</em>.<br><br>Cliquez <strong>"🚀 Lancer la Course"</strong> (N=300, CI identiques).'
+                    : '<strong>JWST Tension:</strong> JWST observes massive galaxies (M★ ≳ 10¹⁰ M☉) at z≳8–10, far more abundant than ΛCDM predicts.<br><br><strong>ÆTHER Solution:</strong> G<sub>eff</sub> = G×(1+ε∆). Overdensities collapse <em>earlier</em>.<br><br>Click <strong>"🚀 Launch the Race"</strong> (N=300, identical ICs).';
+                document.getElementById('infoContent').innerHTML = jwstInfo;
             }
         }
         
@@ -1976,6 +2201,18 @@
                 const progress = collapsing ? Math.min(100, (1 - bhRadius / 1e6) * 100) : 0;
                 document.getElementById('timelineFill').style.width = progress + '%';
                 document.getElementById('timeDisplay').textContent = collapsing ? 'Effondrement...' : phase;
+            } else if(mode === 'jwst') {
+                const fcA = jwstFcoreAether.length ? jwstFcoreAether[jwstFcoreAether.length-1] : 0;
+                const fcL = jwstFcoreLCDM.length   ? jwstFcoreLCDM[jwstFcoreLCDM.length-1]   : 0;
+                document.getElementById('m1').textContent = (fcA * 100).toFixed(1) + '%';
+                document.getElementById('m2').textContent = (fcL * 100).toFixed(1) + '%';
+                const advance = fcL > 0.01 ? (fcA / fcL).toFixed(2) + '×' : (jwstDone ? '—' : 'attente');
+                document.getElementById('m3').textContent = advance;
+                document.getElementById('m4').textContent = jwstStep + ' / ' + JWST_T_MAX;
+                const progress = jwstStep / JWST_T_MAX * 100;
+                document.getElementById('timelineFill').style.width = progress + '%';
+                const tGyr = (jwstStep / JWST_T_MAX) * 14;
+                document.getElementById('timeDisplay').textContent = tGyr.toFixed(1) + ' Gyr';
             } else {
                 let sumX_tstu = 0, sumY_tstu = 0;
                 neurons.forEach(n => {
@@ -2002,6 +2239,284 @@
             }
         }
         
+        // JWST UPDATE
+        function updateJWST(dt) {
+            if(!jwstRunning || jwstDone) return;
+            // Run several physics steps per animation frame for speed
+            const stepsPerFrame = 3;
+            for(let s = 0; s < stepsPerFrame; s++) {
+                if(jwstStep >= JWST_T_MAX) { jwstDone = true; jwstRunning = false; break; }
+                const G = 1.0;
+                jwstLeapStep(jwstAether, G * (1 + jwstEpsDelta));
+                jwstLeapStep(jwstLCDM,   G);
+                jwstFcoreAether.push(jwstFcore(jwstAether));
+                jwstFcoreLCDM.push(jwstFcore(jwstLCDM));
+                jwstStep++;
+            }
+        }
+
+        // JWST DRAW — N-body particle panel
+        function drawJWST(ctx, isAether) {
+            const w = ctx.canvas.width, h = ctx.canvas.height;
+            const scale = Math.min(w, h) / JWST_L;
+            const particles = isAether ? jwstAether : jwstLCDM;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            // Background φ-field glow for Æther panel
+            if(isAether) {
+                const cx = w/2, cy = h/2;
+                const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.45);
+                glow.addColorStop(0, 'rgba(0,80,180,0.18)');
+                glow.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = glow;
+                ctx.fillRect(0, 0, w, h);
+            }
+
+            // Core radius circle
+            const corePix = JWST_RCORE * scale;
+            const pcx = (JWST_L/2) * scale, pcy = (JWST_L/2) * scale;
+            ctx.strokeStyle = isAether ? 'rgba(0,212,255,0.25)' : 'rgba(180,180,180,0.2)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([4,4]);
+            ctx.beginPath();
+            ctx.arc(pcx, pcy, corePix, 0, Math.PI*2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Particles
+            particles.forEach(p => {
+                const px = p.x * scale;
+                const py = p.y * scale;
+                // Color by distance to center — closer = brighter/warmer
+                const dx = p.x - JWST_L/2, dy = p.y - JWST_L/2;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+                const inCore = dist < JWST_RCORE;
+                if(isAether) {
+                    ctx.fillStyle = inCore ? 'rgba(0,255,200,0.95)' : 'rgba(0,180,255,0.55)';
+                } else {
+                    ctx.fillStyle = inCore ? 'rgba(220,220,220,0.8)' : 'rgba(140,140,140,0.4)';
+                }
+                ctx.beginPath();
+                ctx.arc(px, py, inCore ? 2.2 : 1.5, 0, Math.PI*2);
+                ctx.fill();
+            });
+
+            // Cosmic time label
+            const tGyr = (jwstStep / JWST_T_MAX) * 14;
+            const zApprox = tGyr < 0.5 ? '>10' : (tGyr < 1 ? '~10' : (tGyr < 2 ? '~6' : (tGyr < 4 ? '~3' : '<2')));
+            ctx.fillStyle = isAether ? 'rgba(0,20,40,0.85)' : 'rgba(10,10,10,0.85)';
+            ctx.fillRect(10, 10, 220, 72);
+            ctx.strokeStyle = isAether ? '#00d4ff' : '#888';
+            ctx.lineWidth = 1.5;
+            ctx.strokeRect(10, 10, 220, 72);
+
+            ctx.fillStyle = isAether ? '#00d4ff' : '#aaa';
+            ctx.font = 'bold 13px Arial';
+            ctx.fillText(isAether ? '🔵 ÆTHER  Geff = G×(1+ε∆)' : '⚫ ΛCDM Standard  G', 18, 30);
+
+            const fc = isAether
+                ? (jwstFcoreAether.length ? jwstFcoreAether[jwstFcoreAether.length-1] : 0)
+                : (jwstFcoreLCDM.length   ? jwstFcoreLCDM[jwstFcoreLCDM.length-1]   : 0);
+            ctx.fillStyle = '#ddd';
+            ctx.font = '11px Arial';
+            ctx.fillText(`t ≈ ${tGyr.toFixed(1)} Gyr  |  z ${zApprox}  |  f_core = ${(fc*100).toFixed(1)}%`, 18, 50);
+
+            if(jwstDone) {
+                ctx.fillStyle = isAether ? '#00ff88' : '#ff8888';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText(isAether ? '✅ Collapse précoce — JWST expliqué' : '❌ Structures tardives — tension JWST', 18, 68);
+            } else if(!jwstRunning) {
+                ctx.fillStyle = '#ffcc00';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText('▶ Cliquez "🚀 Lancer la Course" pour démarrer', 18, 68);
+            } else {
+                ctx.fillStyle = isAether ? '#00d4ff' : '#aaa';
+                ctx.font = '12px Arial';
+                ctx.fillText(`Simulation en cours… étape ${jwstStep}/${JWST_T_MAX}`, 18, 68);
+            }
+        }
+
+        // JWST EXTRA — f_core(t) graph + SMF
+        function drawJWSTExtra() {
+            const w = ctxE.canvas.width, h = ctxE.canvas.height;
+            const m = 55;
+            ctxE.fillStyle = '#050510';
+            ctxE.fillRect(0, 0, w, h);
+
+            // ── Left half: f_core(t) graph ──
+            const lw = w * 0.52;
+
+            ctxE.strokeStyle = '#333';
+            ctxE.lineWidth = 1;
+            ctxE.beginPath();
+            ctxE.moveTo(m, h-m); ctxE.lineTo(lw-10, h-m);
+            ctxE.moveTo(m, h-m); ctxE.lineTo(m, m);
+            ctxE.stroke();
+
+            // Y-axis labels
+            for(let v = 0; v <= 0.6; v += 0.2) {
+                const y = h - m - (h-2*m) * (v/0.6);
+                ctxE.fillStyle = '#555';
+                ctxE.font = '10px Arial';
+                ctxE.fillText(v.toFixed(1), 5, y+4);
+                ctxE.strokeStyle = 'rgba(255,255,255,0.04)';
+                ctxE.beginPath(); ctxE.moveTo(m, y); ctxE.lineTo(lw-10, y); ctxE.stroke();
+            }
+
+            // JWST lookback line (z~10 ≈ 0.5 Gyr ≈ step 18)
+            const zStep = Math.floor(0.5 / 14 * JWST_T_MAX);
+            const zX = m + (lw - m - 10) * (zStep / JWST_T_MAX);
+            ctxE.strokeStyle = 'rgba(255,200,0,0.5)';
+            ctxE.lineWidth = 1;
+            ctxE.setLineDash([5,4]);
+            ctxE.beginPath(); ctxE.moveTo(zX, m); ctxE.lineTo(zX, h-m); ctxE.stroke();
+            ctxE.setLineDash([]);
+            ctxE.fillStyle = '#ffcc00';
+            ctxE.font = '10px Arial';
+            ctxE.fillText('z~10', zX+3, m+12);
+
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.font = '13px Arial';
+            ctxE.fillText("Fraction masse centrale f_core(t)", m, m-8);
+            ctxE.fillStyle = '#888';
+            ctxE.font = '11px Arial';
+            ctxE.fillText('Temps cosmique (Gyr)', (m + lw)/2 - 40, h-8);
+
+            const maxSteps = Math.max(jwstFcoreAether.length, jwstFcoreLCDM.length, 1);
+
+            // Draw ΛCDM curve
+            if(jwstFcoreLCDM.length > 1) {
+                ctxE.strokeStyle = 'rgba(180,180,180,0.7)';
+                ctxE.lineWidth = 2;
+                ctxE.beginPath();
+                jwstFcoreLCDM.forEach((v, i) => {
+                    const x = m + (lw - m - 10) * (i / JWST_T_MAX);
+                    const y = h - m - (h-2*m) * Math.min(1, v/0.6);
+                    i === 0 ? ctxE.moveTo(x, y) : ctxE.lineTo(x, y);
+                });
+                ctxE.stroke();
+            }
+
+            // Draw ÆTHER curve
+            if(jwstFcoreAether.length > 1) {
+                ctxE.strokeStyle = '#00d4ff';
+                ctxE.lineWidth = 2.5;
+                ctxE.beginPath();
+                jwstFcoreAether.forEach((v, i) => {
+                    const x = m + (lw - m - 10) * (i / JWST_T_MAX);
+                    const y = h - m - (h-2*m) * Math.min(1, v/0.6);
+                    i === 0 ? ctxE.moveTo(x, y) : ctxE.lineTo(x, y);
+                });
+                ctxE.stroke();
+            }
+
+            // Legend
+            ctxE.fillStyle = '#00d4ff'; ctxE.font = '11px Arial';
+            ctxE.fillText('— ÆTHER (Geff > G)', m+8, m+18);
+            ctxE.fillStyle = '#aaa';
+            ctxE.fillText('— ΛCDM standard', m+8, m+34);
+
+            // ── Right half: Stellar Mass Function ──
+            const rx = lw + 20, rw = w - lw - 30;
+
+            ctxE.strokeStyle = '#333';
+            ctxE.lineWidth = 1;
+            ctxE.beginPath();
+            ctxE.moveTo(rx, h-m); ctxE.lineTo(w-15, h-m);
+            ctxE.moveTo(rx, h-m); ctxE.lineTo(rx, m);
+            ctxE.stroke();
+
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.font = '13px Arial';
+            ctxE.fillText('Fonction de Masse Stellaire z≈10', rx, m-8);
+            ctxE.fillStyle = '#888'; ctxE.font = '11px Arial';
+            ctxE.fillText('log₁₀(M★/M☉)', rx + rw/2 - 30, h-8);
+
+            // Schechter parameters — ΛCDM vs ÆTHER (shifted by ΔlogM★ ~ 0.5)
+            const logMmin = 8.5, logMmax = 11.5;
+            const alpha = -1.6;
+            function schechter(logM, logMstar, phi0) {
+                const x = Math.pow(10, logM - logMstar);
+                return phi0 * Math.pow(x, alpha+1) * Math.exp(-x) * Math.log(10);
+            }
+
+            const logMstarLCDM  = 9.8;
+            const logMstarAether = logMstarLCDM + 0.5 + jwstEpsDelta * 0.8;
+            const phi0 = 1.0;
+
+            // Y axis range
+            const ymin = -9, ymax = -3;
+            function toY(logPhi) { return h - m - (h-2*m) * (logPhi - ymin) / (ymax - ymin); }
+            function toX(logM)   { return rx + rw * (logM - logMmin) / (logMmax - logMmin); }
+
+            // Y-axis labels
+            for(let v = -9; v <= -3; v += 2) {
+                const y = toY(v);
+                ctxE.fillStyle = '#555'; ctxE.font = '10px Arial';
+                ctxE.fillText(v, rx - 22, y+4);
+                ctxE.strokeStyle = 'rgba(255,255,255,0.04)';
+                ctxE.beginPath(); ctxE.moveTo(rx, y); ctxE.lineTo(w-15, y); ctxE.stroke();
+            }
+
+            // ΛCDM curve (grey dashed)
+            ctxE.strokeStyle = 'rgba(160,160,160,0.8)';
+            ctxE.lineWidth = 2;
+            ctxE.setLineDash([6,4]);
+            ctxE.beginPath();
+            let started = false;
+            for(let logM = logMmin; logM <= logMmax; logM += 0.05) {
+                const phi = schechter(logM, logMstarLCDM, phi0);
+                if(phi <= 0) continue;
+                const logPhi = Math.log10(phi) - 5;
+                if(logPhi < ymin || logPhi > ymax) { started = false; continue; }
+                const x = toX(logM), y = toY(logPhi);
+                started ? ctxE.lineTo(x, y) : (ctxE.moveTo(x, y), started = true);
+            }
+            ctxE.stroke();
+            ctxE.setLineDash([]);
+
+            // ÆTHER curve (cyan solid)
+            ctxE.strokeStyle = '#00d4ff';
+            ctxE.lineWidth = 2.5;
+            ctxE.beginPath();
+            started = false;
+            for(let logM = logMmin; logM <= logMmax; logM += 0.05) {
+                const phi = schechter(logM, logMstarAether, phi0);
+                if(phi <= 0) continue;
+                const logPhi = Math.log10(phi) - 5;
+                if(logPhi < ymin || logPhi > ymax) { started = false; continue; }
+                const x = toX(logM), y = toY(logPhi);
+                started ? ctxE.lineTo(x, y) : (ctxE.moveTo(x, y), started = true);
+            }
+            ctxE.stroke();
+
+            // JWST data points (Labbé et al. 2023)
+            const jwstData = [
+                { logM: 9.8, logPhi: -5.5 }, { logM: 10.2, logPhi: -6.0 },
+                { logM: 10.5, logPhi: -6.8 }, { logM: 10.8, logPhi: -7.8 }
+            ];
+            jwstData.forEach(d => {
+                const x = toX(d.logM), y = toY(d.logPhi);
+                ctxE.fillStyle = '#ff6644';
+                ctxE.beginPath(); ctxE.arc(x, y, 5, 0, Math.PI*2); ctxE.fill();
+                ctxE.strokeStyle = '#ff6644'; ctxE.lineWidth = 1.5;
+                ctxE.beginPath();
+                ctxE.moveTo(x, y-8); ctxE.lineTo(x, y+8);
+                ctxE.moveTo(x-4, y-8); ctxE.lineTo(x+4, y-8);
+                ctxE.stroke();
+            });
+
+            // Legend
+            ctxE.fillStyle = '#aaa'; ctxE.font = '11px Arial';
+            ctxE.fillText('-- ΛCDM (M★ coupée tôt)', rx+6, m+18);
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.fillText('— ÆTHER (M★ décalée +ΔlogM)', rx+6, m+34);
+            ctxE.fillStyle = '#ff6644';
+            ctxE.fillText('● JWST (Labbé+2023)', rx+6, m+50);
+        }
+
         // MAIN LOOP
         function animate() {
             if(animating) {
@@ -2012,6 +2527,7 @@
                 else if(mode === 'p9') updateP9(dt);
                 else if(mode === 'galaxy') updateGalaxy(dt);
                 else if(mode === 'blackhole') updateBlackHole(dt);
+                else if(mode === 'jwst') updateJWST(dt);
                 else updateBrain(dt);
             }
             
@@ -2029,6 +2545,10 @@
                 drawBlackHole(ctxL, true);
                 drawBlackHole(ctxR, false);
                 drawExtraCanvas();
+            } else if(mode === 'jwst') {
+                drawJWST(ctxL, true);
+                drawJWST(ctxR, false);
+                drawJWSTExtra();
             } else {
                 drawBrain(ctxL, true);
                 drawBrain(ctxR, false);
@@ -2112,7 +2632,21 @@
                     csv += `${r.toFixed(0)},${phi.toFixed(6)},${(rho/bhDensity).toExponential(3)},${(r/rs).toFixed(4)}\n`;
                 }
 
-            } else { // brain
+            } else if(mode === 'jwst') {
+                csv = `# ÆTHER/TSTU — Course Cosmique JWST N-body | β=${beta.toFixed(3)} ε∆=${jwstEpsDelta.toFixed(3)} N=${JWST_N} | ${ts}\n`;
+                csv += `# f_core = fraction de masse dans r < ${JWST_RCORE} (centre de la boîte)\n`;
+                csv += `# t_JWST_z10 ≈ 0.5 Gyr = step ${Math.floor(0.5/14*JWST_T_MAX)}\n\n`;
+                csv += `step,t_Gyr,fcore_aether,fcore_lcdm,ratio\n`;
+                const nSteps = Math.max(jwstFcoreAether.length, jwstFcoreLCDM.length);
+                for(let i = 0; i < nSteps; i++) {
+                    const t = (i / JWST_T_MAX * 14).toFixed(3);
+                    const fa = jwstFcoreAether[i] !== undefined ? jwstFcoreAether[i].toFixed(4) : '';
+                    const fl = jwstFcoreLCDM[i]   !== undefined ? jwstFcoreLCDM[i].toFixed(4)   : '';
+                    const ratio = (jwstFcoreAether[i] && jwstFcoreLCDM[i] && jwstFcoreLCDM[i] > 0.001)
+                        ? (jwstFcoreAether[i] / jwstFcoreLCDM[i]).toFixed(3) : '';
+                    csv += `${i},${t},${fa},${fl},${ratio}\n`;
+                }
+            } else {
                 csv = `# ÆTHER/TSTU — Synchronisation Neuronale Kuramoto | β=${beta.toFixed(3)} μ=${mu.toFixed(3)} N=${neurons.length} | ${ts}\n`;
                 csv += `# Paramètre d'ordre r(t) — TSTU vs Standard\n`;
                 csv += `# K_tstu=${(0.6 + beta*mu*8).toFixed(3)}  K_gr=0.080  K_critique≈0.250\n\n`;
