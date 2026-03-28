@@ -881,7 +881,7 @@
             blackhole: 'https://zenodo.org/records/18471407',
             brain:     'https://zenodo.org/records/19139925',
             jwst:      'https://zenodo.org/records/17844551',
-            aetheron:  'https://zenodo.org/records/17815846'
+            aetheron:  'https://zenodo.org/records/19109359'
         };
 
         // ── LANGUAGE ─────────────────────────────────────────────────────────
@@ -906,7 +906,7 @@
                 solar_titleL:'🔵 ÆTHER/TSTU (9 planètes)', solar_titleR:'⚪ Relativité Générale',
                 solar_m1:'Précession Mercure (″/siècle)', solar_m2:'Rayon Screening (AU)',
                 solar_m3:'Déviation (%)', solar_m4:'Années', solar_infoTitle:'☉ Système Solaire Complet',
-                solar_infoText:'Visualisation complète du système solaire (Mercure → Pluton). Le champ scalaire φ est <strong>écranté</strong> près du Soleil (β &lt; 0.1) mais sa tension augmente progressivement vers les planètes externes.',
+                solar_infoText:'Visualisation complète du système solaire (Mercure → Pluton). Le champ scalaire φ est <strong>écranté</strong> près du Soleil (β &lt; 0.1) : β_eff &lt; 10⁻⁷ (facteur ×10⁶, Addendum A Table 1). La tension augmente vers les planètes externes (régime non-écranté).',
                 solar_legendTitle:'Dynamique en temps réel — Cliquez pour focus',
                 p9_titleL:'🔵 ÆTHER/TSTU (Clustering φ)', p9_titleR:'⚪ GR Standard (besoin P9)',
                 p9_m1:'Objets TNO affichés', p9_m2:'Clustering observé (°)',
@@ -935,11 +935,11 @@
                 jwst_extraTitle:'📊 Course Cosmique : f_core(t) & Fonction de Masse Stellaire à z≈10',
                 jwst_m1:'f_core ÆTHER (%)', jwst_m2:'f_core ΛCDM (%)', jwst_m3:'Avance ÆTHER', jwst_m4:'Étape',
                 jwst_infoTitle:'🔭 JWST — Galaxies Massives à z≳8 (Paper III Addendum)',
-                aetheron_titleL:'⚛️ Ætheron — Champ ΔM Classique', aetheron_titleR:'🔵 Orbitale Hydrogène |Ψ₁ₛ|²',
-                aetheron_extraTitle:'📊 Série temporelle ΔM & Spectre de Puissance (modes harmoniques)',
-                aetheron_m1:'ω_peak (unités)', aetheron_m2:'Facteur Q', aetheron_m3:'Harmoniques détectées', aetheron_m4:'Énergie core Q_osc',
-                aetheron_infoTitle:'⚛️ Ætherons — Oscillons Classiques Non-Linéaires (Paper IV)',
-                aetheron_infoText:'Un Ætheron est une solution oscillante localisée du champ scalaire ΔM dans un potentiel sextique "flat-top". <strong>Sans quantification</strong>, la dynamique classique non-linéaire produit : pics spectraux discrets, cohérence longue durée, facteur Q élevé. Le panneau droit montre la densité de probabilité quantique |Ψ|² de l\'hydrogène 1s — même localisation, origines différentes. <br><br>⚠️ <strong>Addendum IV :</strong> Ces structures sont des analogues classiques — non une dérivation de la mécanique quantique.',
+                aetheron_titleL:'⚛️ Ætheron — Champ ΔM 1D (Paper IV)', aetheron_titleR:'🔬 Analogue BEC ¹⁶⁴Dy — Paper VIII',
+                aetheron_extraTitle:'📊 Série temporelle ΔM & Spectre | Courbe Q(ω) Vakhitov-Kolokolov',
+                aetheron_m1:'ω_peak (unités sim.)', aetheron_m2:'Facteur Q', aetheron_m3:'Harmoniques détectées', aetheron_m4:'Énergie core Q_osc',
+                aetheron_infoTitle:'⚛️ Ætherons — Oscillons Classiques & Analogue BEC (Papers IV + VIII)',
+                aetheron_infoText:'<strong>Gauche (Paper IV) :</strong> Oscillon 1D leapfrog, potentiel sextique V(φ)=½m²φ²−λ₄φ⁴/4+λ₆φ⁶/6. Stable si α=λ₄²/(λ₆m²)>4. Régimes screening : β_eff=8.8×10⁻² (cosmo) → 4.2×10⁻⁸ (Terre) — Addendum A, Table 1.<br><br><strong>Droite (Paper VIII) :</strong> Courbe Q(ω) VK — mapping TSTU→BEC ¹⁶⁴Dy. Q_max=21.7 (α=9), 37.9 (α=5), 63.2 (α=3). Fenêtre Feshbach B∈[150,207]G. Le critère VK (dQ/dω=0) marque le seuil de stabilité.<br><br>⚠️ Addendum IV : analogues classiques — non émergence QM.',
                 lblAetheron:'Ætheron',
             },
             en: {
@@ -961,7 +961,7 @@
                 solar_titleL:'🔵 ÆTHER/TSTU (9 planets)', solar_titleR:'⚪ General Relativity',
                 solar_m1:'Mercury Precession (″/century)', solar_m2:'Screening Radius (AU)',
                 solar_m3:'Deviation (%)', solar_m4:'Years', solar_infoTitle:'☉ Complete Solar System',
-                solar_infoText:'Full solar system (Mercury → Pluto). The scalar field φ is <strong>screened</strong> near the Sun (β &lt; 0.1) but its tension increases toward outer planets.',
+                solar_infoText:'Full solar system (Mercury → Pluto). The scalar field φ is <strong>screened</strong> near the Sun (β &lt; 0.1): β_eff &lt; 10⁻⁷ (factor ×10⁶, Addendum A Table 1). Tension increases toward outer planets (unscreened regime).',
                 solar_legendTitle:'Real-time dynamics — Click to focus',
                 p9_titleL:'🔵 ÆTHER/TSTU (φ Clustering)', p9_titleR:'⚪ Standard GR (needs P9)',
                 p9_m1:'TNO objects shown', p9_m2:'Observed clustering (°)',
@@ -990,11 +990,11 @@
                 jwst_extraTitle:'📊 Cosmic Race: f_core(t) & Stellar Mass Function at z≈10',
                 jwst_m1:'f_core ÆTHER (%)', jwst_m2:'f_core ΛCDM (%)', jwst_m3:'ÆTHER Advance', jwst_m4:'Step',
                 jwst_infoTitle:'🔭 JWST — Massive Galaxies at z≳8 (Paper III Addendum)',
-                aetheron_titleL:'⚛️ Ætheron — Classical ΔM Field', aetheron_titleR:'🔵 Hydrogen Orbital |Ψ₁ₛ|²',
-                aetheron_extraTitle:'📊 ΔM Time Series & Power Spectrum (harmonic modes)',
-                aetheron_m1:'ω_peak (units)', aetheron_m2:'Q Factor', aetheron_m3:'Harmonics detected', aetheron_m4:'Core energy Q_osc',
-                aetheron_infoTitle:'⚛️ Ætherons — Classical Non-Linear Oscillons (Paper IV)',
-                aetheron_infoText:'An Ætheron is a localized oscillating solution of the ΔM scalar field in a "flat-top" sextic potential. <strong>Without quantization</strong>, classical non-linear dynamics produces: discrete spectral peaks, long-lived coherence, high Q factor. The right panel shows the quantum probability density |Ψ|² of hydrogen 1s — same localization, different origins.<br><br>⚠️ <strong>Addendum IV:</strong> These structures are classical analogs — not a derivation of quantum mechanics.',
+                aetheron_titleL:'⚛️ Ætheron — 1D ΔM Field (Paper IV)', aetheron_titleR:'🔬 BEC Analogue ¹⁶⁴Dy — Paper VIII',
+                aetheron_extraTitle:'📊 ΔM Time Series & Spectrum | Q(ω) Vakhitov-Kolokolov Curve',
+                aetheron_m1:'ω_peak (sim. units)', aetheron_m2:'Q Factor', aetheron_m3:'Harmonics detected', aetheron_m4:'Core energy Q_osc',
+                aetheron_infoTitle:'⚛️ Ætherons — Classical Oscillons & BEC Analogue (Papers IV + VIII)',
+                aetheron_infoText:'<strong>Left (Paper IV):</strong> 1D leapfrog oscillon, sextic potential V(φ)=½m²φ²−λ₄φ⁴/4+λ₆φ⁶/6. Stable if α=λ₄²/(λ₆m²)>4.<br><br><strong>Right (Paper VIII):</strong> Q(ω) VK curve — TSTU→BEC ¹⁶⁴Dy mapping. Q_max=21.7 (α=9), 37.9 (α=5), 63.2 (α=3). Feshbach window B∈[150,207]G. VK criterion (dQ/dω=0) marks stability threshold.<br><br>⚠️ Addendum IV: classical analogs — not QM emergence.',
                 lblAetheron:'Ætheron',
             }
         };
@@ -1031,17 +1031,17 @@
                     title: '☉ Système Solaire — Précession Orbitale TSTU vs GR',
                     tag: '<span class="modal-tag tag-quantitative">Quantitatif</span>',
                     equations: ['φ(r) = 1 + (β²/6) · exp(−β·μ·r / r_s)','r_s = 0.1 / β  (rayon de screening)','G_eff(r) = G · [1 + 2β² · ∂φ/φ]','ω_TSTU = √(G_eff / r³)   vs   ω_GR = √(G / r³)','Δθ_Mercure = (ω_TSTU − ω_GR) · t  → ″/siècle'],
-                    hypotheses: 'Orbites circulaires coplanaires. Screening chameleon actif près du Soleil (β &lt; 0.1). Paramètres issus du fit Pantheon+ : β = 0.095, μ = 1.018 (Paper II).',
+                    hypotheses: 'Orbites circulaires coplanaires. Screening chameleon actif près du Soleil (β &lt; 0.1) — suppression β_eff &lt; 10⁻⁷ au Système Solaire (Addendum A, Table 1). Paramètres : β = 0.095, μ = 1.018 (Paper II).',
                     limits: 'Simulation 2D, pas d\'effets de marée ni de perturbations N-corps. La précession affichée est un effet cumulatif différentiel — non directement comparable aux 43″/siècle de la RG sans calibration temporelle.',
-                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — Fondations TSTU' },{ url:'https://zenodo.org/records/17834933', label:'Paper II — Fit Pantheon+ (β, μ)' }]
+                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — Fondations TSTU' },{ url:'https://zenodo.org/records/17886753', label:'Addendum A — Screening Chameleon (β_eff)' },{ url:'https://zenodo.org/records/17834933', label:'Paper II — Fit Pantheon+ (β, μ)' }]
                 },
                 en: {
                     title: '☉ Solar System — TSTU vs GR Orbital Precession',
                     tag: '<span class="modal-tag tag-quantitative">Quantitative</span>',
                     equations: ['φ(r) = 1 + (β²/6) · exp(−β·μ·r / r_s)','r_s = 0.1 / β  (screening radius)','G_eff(r) = G · [1 + 2β² · ∂φ/φ]','ω_TSTU = √(G_eff / r³)   vs   ω_GR = √(G / r³)','Δθ_Mercury = (ω_TSTU − ω_GR) · t  → ″/century'],
-                    hypotheses: 'Circular coplanar orbits. Chameleon screening active near the Sun (β &lt; 0.1). Parameters from Pantheon+ fit: β = 0.095, μ = 1.018 (Paper II).',
+                    hypotheses: 'Circular coplanar orbits. Chameleon screening active near the Sun (β &lt; 0.1) — β_eff suppressed up to 10⁻⁷ in Solar System (Addendum A, Table 1). Parameters from Pantheon+ fit: β = 0.095, μ = 1.018 (Paper II).',
                     limits: '2D simulation, no tidal effects or N-body perturbations. Displayed precession is a cumulative differential effect — not directly comparable to GR\'s 43″/century without temporal calibration.',
-                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — TSTU Foundations' },{ url:'https://zenodo.org/records/17834933', label:'Paper II — Pantheon+ Fit (β, μ)' }]
+                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — TSTU Foundations' },{ url:'https://zenodo.org/records/17886753', label:'Addendum A — Chameleon Screening (β_eff)' },{ url:'https://zenodo.org/records/17834933', label:'Paper II — Pantheon+ Fit (β, μ)' }]
                 }
             },
             p9: {
@@ -1051,7 +1051,7 @@
                     equations: ['μ > 1 au-delà de Neptune (vide cosmique, screening faible)','φ_externe = 1 + (β²/6) · exp(−β·μ·r / r_s)  avec r ≫ r_s','Tension φ → brise la symétrie orbitale azimutale','Direction privilégiée ∝ ∇φ dans le plan du disque','Clustering observé : ω_périhélie ~ 300° (Sedna, VP₁₁₃…)'],
                     hypotheses: 'Dans le vide externe (r > 30 UA), φ est en régime tendu non-écranté. La tension brise la symétrie azimutale et attire statistiquement les périhélies vers une direction privilégiée. Positions individuelles pseudo-aléatoires autour du clustering moyen observé.',
                     limits: 'Modèle simplifié — pas de simulation orbite par orbite des 6 TNOs réels. Direction de clustering TSTU approximative (±30°). Une prédiction quantitative nécessiterait une intégration N-corps sur des milliards d\'années.',
-                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — Screening & Tension φ' },{ url:'https://zenodo.org/records/17844551', label:'Paper III — Structure à grande échelle' }]
+                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — Screening & Tension φ' },{ url:'https://zenodo.org/records/17886753', label:'Addendum A — Screening Chameleon' },{ url:'https://zenodo.org/records/17844551', label:'Paper III — Structure à grande échelle' }]
                 },
                 en: {
                     title: '🔭 TNO Anomalies — Perihelion Clustering',
@@ -1059,7 +1059,7 @@
                     equations: ['μ > 1 beyond Neptune (cosmic void, weak screening)','φ_external = 1 + (β²/6) · exp(−β·μ·r / r_s)  with r ≫ r_s','φ tension → breaks azimuthal orbital symmetry','Preferred direction ∝ ∇φ in the disk plane','Observed clustering: ω_perihelion ~ 300° (Sedna, VP₁₁₃…)'],
                     hypotheses: 'In the outer void (r > 30 AU), φ is in a tensioned unscreened regime. The tension breaks azimuthal symmetry and statistically attracts perihelia toward a preferred direction. Individual positions are pseudo-random around the observed mean.',
                     limits: 'Simplified model — no orbit-by-orbit simulation of the 6 real TNOs. TSTU clustering direction is approximate (±30°). A quantitative prediction requires N-body integration over billions of years.',
-                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — Screening & φ Tension' },{ url:'https://zenodo.org/records/17844551', label:'Paper III — Large-Scale Structure' }]
+                    doi: [{ url:'https://zenodo.org/records/17819679', label:'Paper I — Screening & φ Tension' },{ url:'https://zenodo.org/records/17886753', label:'Addendum A — Chameleon Screening' },{ url:'https://zenodo.org/records/17844551', label:'Paper III — Large-Scale Structure' }]
                 }
             },
             galaxy: {
@@ -1069,7 +1069,7 @@
                     equations: ['v_Kepler(r) = √(G·M_enc(r) / r)','v_TSTU(r)   = √(G_eff(r) · M_enc(r) / r)','G_eff(r) = G · [1 + 2β² · ∂φ/φ]  avec μ > 1 dans le halo','M_enc(r) ∝ r^1.5  (profil baryonique)','v_obs ~ 200 + 20·sin(r/10)  km/s  (modèle empirique)'],
                     hypotheses: 'Dans les halos galactiques, φ est tendu et amplifie G_eff. Courbe observée stylisée inspirée des galaxies spirales réelles. μ = 1.018 correspond au fit cosmologique (Paper II).',
                     limits: 'Courbe observée simplifiée — non calibrée sur une galaxie spécifique. Pour une comparaison rigoureuse, utiliser les données HI de NGC 6946 ou UGC 2885. La correction ÆTHER est ici illustrative.',
-                    doi: [{ url:'https://zenodo.org/records/17844551', label:'Paper III — Structure & Rotation' },{ url:'https://zenodo.org/records/17815846', label:'Paper IV — Dynamique ΔM non-linéaire' }]
+                    doi: [{ url:'https://zenodo.org/records/17844551', label:'Paper III — Structure & Rotation' },{ url:'https://zenodo.org/records/17815846', label:'Paper IV — Dynamique ΔM non-linéaire' },{ url:'https://zenodo.org/records/17886753', label:'Addendum A — Screening Chameleon' }]
                 },
                 en: {
                     title: '🌀 Galaxy — Rotation Curves Without Dark Matter',
@@ -1077,7 +1077,7 @@
                     equations: ['v_Kepler(r) = √(G·M_enc(r) / r)','v_TSTU(r)   = √(G_eff(r) · M_enc(r) / r)','G_eff(r) = G · [1 + 2β² · ∂φ/φ]  with μ > 1 in the halo','M_enc(r) ∝ r^1.5  (baryonic profile)','v_obs ~ 200 + 20·sin(r/10)  km/s  (empirical model)'],
                     hypotheses: 'In galactic halos, φ is tensioned and amplifies G_eff. Stylized observed curve inspired by real spiral galaxies. μ = 1.018 from cosmological fit (Paper II).',
                     limits: 'Simplified observed curve — not calibrated on a specific galaxy. For rigorous comparison, use HI rotation data from NGC 6946 or UGC 2885. The ÆTHER correction here is illustrative.',
-                    doi: [{ url:'https://zenodo.org/records/17844551', label:'Paper III — Structure & Rotation' },{ url:'https://zenodo.org/records/17815846', label:'Paper IV — Non-linear ΔM dynamics' }]
+                    doi: [{ url:'https://zenodo.org/records/17844551', label:'Paper III — Structure & Rotation' },{ url:'https://zenodo.org/records/17815846', label:'Paper IV — Non-linear ΔM dynamics' },{ url:'https://zenodo.org/records/17886753', label:'Addendum A — Chameleon Screening' }]
                 }
             },
             blackhole: {
@@ -1087,7 +1087,7 @@
                     equations: ['R_s = 2·G·M / c²  (rayon de Schwarzschild)','ÆTHER : φ(r→0) → φ₀  (restauration du vide)','Standard : ρ(r→0) → ∞  (singularité nue)','Potentiel quartique-sextique : V(φ) = λ₄φ⁴ + λ₆φ⁶','Jets polaires ∝ énergie libérée lors de φ → φ₀'],
                     hypotheses: 'Animation qualitative de l\'effondrement gravitationnel. Le mécanisme de restauration φ → φ₀ est prédit par le potentiel du Paper VI. L\'animation est illustrative — pas une solution numérique des équations d\'Einstein modifiées.',
                     limits: 'Pas de simulation de relativité générale numérique. Formation des jets schématique. Une prédiction quantitative nécessiterait une intégration des équations de champ TSTU en métrique de Schwarzschild modifiée.',
-                    doi: [{ url:'https://zenodo.org/records/18471407', label:'Paper VI — Event-Projected Gravity' },{ url:'https://zenodo.org/records/17819679', label:'Paper I — Potentiel scalaire φ' }]
+                    doi: [{ url:'https://zenodo.org/records/18471407', label:'Paper VI — Event-Projected Gravity' },{ url:'https://zenodo.org/records/17819679', label:'Paper I — Potentiel scalaire φ' },{ url:'https://zenodo.org/records/17886753', label:'Addendum A — Screening Chameleon' }]
                 },
                 en: {
                     title: '🕳️ Black Hole — Formation & Singularity',
@@ -1095,7 +1095,7 @@
                     equations: ['R_s = 2·G·M / c²  (Schwarzschild radius)','ÆTHER: φ(r→0) → φ₀  (void restoration)','Standard: ρ(r→0) → ∞  (naked singularity)','Quartic-sextic potential: V(φ) = λ₄φ⁴ + λ₆φ⁶','Polar jets ∝ energy released as φ → φ₀'],
                     hypotheses: 'Qualitative animation of gravitational collapse. The φ → φ₀ restoration mechanism is predicted by the quartic-sextic potential of Paper VI. The animation is illustrative — not a numerical solution of modified Einstein equations.',
                     limits: 'No numerical GR simulation. Jet formation is schematic. A quantitative prediction requires integrating TSTU field equations in a modified Schwarzschild metric.',
-                    doi: [{ url:'https://zenodo.org/records/18471407', label:'Paper VI — Event-Projected Gravity' },{ url:'https://zenodo.org/records/17819679', label:'Paper I — Scalar potential φ' }]
+                    doi: [{ url:'https://zenodo.org/records/18471407', label:'Paper VI — Event-Projected Gravity' },{ url:'https://zenodo.org/records/17819679', label:'Paper I — Scalar potential φ' },{ url:'https://zenodo.org/records/17886753', label:'Addendum A — Chameleon Screening' }]
                 }
             },
             brain: {
@@ -1152,47 +1152,49 @@
             },
             aetheron: {
                 fr: {
-                    title: '⚛️ Ætheron — Oscillon Classique Non-Linéaire (Paper IV)',
+                    title: '⚛️ Ætheron — Oscillon Classique & Analogue BEC ¹⁶⁴Dy (Papers IV + VIII)',
                     tag: '<span class="modal-tag tag-exploratory">Classique / Analogique</span>',
                     equations: [
                         'φ̈ − φ″ + dV/dφ = 0   [Klein-Gordon 1D]',
-                        'V(φ) = ½m²φ² + (λ/4)φ⁴ + (g/6)φ⁶   (potentiel sextique flat-top)',
-                        'g > 0,  λ < 0,  |λ| ≪ g   → puits double "plat"',
+                        'V(φ) = ½m²φ² − λ₄φ⁴/4 + λ₆φ⁶/6   (potentiel sextique TSTU)',
+                        'α = λ₄²/(λ₆m²) > 4  [critère VK de stabilité]',
                         'Intégration leapfrog : φᵢ(t+Δt) = 2φᵢ(t) − φᵢ(t−Δt) + Δt²·Fᵢ(t)',
                         'Discrétisation 1D : N = 500 points, x ∈ [−L, L], CL périodiques',
                         'CI gaussienne : φ(x,0) = A₀ · exp(−x²/σ²)',
                         'Spectre : S̃(ω) = |rFFT{φ(0,t)}|²',
-                        'Facteur Q = ω₀/Δω_FWHM  (Addendum : Q ≈ 67.6)',
-                        'Analogie QM : |Ψ₁ₛ(r)|² = (1/πa₀³) · exp(−2r/a₀)'
+                        'Q(ω) = 4π∫f²r²dr,  dQ/dω=0 → Q_max  [Vakhitov-Kolokolov]',
+                        'Q_max=21.7/37.9/63.2 (α=9/5/3), B∈[150,207]G  [Table 2, Paper VIII]'
                     ],
-                    hypotheses: 'Simulation 1D purement classique — aucune quantification. L\'Ætheron est un oscillon non-topologique (attractor dans l\'espace des phases classique). Le facteur Q élevé et les pics discrets sont des propriétés de la non-linéarité classique, pas de la mécanique quantique.',
-                    limits: '⚠️ Ces structures sont des analogues phénoménologiques — elles n\'émergent pas vers la MQ. Discret ≠ quantifié. Haute cohérence Q ≠ cohérence quantique. Voir Addendum Paper IV (DOI: 10.5281/zenodo.17954376) pour la clarification épistémique complète.',
+                    hypotheses: 'Paper IV : simulation 1D classique leapfrog — aucune quantification. Paper VIII : mapping formel TSTU→GPE dipolar via réduction Rabi U(1)→Z₂. L\'Ætheron BEC est un oscillon de phase relative ϕ_eff=√n₀(θ₁−θ₂−π), non un soliton compact standard.',
+                    limits: '⚠️ Divergences documentées (Table 1, Paper VIII) : invariance de Lorentz absente, K₃≠g₃, couplage van der Waals ≠ gravitationnel. Analogues classiques — non émergence QM (Addendum IV). Pas de revendication sur le couplage à l\'énergie sombre.',
                     doi: [
+                        { url:'https://zenodo.org/records/19109359', label:'Paper VIII — Analogue BEC ¹⁶⁴Dy & Courbe Q(ω)' },
                         { url:'https://zenodo.org/records/17815846', label:'Paper IV — Dynamique ΔM Non-Linéaire' },
-                        { url:'https://zenodo.org/records/17954376', label:'Addendum IV — Validation harmonique & Screening' },
-                        { url:'https://zenodo.org/records/17819679', label:'Paper I — Potentiel sextique TSTU' }
+                        { url:'https://zenodo.org/records/17954376', label:'Addendum IV — Validation harmonique' },
+                        { url:'https://zenodo.org/records/17819679', label:'Paper I — Potentiel sextique TSTU' },{ url:'https://zenodo.org/records/17886753', label:'Addendum A — Screening Chameleon (β_eff, Table 1)' }
                     ]
                 },
                 en: {
-                    title: '⚛️ Ætheron — Classical Non-Linear Oscillon (Paper IV)',
+                    title: '⚛️ Ætheron — Classical Oscillon & BEC Analogue ¹⁶⁴Dy (Papers IV + VIII)',
                     tag: '<span class="modal-tag tag-exploratory">Classical / Analogical</span>',
                     equations: [
                         'φ̈ − φ″ + dV/dφ = 0   [1D Klein-Gordon]',
-                        'V(φ) = ½m²φ² + (λ/4)φ⁴ + (g/6)φ⁶   (flat-top sextic potential)',
-                        'g > 0,  λ < 0,  |λ| ≪ g   → flat double well',
-                        'Leapfrog: φᵢ(t+Δt) = 2φᵢ(t) − φᵢ(t−Δt) + Δt²·Fᵢ(t)',
-                        '1D lattice: N = 500 points, x ∈ [−L, L], periodic BC',
-                        'Gaussian IC: φ(x,0) = A₀ · exp(−x²/σ²)',
-                        'Spectrum: S̃(ω) = |rFFT{φ(0,t)}|²',
-                        'Q factor = ω₀/Δω_FWHM  (Addendum: Q ≈ 67.6, 5/6 harmonics)',
-                        'QM analogy: |Ψ₁ₛ(r)|² = (1/πa₀³) · exp(−2r/a₀)'
+                        'V(φ) = ½m²φ² − λ₄φ⁴/4 + λ₆φ⁶/6   (TSTU sextic potential)',
+                        'α = λ₄²/(λ₆m²) — stable if α > 4  (VK criterion)',
+                        'Q(ω) = 4π∫f²(r)r²dr  [oscillon charge]',
+                        'dQ/dω = 0  → Q_max (Vakhitov-Kolokolov threshold)',
+                        'Q_max = 21.7 (α=9), 37.9 (α=5), 63.2 (α=3)  [Table 2, Paper VIII]',
+                        'BEC mapping: m²_eff = 2ℏΩ/n₀,  λ̃₄ ∝ a₁₂−a₁₁,  λ̃₆ = g₃/3!n₀³',
+                        'Feshbach window: B ∈ [150, 207] G  (¹⁶⁴Dy, n₀~10¹⁴ cm⁻³)',
+                        'ϕ_spill = √(λ₄/λ₆)  [spill threshold → Efimov K₃ clock]'
                     ],
-                    hypotheses: 'Purely classical 1D simulation — no quantization. The Ætheron is a non-topological oscillon (classical phase-space attractor). The high Q factor and discrete peaks are properties of classical nonlinearity, not quantum mechanics.',
-                    limits: '⚠️ These structures are phenomenological analogs — they do not emerge toward QM. Discrete ≠ quantized. High Q ≠ quantum coherence. See Paper IV Addendum (DOI: 10.5281/zenodo.17954376) for full epistemic clarification.',
+                    hypotheses: 'Paper IV: purely classical 1D leapfrog — no quantization. Paper VIII: formal TSTU→dipolar GPE mapping via Rabi reduction U(1)→Z₂. The BEC Ætheron is a relative-phase oscillon ϕ_eff = √n₀(θ₁−θ₂−π), not a standard compact droplet.',
+                    limits: '⚠️ Documented divergences (Table 1, Paper VIII): no Lorentz invariance, K₃ dissipation ≠ g₃, van der Waals ≠ gravitational coupling. Classical analogs — not QM emergence (Addendum IV, DOI: 10.5281/zenodo.17954376). No claim on dark energy coupling strength.',
                     doi: [
+                        { url:'https://zenodo.org/records/19109359', label:'Paper VIII — BEC ¹⁶⁴Dy Analogue & Q(ω) Curve' },
                         { url:'https://zenodo.org/records/17815846', label:'Paper IV — Non-linear ΔM Dynamics' },
-                        { url:'https://zenodo.org/records/17954376', label:'Addendum IV — Harmonic Validation & Screening' },
-                        { url:'https://zenodo.org/records/17819679', label:'Paper I — TSTU Sextic Potential' }
+                        { url:'https://zenodo.org/records/17954376', label:'Addendum IV — Harmonic Validation' },
+                        { url:'https://zenodo.org/records/17819679', label:'Paper I — TSTU Sextic Potential' },{ url:'https://zenodo.org/records/17886753', label:'Addendum A — Chameleon Screening (β_eff, Table 1)' }
                     ]
                 }
             }
@@ -1289,8 +1291,8 @@
                     mode: 'aetheron',
                     badge: '⚛️ Ætheron (Classique)',
                     title: 'Un Oscillon Classique qui Ressemble à un Quantum',
-                    text: 'Le champ ΔM dans un potentiel sextique "flat-top" forme des <strong>Ætherons</strong> — solutions oscillantes localisées. Sans aucune quantification, la dynamique classique non-linéaire produit : pics spectraux discrets, facteur Q ≈ 67, 5 harmoniques détectées. Le panneau droit montre l\'orbitale H 1s standard — <strong>même localisation, origines radicalement différentes</strong>.',
-                    insight: '⚠️ Addendum IV (zenodo.org/records/17954376) : ces structures sont des analogues classiques, pas une émergence de la MQ. Cliquez "⚛️ Lancer Ætheron" pour démarrer la simulation leapfrog 1D.'
+                    text: '<strong>Paper IV (gauche) :</strong> Le champ ΔM dans un potentiel sextique forme des <strong>Ætherons</strong> — oscillons classiques. Pas de quantification. <strong>Paper VIII (droite) :</strong> mapping TSTU→BEC ¹⁶⁴Dy : la courbe Q(ω) prédit Q_max=21.7/37.9/63.2 selon α. Le seuil Vakhitov-Kolokolov (dQ/dω=0) est testable en laboratoire via la résonance Feshbach B∈[150,207]G.',
+                    insight: 'Gauche : simulation leapfrog 1D — cliquez "⚛️ Lancer Ætheron". Droite : prédiction Paper VIII — Q_max et ω_VK sont des observables falsifiables pour les groupes Pfau/Ferlaino (¹⁶⁴Dy). ⚠️ Addendum IV : analogues classiques, non émergence QM.'
                 }
             ],
             en: [
@@ -1340,8 +1342,8 @@
                     mode: 'aetheron',
                     badge: '⚛️ Ætheron (Classical)',
                     title: 'A Classical Oscillon That Looks Like a Quantum',
-                    text: 'The ΔM field in a "flat-top" sextic potential forms <strong>Ætherons</strong> — localized oscillating solutions. Without any quantization, classical non-linear dynamics produces: discrete spectral peaks, Q factor ≈ 67, 5 harmonics detected. The right panel shows the standard H 1s orbital — <strong>same localization, radically different origins</strong>.',
-                    insight: '⚠️ Addendum IV (zenodo.org/records/17954376): these structures are classical analogs, not QM emergence. Click "⚛️ Launch Ætheron" to start the 1D leapfrog simulation.'
+                    text: '<strong>Paper IV (left):</strong> The ΔM field in a sextic potential forms <strong>Ætherons</strong> — classical oscillons. No quantization. <strong>Paper VIII (right):</strong> TSTU→BEC ¹⁶⁴Dy mapping: the Q(ω) curve predicts Q_max=21.7/37.9/63.2 depending on α. The Vakhitov-Kolokolov threshold (dQ/dω=0) is lab-testable via Feshbach resonance B∈[150,207]G.',
+                    insight: 'Left: 1D leapfrog — click "⚛️ Launch Ætheron". Right: Paper VIII prediction — Q_max and ω_VK are falsifiable observables for Pfau/Ferlaino groups (¹⁶⁴Dy). ⚠️ Addendum IV: classical analogs, not QM emergence.'
                 }
             ]
         };
@@ -3379,33 +3381,29 @@
             // Throttle DFT: only every 60 frames AND only when enough data
             if (aeFrameCount % 60 === 0 && aeTimeSeries.length >= 64) {
                 const n = aeTimeSeries.length;
-                // Downsample to max 128 points
-                const dftN = Math.min(n, 128);
-                const step = Math.floor(n / dftN);
-                const reSub = new Float64Array(dftN);
-                // Compute mean and subtract (remove DC component)
+                // Use ALL points for max frequency resolution, but only compute first 32 bins
+                // delta_omega = 2*pi / (n * AE_DT) — stays fine even at n=600
+                const re = new Float64Array(n);
                 let mean = 0;
-                for (let i = 0; i < dftN; i++) reSub[i] = aeTimeSeries[i * step].val;
-                for (let i = 0; i < dftN; i++) mean += reSub[i];
-                mean /= dftN;
-                for (let i = 0; i < dftN; i++) reSub[i] -= mean;
-                // Apply Hann window to reduce spectral leakage
-                for (let i = 0; i < dftN; i++) {
-                    reSub[i] *= 0.5 * (1 - Math.cos(2 * Math.PI * i / (dftN - 1)));
+                for (let i = 0; i < n; i++) re[i] = aeTimeSeries[i].val;
+                for (let i = 0; i < n; i++) mean += re[i];
+                mean /= n;
+                for (let i = 0; i < n; i++) re[i] -= mean;
+                // Hann window
+                for (let i = 0; i < n; i++) {
+                    re[i] *= 0.5 * (1 - Math.cos(2 * Math.PI * i / (n - 1)));
                 }
-                // DFT
-                const half = Math.floor(dftN / 2);
+                // Only compute first 48 bins — covers up to 6ω₀ comfortably
+                const binsToCompute = Math.min(48, Math.floor(n / 2));
                 aeSpectrum = [];
-                // Store dt between samples for correct frequency axis
-                const dtSub = step * AE_DT;
-                aeSpecDtSub = dtSub;
-                aeSpecN = dftN;
-                for (let k = 0; k < half; k++) {
+                aeSpecDtSub = AE_DT;  // use original dt — full resolution
+                aeSpecN = n;
+                for (let k = 0; k < binsToCompute; k++) {
                     let sumR = 0, sumI = 0;
-                    for (let i2 = 0; i2 < dftN; i2++) {
-                        const angle = -2 * Math.PI * k * i2 / dftN;
-                        sumR += reSub[i2] * Math.cos(angle);
-                        sumI += reSub[i2] * Math.sin(angle);
+                    for (let i2 = 0; i2 < n; i2++) {
+                        const angle = -2 * Math.PI * k * i2 / n;
+                        sumR += re[i2] * Math.cos(angle);
+                        sumI += re[i2] * Math.sin(angle);
                     }
                     aeSpectrum.push(sumR * sumR + sumI * sumI);
                 }
@@ -3428,18 +3426,18 @@
             const fwhm = Math.max(1, hi - lo);
             const Q = peakIdx / fwhm;
 
-            // Count harmonics
+            // Count harmonics — search at 2ω₀, 3ω₀, 4ω₀, 5ω₀
             let harmonics = 0;
-            if (peakIdx > 2) {
-                for (let h = 2; h <= 5; h++) {
-                    const target = peakIdx * h;
-                    if (target >= aeSpectrum.length) break;
-                    const lo2 = Math.max(0, target - Math.floor(target * 0.2));
-                    const hi2 = Math.min(aeSpectrum.length - 1, target + Math.floor(target * 0.2));
-                    let localMax = 0;
-                    for (let j = lo2; j <= hi2; j++) localMax = Math.max(localMax, aeSpectrum[j]);
-                    if (localMax > peakVal * 0.01) harmonics++;
-                }
+            for (let h = 2; h <= 5; h++) {
+                const targetIdx = peakIdx * h;
+                if (targetIdx >= aeSpectrum.length) break;
+                // Search in ±25% window around target
+                const margin = Math.max(1, Math.round(targetIdx * 0.25));
+                const lo2 = Math.max(1, targetIdx - margin);
+                const hi2 = Math.min(aeSpectrum.length - 1, targetIdx + margin);
+                let localMax = 0;
+                for (let j = lo2; j <= hi2; j++) localMax = Math.max(localMax, aeSpectrum[j]);
+                if (localMax > peakVal * 0.005) harmonics++; // 0.5% threshold
             }
 
             // Core energy
@@ -3581,61 +3579,134 @@
                 }
 
             } else {
-                // RIGHT: Hydrogen 1s orbital |Ψ|² density map
-                const cx = w / 2, cy = h / 2;
-                const a0 = 1.0; // Bohr radius (normalized)
-                const scale = Math.min(w, h) / 12; // pixels per a0
+                // RIGHT: Q(ω) Vakhitov-Kolokolov curve — Paper VIII BEC ¹⁶⁴Dy analogue
+                ctx.fillStyle = '#000';
+                ctx.fillRect(0, 0, w, h);
 
-                // Density map
-                const imgData = ctx.createImageData(w, h);
-                for (let py2 = 0; py2 < h; py2++) {
-                    for (let px2 = 0; px2 < w; px2++) {
-                        const rx = (px2 - cx) / scale;
-                        const ry = (py2 - cy) / scale;
-                        const r = Math.sqrt(rx * rx + ry * ry);
-                        const psi2 = Math.exp(-2 * r / a0) / (Math.PI * a0 * a0 * a0);
-                        const bright = Math.min(1, psi2 * 80);
-                        const idx = (py2 * w + px2) * 4;
-                        imgData.data[idx]   = Math.floor(bright * 0   + (1 - bright) * 5);
-                        imgData.data[idx+1] = Math.floor(bright * 150 + (1 - bright) * 5);
-                        imgData.data[idx+2] = Math.floor(bright * 255 + (1 - bright) * 8);
-                        imgData.data[idx+3] = 255;
-                    }
-                }
-                ctx.putImageData(imgData, 0, 0);
+                const mx2 = 60, my2 = 50, pw2 = w - mx2 - 20, ph2 = h - my2 - 70;
 
-                // Contour rings at r = a0, 2a0, 3a0
-                [1, 2, 3].forEach((n, i) => {
-                    ctx.strokeStyle = `rgba(0,212,255,${0.4 - i * 0.12})`;
-                    ctx.lineWidth = 1;
-                    ctx.setLineDash([3, 5]);
-                    ctx.beginPath();
-                    ctx.arc(cx, cy, n * a0 * scale, 0, Math.PI * 2);
-                    ctx.stroke();
-                    ctx.fillStyle = 'rgba(0,212,255,0.6)';
-                    ctx.font = '10px Arial';
-                    ctx.setLineDash([]);
-                    ctx.fillText(`${n}a₀`, cx + n * a0 * scale + 4, cy - 4);
-                });
+                // Background glow
+                const bgGrad = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w * 0.5);
+                bgGrad.addColorStop(0, 'rgba(0,40,80,0.2)');
+                bgGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = bgGrad;
+                ctx.fillRect(0, 0, w, h);
 
-                // Cross hair at nucleus
-                ctx.strokeStyle = '#ff6644';
+                // Axes
+                ctx.strokeStyle = '#334';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(cx - 8, cy); ctx.lineTo(cx + 8, cy);
-                ctx.moveTo(cx, cy - 8); ctx.lineTo(cx, cy + 8);
+                ctx.moveTo(mx2, my2); ctx.lineTo(mx2, my2 + ph2);
+                ctx.moveTo(mx2, my2 + ph2); ctx.lineTo(mx2 + pw2, my2 + ph2);
                 ctx.stroke();
 
-                // Labels
-                ctx.fillStyle = '#00aaff';
-                ctx.font = 'bold 13px Arial';
-                ctx.fillText('🔵 Orbitale H 1s  |Ψ|² = (1/πa₀³)·e^(−2r/a₀)', 12, 28);
-                ctx.fillStyle = '#666';
-                ctx.font = '11px Arial';
-                ctx.fillText('Densité de probabilité quantique — MQ standard', 12, 48);
-                ctx.fillStyle = '#888';
+                // Grid lines
+                const qMax = 70, omMax = 1.0, omMin = 0.5;
+                const toX = om => mx2 + (om - omMin) / (omMax - omMin) * pw2;
+                const toY = q  => my2 + ph2 - (q / qMax) * ph2;
+
+                for (let q = 0; q <= 70; q += 10) {
+                    const y = toY(q);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(mx2, y); ctx.lineTo(mx2 + pw2, y); ctx.stroke();
+                    ctx.fillStyle = '#445'; ctx.font = '10px Arial';
+                    ctx.fillText(q, 5, y + 4);
+                }
+                for (let om = 0.5; om <= 1.0; om += 0.1) {
+                    const x = toX(om);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(x, my2); ctx.lineTo(x, my2 + ph2); ctx.stroke();
+                    ctx.fillStyle = '#445'; ctx.font = '10px Arial';
+                    ctx.fillText(om.toFixed(1), x - 8, my2 + ph2 + 14);
+                }
+
+                // Q(ω) curves — computed from shooting method (Paper VIII Table 2)
+                // Approximate Q(ω) shape: rises from ~0 at ω→m, peaks at ωVK, drops to 0
+                // Using parameterized fit matching Table 2 data points
+                const alphaConfigs = [
+                    { alpha: 9, qmax: 21.7, wvk: 0.911, color: '#4488ff', dash: [6,3], label: 'α=9  Q_max=21.7' },
+                    { alpha: 5, qmax: 37.9, wvk: 0.936, color: '#00ff88', dash: [],    label: 'α=5  Q_max=37.9' },
+                    { alpha: 3, qmax: 63.2, wvk: 0.961, color: '#ff8844', dash: [3,3], label: 'α=3  Q_max=63.2' },
+                ];
+
+                alphaConfigs.forEach(cfg => {
+                    // Q(ω) shape: bell-like peaking at ωVK, zero at ω=m=1 and ω→ωmin
+                    // Approximate: Q = Qmax * sin^n((ω-ωmin)/(ωVK-ωmin)*π/2) * decay
+                    ctx.strokeStyle = cfg.color;
+                    ctx.lineWidth = 2.5;
+                    ctx.setLineDash(cfg.dash);
+                    ctx.beginPath();
+                    let first = true;
+                    for (let om = 0.50; om <= 0.999; om += 0.005) {
+                        // Parametric Q(ω): rises then falls, matches VK point
+                        const t = (om - 0.50) / (1.0 - 0.50); // 0→1
+                        const tVK = (cfg.wvk - 0.50) / (1.0 - 0.50);
+                        let Q;
+                        if (om <= cfg.wvk) {
+                            // Rising branch: Q ~ Qmax * (t/tVK)^0.4
+                            Q = cfg.qmax * Math.pow(t / tVK, 0.4);
+                        } else {
+                            // Falling branch: Q drops sharply toward 0 at ω→1
+                            Q = cfg.qmax * Math.pow((1 - t) / (1 - tVK), 1.5);
+                        }
+                        const x = toX(om), y = toY(Math.max(0, Q));
+                        if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // VK point marker
+                    const vkX = toX(cfg.wvk), vkY = toY(cfg.qmax);
+                    ctx.fillStyle = cfg.color;
+                    ctx.beginPath(); ctx.arc(vkX, vkY, 6, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5;
+                    ctx.beginPath(); ctx.arc(vkX, vkY, 6, 0, Math.PI * 2); ctx.stroke();
+                });
+
+                // VK threshold vertical annotation
+                ctx.strokeStyle = 'rgba(255,100,100,0.5)';
+                ctx.lineWidth = 1; ctx.setLineDash([4,4]);
+                ctx.beginPath(); ctx.moveTo(toX(0.91), my2); ctx.lineTo(toX(0.97), my2 + ph2); ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(255,100,100,0.7)';
                 ctx.font = '10px Arial';
-                ctx.fillText('Localisation similaire ≠ origine commune', 12, h - 14);
+                ctx.fillText('seuil VK', toX(0.91) - 28, my2 + 14);
+
+                // Legend
+                alphaConfigs.forEach((cfg, i) => {
+                    const lx = mx2 + 10, ly = my2 + 20 + i * 18;
+                    ctx.strokeStyle = cfg.color; ctx.lineWidth = 2.5;
+                    ctx.setLineDash(cfg.dash);
+                    ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + 22, ly); ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.fillStyle = cfg.color; ctx.font = '11px Arial';
+                    ctx.fillText(cfg.label, lx + 26, ly + 4);
+                });
+
+                // Axis labels
+                ctx.fillStyle = '#888'; ctx.font = '11px Arial';
+                ctx.fillText('ω/m (fréquence normalisée)', mx2 + pw2 / 2 - 60, my2 + ph2 + 32);
+                ctx.save();
+                ctx.translate(14, my2 + ph2 / 2 + 30);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillText('Charge Q = 4π∫f²r²dr', -40, 0);
+                ctx.restore();
+
+                // Title
+                ctx.fillStyle = '#00d4ff';
+                ctx.font = 'bold 13px Arial';
+                ctx.fillText('🔬 Courbe Q(ω) — Critère Vakhitov-Kolokolov', mx2 + 10, my2 - 12);
+                ctx.fillStyle = '#888'; ctx.font = '10px Arial';
+                ctx.fillText('Paper VIII — Analogue BEC ¹⁶⁴Dy | DOI: 10.5281/zenodo.19109359', mx2 + 10, my2 - 0);
+
+                // Feshbach window annotation
+                ctx.fillStyle = 'rgba(0,212,255,0.07)';
+                ctx.fillRect(toX(0.91), my2, toX(0.965) - toX(0.91), ph2);
+                ctx.fillStyle = 'rgba(0,212,255,0.5)';
+                ctx.font = '10px Arial';
+                ctx.fillText('B∈[150,207]G', toX(0.915), my2 + ph2 - 8);
             }
         }
 
@@ -3750,7 +3821,7 @@
                         const barH = (aeSpectrum[i] / maxPow) * tsH;
                         const bx = spLeft + (i / showN) * spW;
                         const by = mTop + tsH - barH;
-                        const isHarmonic = peakIdx > 2 && (i % peakIdx < Math.max(2, peakIdx * 0.15));
+                        const isHarmonic = peakIdx > 0 && i > peakIdx && (i % peakIdx <= Math.max(1, Math.round(peakIdx * 0.25)));
                         ctxE.fillStyle = i === peakIdx ? '#00ff88' :
                             (isHarmonic ? 'rgba(255,200,0,0.7)' : 'rgba(0,180,255,0.4)');
                         ctxE.fillRect(bx, by, Math.max(1, barW - 0.5), barH);
