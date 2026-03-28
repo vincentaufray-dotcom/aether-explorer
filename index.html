@@ -181,6 +181,32 @@
             transform: scale(1.05);
         }
         
+        .rigor-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.72em;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        .rigor-heuristic {
+            background: rgba(255,165,0,0.12);
+            color: #ffaa00;
+            border: 1px solid rgba(255,165,0,0.4);
+        }
+        .rigor-numeric {
+            background: rgba(0,255,136,0.10);
+            color: #00ff88;
+            border: 1px solid rgba(0,255,136,0.4);
+        }
+        .rigor-analytic {
+            background: rgba(0,180,255,0.10);
+            color: #00d4ff;
+            border: 1px solid rgba(0,180,255,0.4);
+        }
+        
         canvas { 
             background: #000; 
             border-radius: 10px; 
@@ -731,6 +757,7 @@
             <div class="canvas-wrapper">
                 <a href="https://zenodo.org/records/17819679" class="zenodo-link" id="zenodoLeft" target="_blank">📄 Preuve TSTU</a>
                 <div class="canvas-title" id="titleLeft">🔵 Modèle ÆTHER / TSTU</div>
+                <div id="rigorBadgeLeft" style="text-align:center;margin:-6px 0 8px;"></div>
                 <canvas id="canvasLeft" width="650" height="650"></canvas>
                 
                 <div class="legend-panel" id="legendLeft">
@@ -749,6 +776,7 @@
             <div class="canvas-wrapper">
                 <a href="#" class="zenodo-link" id="zenodoRight" style="color:#aaa; border-color:#aaa;" target="_blank">📄 Modèle Standard</a>
                 <div class="canvas-title" id="titleRight" style="color:#aaa;">⚪ Modèle Standard (GR)</div>
+                <div id="rigorBadgeRight" style="text-align:center;margin:-6px 0 8px;"></div>
                 <canvas id="canvasRight" width="650" height="650"></canvas>
             </div>
         </div>
@@ -890,7 +918,7 @@
             fr: {
                 tagline:'De la Cosmologie à la Conscience | Simulateur Physique Multi-Échelles',
                 welcomeStrong:'Bienvenue dans l\'Æther :',
-                welcomeText:'Le vide n\'est pas vide, c\'est un milieu actif. Naviguez entre les échelles (Système Solaire, Anomalies TNO, Galaxie, Trou Noir, Conscience, JWST) pour observer comment la tension de l\'Æther (paramètres β et μ) résout les anomalies de la physique standard.',
+                welcomeText:'Le vide n\'est pas vide — c\'est un milieu actif. 7 échelles, un seul champ φ (β=0.095, μ=1.018, fixés par Pantheon+). Deux modes sont des simulations numériques rigoureuses (✅ Ætheron : PDE Klein-Gordon leapfrog | ✅ JWST : N-body symplectique). Les autres sont des illustrations heuristiques de lois effectives TSTU. Voir badge sous chaque panneau.',
                 gaugeLabel:'⚡ Tension du Champ ÆTHER',
                 legendTitle:'Dynamique en temps réel — Cliquez pour focus',
                 lblSimTime:'Temps de simulation', controlsTitle:'⚙️ Paramètres Physiques',
@@ -945,7 +973,7 @@
             en: {
                 tagline:'From Cosmology to Consciousness | Multi-Scale Physics Simulator',
                 welcomeStrong:'Welcome to the Æther:',
-                welcomeText:'The void is not empty — it is an active medium. Navigate between scales (Solar System, TNO Anomalies, Galaxy, Black Hole, Consciousness, JWST) to observe how Æther field tension (parameters β and μ) resolves anomalies of standard physics.',
+                welcomeText:'The void is not empty — it is an active medium. 7 scales, one scalar field φ (β=0.095, μ=1.018, fixed by Pantheon+). Two modes are rigorous numerical simulations (✅ Ætheron: leapfrog Klein-Gordon PDE | ✅ JWST: symplectic N-body). Others are heuristic illustrations of effective TSTU laws. See badge under each panel.',
                 gaugeLabel:'⚡ ÆTHER Field Tension',
                 legendTitle:'Real-time dynamics — Click to focus',
                 lblSimTime:'Simulation time', controlsTitle:'⚙️ Physical Parameters',
@@ -1112,7 +1140,7 @@
                         'K_GR = 8.0 Hz < K_c  → sous-critique, chaos permanent',
                         'f_µ = 40 Hz, Δf = 10.6 Hz  (bande gamma L5, données patch-clamp)'],
                     hypotheses: 'Hypothèse exploratoire : φ amplifie le couplage synaptique K via un mécanisme de gradient ionique (Paper VII). Ce module illustre une analogie formelle — il ne constitue pas une prédiction médicale ou neurologique.',
-                    limits: '⚠️ Extension hautement spéculative. Le lien entre φ cosmologique et dynamique neuronale est une hypothèse de travail non confirmée expérimentalement. Les prédictions falsifiables (test NMDA, épaisseur corticale) sont dans Paper VII — non encore testées.',
+                    limits: '⚠️ Extension hautement spéculative. Le lien entre φ cosmologique et dynamique neuronale est une hypothèse de travail non confirmée expérimentalement. Les prédictions falsifiables (test NMDA, épaisseur corticale) sont dans Paper VII — non encore testées.<br><span style="color:#00ff88;font-size:0.9em">✅ Kuramoto numérique rigoureux (dθᵢ/dt exact). Le lien K_eff↔φ est l\'hypothèse exploratoire.</span>',
                     doi: [{ url:'https://zenodo.org/records/19139925', label:'Paper VII — Kuramoto & Conscience' }]
                 },
                 en: {
@@ -1250,35 +1278,35 @@
                     badge: '☉ Système Solaire',
                     title: 'Le Champ φ au Cœur du Système Solaire',
                     text: 'ÆTHER/TSTU postule un <strong>champ scalaire φ</strong> qui modifie la gravité selon la densité locale. Près du Soleil (densité élevée), φ est <strong>écranté</strong> — la gravité est quasi-standard, comme prédit par la RG. Ce mécanisme de screening "chameleon" est la clé : il explique pourquoi les tests solaires ne détectent pas le champ.',
-                    insight: 'Observez la différence progressive entre les orbites TSTU (gauche) et GR (droite). Elle s\'accumule lentement — exactement comme une précession de périhélie.'
+                    insight: 'Observez la différence progressive entre les orbites TSTU (gauche) et GR (droite). Elle s\'accumule lentement — exactement comme une précession de périhélie.<br><span style="color:#ffaa00;font-size:0.9em">⚠️ Illustratif — lois effectives φ(r), pas résolution Einstein modifié.</span>'
                 },
                 {
                     mode: 'p9',
                     badge: '🔭 Anomalies TNO',
                     title: 'Pas de Planète 9 — Une Tension du Vide',
                     text: 'Au-delà de Neptune, la densité chute et le screening <strong>s\'éteint</strong>. Le champ φ entre en régime "tendu" (μ > 1) et brise la symétrie azimutale des orbites. Résultat : les périhélies des objets trans-neptuniens (Sedna, VP₁₁₃…) se <strong>regroupent naturellement</strong> vers ~300° — sans invoquer une planète massive non observée.',
-                    insight: 'Comparez la dispersion des flèches de périhélie : ÆTHER (gauche) montre un clustering cohérent. GR standard (droite) exige une Planète 9 inexistante.'
+                    insight: 'Comparez la dispersion des flèches de périhélie : ÆTHER (gauche) montre un clustering cohérent. GR standard (droite) exige une Planète 9 inexistante.<br><span style="color:#ffaa00;font-size:0.9em">⚠️ Illustratif — clustering qualitatif, pas intégration N-body sur 10⁹ ans.</span>'
                 },
                 {
                     mode: 'galaxy',
                     badge: '🌀 Rotation Galactique',
                     title: 'Courbes Plates Sans Matière Noire',
                     text: 'Dans les halos galactiques, même logique : faible densité → φ non écranté → G_eff > G. La gravité effective est naturellement amplifiée aux grandes échelles. <strong>Les courbes de rotation plates s\'expliquent</strong> sans invoquer de matière noire hypothétique. Glissez μ vers 1.050 pour voir l\'effet en temps réel.',
-                    insight: 'Un seul mécanisme — le champ φ — explique à la fois le clustering TNO et les courbes de rotation. Les mêmes paramètres β et μ fonctionnent aux deux échelles.'
+                    insight: 'Un seul mécanisme — le champ φ — explique à la fois le clustering TNO et les courbes de rotation. Les mêmes paramètres β=0.095 et μ=1.018 contraints par Pantheon+.<br><span style="color:#ffaa00;font-size:0.9em">⚠️ Illustratif — courbe observée styl isée, non calibrée sur une galaxie réelle.</span>'
                 },
                 {
                     mode: 'blackhole',
                     badge: '🕳️ Trou Noir',
                     title: 'La Singularité Évitée',
                     text: 'La RG standard prédit une singularité ρ → ∞ au cœur du trou noir — une brisure des équations. ÆTHER prédit que le champ φ <strong>résiste à la compression infinie</strong> : en approchant r → 0, φ se restaure vers φ₀ (vide). Résultat : l\'énergie est expulsée sous forme de <strong>jets polaires</strong>, observés réellement dans les AGN. Cliquez "💥 Effondrement".',
-                    insight: 'Panneau gauche : horizon → jets → vide restauré. Panneau droit : singularité ρ → ∞, GR échoue. La différence est visible et physiquement fondamentale.'
+                    insight: 'Panneau gauche : horizon → jets → vide restauré. Panneau droit : singularité ρ → ∞, GR échoue. La différence est visible et physiquement fondamentale.<br><span style="color:#ffaa00;font-size:0.9em">⚠️ Qualitatif — animation illustrative, pas résolution GR numérique.</span>'
                 },
                 {
                     mode: 'jwst',
                     badge: '🔭 JWST',
                     title: 'Les Galaxies "Impossibles" Expliquées',
                     text: 'Le JWST observe des galaxies massives à z ≳ 8–10 — trop tôt pour ΛCDM. ÆTHER prédit qu\'à haut redshift (régime non-écranté), G_eff = G×(1+ε∆) accélère l\'effondrement gravitationnel. Cliquez <strong>"🚀 Lancer la Course"</strong> : deux univers identiques évoluent — ÆTHER forme ses structures nettement plus tôt.',
-                    insight: 'Observez f_core(t) : la courbe cyan (ÆTHER) pic avant la courbe grise (ΛCDM). Ce décalage temporel, même modeste, suffit à expliquer les galaxies massives observées par JWST.'
+                    insight: 'Observez f_core(t) : la courbe cyan (ÆTHER) pic avant la courbe grise (ΛCDM). Ce décalage suffit à expliquer les galaxies massives observées par JWST.<br><span style="color:#00ff88;font-size:0.9em">✅ N-body leapfrog symplectique — N=300, Plummer ε=0.05. Simplifié 2D, sans expansion cosmologique.</span>'
                 },
                 {
                     mode: 'brain',
@@ -1292,7 +1320,7 @@
                     badge: '⚛️ Ætheron (Classique)',
                     title: 'Un Oscillon Classique qui Ressemble à un Quantum',
                     text: '<strong>Paper IV (gauche) :</strong> Le champ ΔM dans un potentiel sextique forme des <strong>Ætherons</strong> — oscillons classiques. Pas de quantification. <strong>Paper VIII (droite) :</strong> mapping TSTU→BEC ¹⁶⁴Dy : la courbe Q(ω) prédit Q_max=21.7/37.9/63.2 selon α. Le seuil Vakhitov-Kolokolov (dQ/dω=0) est testable en laboratoire via la résonance Feshbach B∈[150,207]G.',
-                    insight: 'Gauche : simulation leapfrog 1D — cliquez "⚛️ Lancer Ætheron". Droite : prédiction Paper VIII — Q_max et ω_VK sont des observables falsifiables pour les groupes Pfau/Ferlaino (¹⁶⁴Dy). ⚠️ Addendum IV : analogues classiques, non émergence QM.'
+                    insight: 'Gauche : simulation leapfrog 1D — cliquez "⚛️ Lancer Ætheron". Droite : prédiction Paper VIII — Q_max et ω_VK sont des observables falsifiables pour les groupes Pfau/Ferlaino (¹⁶⁴Dy). Q_max et ω_VK sont falsifiables pour groupes Pfau/Ferlaino (¹⁶⁴Dy).<br><span style="color:#00ff88;font-size:0.9em">✅ PDE Klein-Gordon leapfrog (N=500, CFL vérifié) | Droite : prédiction analytique Paper VIII. ⚠️ Addendum IV : analogues classiques.</span>'
                 }
             ],
             en: [
@@ -1301,49 +1329,49 @@
                     badge: '☉ Solar System',
                     title: 'The φ Field in the Solar System',
                     text: 'ÆTHER/TSTU proposes a <strong>scalar field φ</strong> that modifies gravity according to local density. Near the Sun (high density), φ is <strong>screened</strong> — gravity is nearly standard, as GR predicts. This "chameleon" screening mechanism is the key: it explains why solar tests don\'t detect the field.',
-                    insight: 'Observe the progressive difference between TSTU orbits (left) and GR (right). It accumulates slowly — exactly like a perihelion precession.'
+                    insight: 'Observe the progressive difference between TSTU orbits (left) and GR (right). It accumulates slowly — exactly like a perihelion precession.<br><span style="color:#ffaa00;font-size:0.9em">⚠️ Illustrative — effective laws φ(r), not solution of modified Einstein equations.</span>'
                 },
                 {
                     mode: 'p9',
                     badge: '🔭 TNO Anomalies',
                     title: 'No Planet 9 — A Void Tension',
                     text: 'Beyond Neptune, density drops and screening <strong>switches off</strong>. The φ field enters a "tensioned" regime (μ > 1) and breaks the azimuthal symmetry of orbits. Result: perihelia of trans-Neptunian objects (Sedna, VP₁₁₃…) <strong>naturally cluster</strong> toward ~300° — without invoking an unobserved massive planet.',
-                    insight: 'Compare perihelion arrow spread: ÆTHER (left) shows coherent clustering. Standard GR (right) requires a non-existent Planet 9.'
+                    insight: 'Compare perihelion arrow spread: ÆTHER (left) shows coherent clustering. Standard GR (right) requires a non-existent Planet 9.<br><span style="color:#ffaa00;font-size:0.9em">⚠️ Illustrative — qualitative clustering, not N-body over 10⁹ years.</span>'
                 },
                 {
                     mode: 'galaxy',
                     badge: '🌀 Galactic Rotation',
                     title: 'Flat Curves Without Dark Matter',
                     text: 'In galactic halos, same logic: low density → unscreened φ → G_eff > G. Effective gravity is naturally amplified at large scales. <strong>Flat rotation curves are explained</strong> without invoking hypothetical dark matter. Slide μ toward 1.050 to see the effect in real time.',
-                    insight: 'One mechanism — the φ field — explains both TNO clustering and rotation curves. The same parameters β and μ work at both scales.'
+                    insight: 'One mechanism — the φ field — explains both TNO clustering and rotation curves. The same parameters β=0.095 and μ=1.018 constrained by Pantheon+.<br><span style="color:#ffaa00;font-size:0.9em">⚠️ Illustrative — stylized rotation curve, not calibrated on a real galaxy.</span>'
                 },
                 {
                     mode: 'blackhole',
                     badge: '🕳️ Black Hole',
                     title: 'The Avoided Singularity',
                     text: 'Standard GR predicts a singularity ρ → ∞ at the black hole core — a breakdown of equations. ÆTHER predicts the φ field <strong>resists infinite compression</strong>: approaching r → 0, φ restores to φ₀ (void). Result: energy expelled as <strong>polar jets</strong>, actually observed in AGN. Click "💥 Collapse".',
-                    insight: 'Left panel: horizon → jets → void restored. Right panel: singularity ρ → ∞, GR fails. The difference is visible and physically fundamental.'
+                    insight: 'Left panel: horizon → jets → void restored. Right panel: singularity ρ → ∞, GR fails. The difference is visible and physically fundamental.<br><span style="color:#ffaa00;font-size:0.9em">⚠️ Qualitative — illustrative animation, not numerical GR solution.</span>'
                 },
                 {
                     mode: 'jwst',
                     badge: '🔭 JWST',
                     title: '"Impossible" Galaxies Explained',
                     text: 'JWST observes massive galaxies at z ≳ 8–10 — too early for ΛCDM. ÆTHER predicts that at high redshift (unscreened regime), G_eff = G×(1+ε∆) accelerates gravitational collapse. Click <strong>"🚀 Launch the Race"</strong>: two identical universes evolve — ÆTHER forms structures noticeably earlier.',
-                    insight: 'Watch f_core(t): the cyan curve (ÆTHER) peaks before the grey curve (ΛCDM). This temporal shift, even modest, is sufficient to explain JWST massive galaxies.'
+                    insight: 'Watch f_core(t): the cyan curve (ÆTHER) peaks before the grey curve (ΛCDM). This temporal shift is sufficient to explain JWST massive galaxies.<br><span style="color:#00ff88;font-size:0.9em">✅ Symplectic leapfrog N-body — N=300, Plummer ε=0.05. Simplified 2D, no cosmological expansion.</span>'
                 },
                 {
                     mode: 'brain',
                     badge: '🧠 Consciousness (Exploratory)',
                     title: 'From Cosmology to Consciousness',
                     text: 'Hypothetical extension: the same geometric invariant Y of the φ field may couple to ionic gradients of L5 pyramidal neurons. K_eff = D×Y_HH×τ_syn = <strong>33.3 Hz</strong> — twice K_c = 19.9 Hz. The cortex sits naturally at <strong>self-organised criticality</strong>, without free parameters. Click "⚡ Perturb" to simulate anaesthesia.',
-                    insight: '⚠️ Exploratory section. This module illustrates a formal analogy — not a medical prediction. Two falsifiable predictions are in Paper VII (NMDA test, cortical thickness).'
+                    insight: '⚠️ Exploratory section. This module illustrates a formal analogy — not a medical prediction. Two falsifiable predictions are in Paper VII (NMDA test, cortical thickness).<br><span style="color:#00ff88;font-size:0.9em">✅ Rigorous numerical Kuramoto (exact dθᵢ/dt). K_eff↔φ link is the exploratory hypothesis.</span>'
                 },
                 {
                     mode: 'aetheron',
                     badge: '⚛️ Ætheron (Classical)',
                     title: 'A Classical Oscillon That Looks Like a Quantum',
                     text: '<strong>Paper IV (left):</strong> The ΔM field in a sextic potential forms <strong>Ætherons</strong> — classical oscillons. No quantization. <strong>Paper VIII (right):</strong> TSTU→BEC ¹⁶⁴Dy mapping: the Q(ω) curve predicts Q_max=21.7/37.9/63.2 depending on α. The Vakhitov-Kolokolov threshold (dQ/dω=0) is lab-testable via Feshbach resonance B∈[150,207]G.',
-                    insight: 'Left: 1D leapfrog — click "⚛️ Launch Ætheron". Right: Paper VIII prediction — Q_max and ω_VK are falsifiable observables for Pfau/Ferlaino groups (¹⁶⁴Dy). ⚠️ Addendum IV: classical analogs, not QM emergence.'
+                    insight: 'Left: 1D leapfrog — click "⚛️ Launch Ætheron". Right: Paper VIII prediction — Q_max and ω_VK are falsifiable observables for Pfau/Ferlaino groups (¹⁶⁴Dy). Q_max and ω_VK are falsifiable for Pfau/Ferlaino groups (¹⁶⁴Dy).<br><span style="color:#00ff88;font-size:0.9em">✅ Klein-Gordon leapfrog PDE (N=500, CFL verified) | Right: analytical prediction Paper VIII. ⚠️ Addendum IV: classical analogs.</span>'
                 }
             ]
         };
@@ -1838,6 +1866,25 @@
         }
 
         function updateUI() {
+            // ── Rigor badges ─────────────────────────────────────────────────
+            const BADGE = {
+                heuristic: (l) => `<span class="rigor-badge rigor-heuristic">⚠️ ${l==='fr'?'Lois effectives heuristiques':'Effective heuristic laws'}</span>`,
+                numeric:   (l) => `<span class="rigor-badge rigor-numeric">✅ ${l==='fr'?'Simulation numérique (N-body / PDE)':'Numerical simulation (N-body / PDE)'}</span>`,
+                analytic:  (l) => `<span class="rigor-badge rigor-analytic">📐 ${l==='fr'?'Prédiction analytique (Paper VIII)':'Analytical prediction (Paper VIII)'}</span>`,
+                qualitative:(l)=> `<span class="rigor-badge rigor-heuristic">⚠️ ${l==='fr'?'Illustration qualitative':'Qualitative illustration'}</span>`,
+            };
+            const rigorMap = {
+                solar:     { left: 'heuristic', right: 'heuristic' },
+                p9:        { left: 'heuristic', right: 'heuristic' },
+                galaxy:    { left: 'heuristic', right: 'heuristic' },
+                blackhole: { left: 'qualitative', right: 'qualitative' },
+                brain:     { left: 'numeric',   right: 'heuristic' },
+                jwst:      { left: 'numeric',   right: 'numeric'   },
+                aetheron:  { left: 'numeric',   right: 'analytic'  },
+            };
+            const rm = rigorMap[mode] || { left: 'heuristic', right: 'heuristic' };
+            document.getElementById('rigorBadgeLeft').innerHTML  = BADGE[rm.left](lang);
+            document.getElementById('rigorBadgeRight').innerHTML = BADGE[rm.right](lang);
             const extra = document.getElementById('extraCanvasWrapper');
             const massCtrl = document.getElementById('massControl');
             const neuronsCtrl = document.getElementById('neuronsControl');
