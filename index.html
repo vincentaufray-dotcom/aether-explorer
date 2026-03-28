@@ -714,6 +714,9 @@
             <button class="mode-btn" id="btnJwst" onclick="switchMode('jwst')">
                 <span class="mode-icon">🔭</span> <span id="lblJwst">JWST</span>
             </button>
+            <button class="mode-btn" id="btnAetheron" onclick="switchMode('aetheron')">
+                <span class="mode-icon">⚛️</span> <span id="lblAetheron">Ætheron</span>
+            </button>
         </div>
         
         <div class="aether-gauge">
@@ -793,6 +796,7 @@
                 <button id="collapseBtn" onclick="startCollapse()" class="action-btn danger" style="display:none;">💥 <span id="lblCollapse">Effondrement</span></button>
                 <button id="perturbBtn" onclick="perturbNetwork()" class="action-btn purple" style="display:none;">⚡ <span id="lblPerturb">Perturber</span></button>
                 <button id="jwstBtn" onclick="launchJWST()" class="action-btn danger" style="display:none;">🚀 <span id="lblJwstBtn">Lancer la Course</span></button>
+                <button id="aetheronBtn" onclick="launchAetheron()" class="action-btn" style="display:none;background:linear-gradient(135deg,#aa00ff,#6600cc);">⚛️ <span id="lblAetheronBtn">Lancer Ætheron</span></button>
                 <button onclick="openMeth()" class="action-btn" style="background:linear-gradient(135deg,#004488,#006699);">🔬 <span id="lblMeth">Méthodologie</span></button>
             </div>
             
@@ -875,7 +879,8 @@
             galaxy:    'https://zenodo.org/records/17844551',
             blackhole: 'https://zenodo.org/records/18471407',
             brain:     'https://zenodo.org/records/19139925',
-            jwst:      'https://zenodo.org/records/17844551'
+            jwst:      'https://zenodo.org/records/17844551',
+            aetheron:  'https://zenodo.org/records/17815846'
         };
 
         // ── LANGUAGE ─────────────────────────────────────────────────────────
@@ -929,6 +934,12 @@
                 jwst_extraTitle:'📊 Course Cosmique : f_core(t) & Fonction de Masse Stellaire à z≈10',
                 jwst_m1:'f_core ÆTHER (%)', jwst_m2:'f_core ΛCDM (%)', jwst_m3:'Avance ÆTHER', jwst_m4:'Étape',
                 jwst_infoTitle:'🔭 JWST — Galaxies Massives à z≳8 (Paper III Addendum)',
+                aetheron_titleL:'⚛️ Ætheron — Champ ΔM Classique', aetheron_titleR:'🔵 Orbitale Hydrogène |Ψ₁ₛ|²',
+                aetheron_extraTitle:'📊 Série temporelle ΔM & Spectre de Puissance (modes harmoniques)',
+                aetheron_m1:'ω_peak (unités)', aetheron_m2:'Facteur Q', aetheron_m3:'Harmoniques détectées', aetheron_m4:'Énergie core Q_osc',
+                aetheron_infoTitle:'⚛️ Ætherons — Oscillons Classiques Non-Linéaires (Paper IV)',
+                aetheron_infoText:'Un Ætheron est une solution oscillante localisée du champ scalaire ΔM dans un potentiel sextique "flat-top". <strong>Sans quantification</strong>, la dynamique classique non-linéaire produit : pics spectraux discrets, cohérence longue durée, facteur Q élevé. Le panneau droit montre la densité de probabilité quantique |Ψ|² de l\'hydrogène 1s — même localisation, origines différentes. <br><br>⚠️ <strong>Addendum IV :</strong> Ces structures sont des analogues classiques — non une dérivation de la mécanique quantique.',
+                lblAetheron:'Ætheron',
             },
             en: {
                 tagline:'From Cosmology to Consciousness | Multi-Scale Physics Simulator',
@@ -978,6 +989,12 @@
                 jwst_extraTitle:'📊 Cosmic Race: f_core(t) & Stellar Mass Function at z≈10',
                 jwst_m1:'f_core ÆTHER (%)', jwst_m2:'f_core ΛCDM (%)', jwst_m3:'ÆTHER Advance', jwst_m4:'Step',
                 jwst_infoTitle:'🔭 JWST — Massive Galaxies at z≳8 (Paper III Addendum)',
+                aetheron_titleL:'⚛️ Ætheron — Classical ΔM Field', aetheron_titleR:'🔵 Hydrogen Orbital |Ψ₁ₛ|²',
+                aetheron_extraTitle:'📊 ΔM Time Series & Power Spectrum (harmonic modes)',
+                aetheron_m1:'ω_peak (units)', aetheron_m2:'Q Factor', aetheron_m3:'Harmonics detected', aetheron_m4:'Core energy Q_osc',
+                aetheron_infoTitle:'⚛️ Ætherons — Classical Non-Linear Oscillons (Paper IV)',
+                aetheron_infoText:'An Ætheron is a localized oscillating solution of the ΔM scalar field in a "flat-top" sextic potential. <strong>Without quantization</strong>, classical non-linear dynamics produces: discrete spectral peaks, long-lived coherence, high Q factor. The right panel shows the quantum probability density |Ψ|² of hydrogen 1s — same localization, different origins.<br><br>⚠️ <strong>Addendum IV:</strong> These structures are classical analogs — not a derivation of quantum mechanics.',
+                lblAetheron:'Ætheron',
             }
         };
 
@@ -989,7 +1006,7 @@
             const ids = ['tagline','welcomeStrong','welcomeText','gaugeLabel','legendTitle',
                 'lblSimTime','controlsTitle','lblBeta','lblMu','lblSpeed','lblZoom',
                 'lblMass','lblNeurons','lblTrails','lblGrid','lblCollapse','lblPerturb',
-                'lblJwstBtn','lblSolar','lblP9','lblGalaxy','lblBlackHole','lblBrain','lblJwst'];
+                'lblJwstBtn','lblSolar','lblP9','lblGalaxy','lblBlackHole','lblBrain','lblJwst','lblAetheron'];
             ids.forEach(id => {
                 const el = document.getElementById(id);
                 if(el && t[id]) el.textContent = t[id];
@@ -1131,6 +1148,52 @@
                     limits: '2D simulation without cosmological expansion, baryons, or stellar feedback. Absolute f_core values not directly comparable to JWST data. Goal: isolate the pure gravitational mechanism.',
                     doi: [{ url:'https://zenodo.org/records/17844551', label:'Paper III Addendum — JWST & Formation' },{ url:'https://zenodo.org/records/17819679', label:'Paper I — TSTU Theoretical Framework' }]
                 }
+            },
+            aetheron: {
+                fr: {
+                    title: '⚛️ Ætheron — Oscillon Classique Non-Linéaire (Paper IV)',
+                    tag: '<span class="modal-tag tag-exploratory">Classique / Analogique</span>',
+                    equations: [
+                        'φ̈ − φ″ + dV/dφ = 0   [Klein-Gordon 1D]',
+                        'V(φ) = ½m²φ² + (λ/4)φ⁴ + (g/6)φ⁶   (potentiel sextique flat-top)',
+                        'g > 0,  λ < 0,  |λ| ≪ g   → puits double "plat"',
+                        'Intégration leapfrog : φᵢ(t+Δt) = 2φᵢ(t) − φᵢ(t−Δt) + Δt²·Fᵢ(t)',
+                        'Discrétisation 1D : N = 500 points, x ∈ [−L, L], CL périodiques',
+                        'CI gaussienne : φ(x,0) = A₀ · exp(−x²/σ²)',
+                        'Spectre : S̃(ω) = |rFFT{φ(0,t)}|²',
+                        'Facteur Q = ω₀/Δω_FWHM  (Addendum : Q ≈ 67.6)',
+                        'Analogie QM : |Ψ₁ₛ(r)|² = (1/πa₀³) · exp(−2r/a₀)'
+                    ],
+                    hypotheses: 'Simulation 1D purement classique — aucune quantification. L\'Ætheron est un oscillon non-topologique (attractor dans l\'espace des phases classique). Le facteur Q élevé et les pics discrets sont des propriétés de la non-linéarité classique, pas de la mécanique quantique.',
+                    limits: '⚠️ Ces structures sont des analogues phénoménologiques — elles n\'émergent pas vers la MQ. Discret ≠ quantifié. Haute cohérence Q ≠ cohérence quantique. Voir Addendum Paper IV (DOI: 10.5281/zenodo.17954376) pour la clarification épistémique complète.',
+                    doi: [
+                        { url:'https://zenodo.org/records/17815846', label:'Paper IV — Dynamique ΔM Non-Linéaire' },
+                        { url:'https://zenodo.org/records/17954376', label:'Addendum IV — Validation harmonique & Screening' },
+                        { url:'https://zenodo.org/records/17819679', label:'Paper I — Potentiel sextique TSTU' }
+                    ]
+                },
+                en: {
+                    title: '⚛️ Ætheron — Classical Non-Linear Oscillon (Paper IV)',
+                    tag: '<span class="modal-tag tag-exploratory">Classical / Analogical</span>',
+                    equations: [
+                        'φ̈ − φ″ + dV/dφ = 0   [1D Klein-Gordon]',
+                        'V(φ) = ½m²φ² + (λ/4)φ⁴ + (g/6)φ⁶   (flat-top sextic potential)',
+                        'g > 0,  λ < 0,  |λ| ≪ g   → flat double well',
+                        'Leapfrog: φᵢ(t+Δt) = 2φᵢ(t) − φᵢ(t−Δt) + Δt²·Fᵢ(t)',
+                        '1D lattice: N = 500 points, x ∈ [−L, L], periodic BC',
+                        'Gaussian IC: φ(x,0) = A₀ · exp(−x²/σ²)',
+                        'Spectrum: S̃(ω) = |rFFT{φ(0,t)}|²',
+                        'Q factor = ω₀/Δω_FWHM  (Addendum: Q ≈ 67.6, 5/6 harmonics)',
+                        'QM analogy: |Ψ₁ₛ(r)|² = (1/πa₀³) · exp(−2r/a₀)'
+                    ],
+                    hypotheses: 'Purely classical 1D simulation — no quantization. The Ætheron is a non-topological oscillon (classical phase-space attractor). The high Q factor and discrete peaks are properties of classical nonlinearity, not quantum mechanics.',
+                    limits: '⚠️ These structures are phenomenological analogs — they do not emerge toward QM. Discrete ≠ quantized. High Q ≠ quantum coherence. See Paper IV Addendum (DOI: 10.5281/zenodo.17954376) for full epistemic clarification.',
+                    doi: [
+                        { url:'https://zenodo.org/records/17815846', label:'Paper IV — Non-linear ΔM Dynamics' },
+                        { url:'https://zenodo.org/records/17954376', label:'Addendum IV — Harmonic Validation & Screening' },
+                        { url:'https://zenodo.org/records/17819679', label:'Paper I — TSTU Sextic Potential' }
+                    ]
+                }
             }
         };
 
@@ -1220,6 +1283,13 @@
                     title: 'De la Cosmologie à la Conscience',
                     text: 'Extension hypothétique : le même invariant géométrique Y du champ φ peut coupler aux gradients ioniques des neurones pyramidaux L5. K_eff = D×Y_HH×τ_syn = <strong>33.3 Hz</strong> — deux fois K_c = 19.9 Hz. Le cortex se trouve naturellement à la <strong>criticité auto-organisée</strong>, sans paramètre libre. Cliquez "⚡ Perturber" pour simuler l\'anesthésie.',
                     insight: '⚠️ Section exploratoire. Ce module illustre une analogie formelle — pas une prédiction médicale. Les deux prédictions falsifiables sont dans Paper VII (test NMDA, épaisseur corticale).'
+                },
+                {
+                    mode: 'aetheron',
+                    badge: '⚛️ Ætheron (Classique)',
+                    title: 'Un Oscillon Classique qui Ressemble à un Quantum',
+                    text: 'Le champ ΔM dans un potentiel sextique "flat-top" forme des <strong>Ætherons</strong> — solutions oscillantes localisées. Sans aucune quantification, la dynamique classique non-linéaire produit : pics spectraux discrets, facteur Q ≈ 67, 5 harmoniques détectées. Le panneau droit montre l\'orbitale H 1s standard — <strong>même localisation, origines radicalement différentes</strong>.',
+                    insight: '⚠️ Addendum IV (zenodo.org/records/17954376) : ces structures sont des analogues classiques, pas une émergence de la MQ. Cliquez "⚛️ Lancer Ætheron" pour démarrer la simulation leapfrog 1D.'
                 }
             ],
             en: [
@@ -1264,6 +1334,13 @@
                     title: 'From Cosmology to Consciousness',
                     text: 'Hypothetical extension: the same geometric invariant Y of the φ field may couple to ionic gradients of L5 pyramidal neurons. K_eff = D×Y_HH×τ_syn = <strong>33.3 Hz</strong> — twice K_c = 19.9 Hz. The cortex sits naturally at <strong>self-organised criticality</strong>, without free parameters. Click "⚡ Perturb" to simulate anaesthesia.',
                     insight: '⚠️ Exploratory section. This module illustrates a formal analogy — not a medical prediction. Two falsifiable predictions are in Paper VII (NMDA test, cortical thickness).'
+                },
+                {
+                    mode: 'aetheron',
+                    badge: '⚛️ Ætheron (Classical)',
+                    title: 'A Classical Oscillon That Looks Like a Quantum',
+                    text: 'The ΔM field in a "flat-top" sextic potential forms <strong>Ætherons</strong> — localized oscillating solutions. Without any quantization, classical non-linear dynamics produces: discrete spectral peaks, Q factor ≈ 67, 5 harmonics detected. The right panel shows the standard H 1s orbital — <strong>same localization, radically different origins</strong>.',
+                    insight: '⚠️ Addendum IV (zenodo.org/records/17954376): these structures are classical analogs, not QM emergence. Click "⚛️ Launch Ætheron" to start the 1D leapfrog simulation.'
                 }
             ]
         };
@@ -1692,8 +1769,8 @@
         function switchMode(newMode) {
             mode = newMode;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            const btnId = 'btn' + newMode.charAt(0).toUpperCase() + newMode.slice(1).replace('hole', 'Hole').replace('brain', 'Brain');
-            const btn = document.getElementById(btnId);
+            const idMap = { solar:'btnSolar', p9:'btnP9', galaxy:'btnGalaxy', blackhole:'btnBlackHole', brain:'btnBrain', jwst:'btnJwst', aetheron:'btnAetheron' };
+            const btn = document.getElementById(idMap[mode] || '');
             if(btn) btn.classList.add('active');
             
             document.getElementById('zenodoLeft').href = zenodoDOIs[mode];
@@ -1745,6 +1822,7 @@
             syncHistory = [];
             initNeurons(numNeurons);
             initJWST();
+            initAetheron();
             document.getElementById('timelineFill').style.width = '0%';
 
             // Remettre β et μ aux valeurs du fit (Paper I & II)
@@ -1774,6 +1852,7 @@
             document.getElementById('trailsBtn').style.display = 'inline-block';
             document.getElementById('gridBtn').style.display = 'inline-block';
             document.getElementById('jwstBtn').style.display = 'none';
+            document.getElementById('aetheronBtn').style.display = 'none';
 
             if(mode === 'solar') {
                 document.getElementById('titleLeft').innerText = t.solar_titleL;
@@ -1865,6 +1944,21 @@
                     ? '<strong>Tension JWST :</strong> Le JWST observe des galaxies massives (M★ ≳ 10¹⁰ M☉) à z≳8–10, bien plus abondantes que prédit par ΛCDM.<br><br><strong>Solution ÆTHER :</strong> G<sub>eff</sub> = G×(1+ε∆). Les surdensités s\'effondrent <em>plus tôt</em>.<br><br>Cliquez <strong>"🚀 Lancer la Course"</strong> (N=300, CI identiques).'
                     : '<strong>JWST Tension:</strong> JWST observes massive galaxies (M★ ≳ 10¹⁰ M☉) at z≳8–10, far more abundant than ΛCDM predicts.<br><br><strong>ÆTHER Solution:</strong> G<sub>eff</sub> = G×(1+ε∆). Overdensities collapse <em>earlier</em>.<br><br>Click <strong>"🚀 Launch the Race"</strong> (N=300, identical ICs).';
                 document.getElementById('infoContent').innerHTML = jwstInfo;
+            } else if(mode === 'aetheron') {
+                document.getElementById('trailsBtn').style.display = 'none';
+                document.getElementById('gridBtn').style.display = 'none';
+                document.getElementById('titleLeft').innerText = t.aetheron_titleL;
+                document.getElementById('titleRight').innerText = t.aetheron_titleR;
+                extra.style.display = 'block';
+                document.getElementById('extraTitle').innerText = t.aetheron_extraTitle;
+                document.getElementById('aetheronBtn').style.display = 'inline-block';
+                legend.style.display = 'none';
+                document.getElementById('l1').innerText = t.aetheron_m1;
+                document.getElementById('l2').innerText = t.aetheron_m2;
+                document.getElementById('l3').innerText = t.aetheron_m3;
+                document.getElementById('l4').innerText = t.aetheron_m4;
+                document.getElementById('infoTitle').innerText = t.aetheron_infoTitle;
+                document.getElementById('infoContent').innerHTML = t.aetheron_infoText;
             }
         }
         
@@ -2874,6 +2968,15 @@
                 document.getElementById('timelineFill').style.width = progress + '%';
                 const tGyr = (jwstStep / JWST_T_MAX) * 14;
                 document.getElementById('timeDisplay').textContent = tGyr.toFixed(1) + ' Gyr';
+            } else if(mode === 'aetheron') {
+                const metrics = aeGetMetrics();
+                document.getElementById('m1').textContent = metrics.omega_peak.toFixed(2);
+                document.getElementById('m2').textContent = metrics.Q.toFixed(1);
+                document.getElementById('m3').textContent = metrics.harmonics + '/5';
+                document.getElementById('m4').textContent = metrics.Qosc.toFixed(3);
+                const progress = (aeTime % 100) / 100 * 100;
+                document.getElementById('timelineFill').style.width = progress + '%';
+                document.getElementById('timeDisplay').textContent = 't = ' + aeTime.toFixed(1);
             } else {
                 let sumX_tstu = 0, sumY_tstu = 0;
                 neurons.forEach(n => {
@@ -3178,6 +3281,460 @@
             ctxE.fillText('● JWST (Labbé+2023)', rx+6, m+50);
         }
 
+        // ── ÆTHERON 1D FIELD SIMULATION ──────────────────────────────────────
+        const AE_N    = 500;     // lattice points
+        const AE_L    = 30.0;   // domain half-width
+        const AE_DX   = 2 * AE_L / AE_N;
+        const AE_DT   = 0.01;
+        const AE_M2   = 1.0;    // m²
+        const AE_LAM  = -1.5;   // λ < 0
+        const AE_G    = 1.0;    // g > 0
+        const AE_A0   = 0.9;    // Gaussian amplitude
+        const AE_SIG  = 3.0;    // Gaussian width
+        const AE_HIST_MAX = 600;
+
+        let aePhi  = new Float64Array(AE_N);  // field values
+        let aePhi0 = new Float64Array(AE_N);  // previous step (leapfrog)
+        let aeTime = 0;
+        let aeRunning = false;
+        let aeTimeSeries = [];   // {t, val} central field value
+        let aeSpectrum = [];     // FFT power spectrum
+
+        function aeVprime(phi) {
+            return AE_M2 * phi + AE_LAM * phi * phi * phi + AE_G * phi * phi * phi * phi * phi;
+        }
+
+        function initAetheron() {
+            aeTime = 0;
+            aeTimeSeries = [];
+            aeSpectrum = [];
+            for (let i = 0; i < AE_N; i++) {
+                const x = -AE_L + i * AE_DX;
+                aePhi[i]  = AE_A0 * Math.exp(-(x * x) / (AE_SIG * AE_SIG));
+                // Initial velocity = 0 → phi_prev = phi (leapfrog bootstrap)
+                aePhi0[i] = aePhi[i];
+            }
+            aeRunning = false;
+        }
+        initAetheron();
+
+        function updateAetheron(dt) {
+            if (!aeRunning) return;
+            // Run multiple leapfrog steps per animation frame
+            const stepsPerFrame = 4;
+            for (let s = 0; s < stepsPerFrame; s++) {
+                const phiNew = new Float64Array(AE_N);
+                for (let i = 0; i < AE_N; i++) {
+                    const im = (i - 1 + AE_N) % AE_N;
+                    const ip = (i + 1) % AE_N;
+                    const laplacian = (aePhi[ip] - 2 * aePhi[i] + aePhi[im]) / (AE_DX * AE_DX);
+                    const force = laplacian - aeVprime(aePhi[i]);
+                    phiNew[i] = 2 * aePhi[i] - aePhi0[i] + AE_DT * AE_DT * force;
+                }
+                aePhi0 = aePhi;
+                aePhi  = phiNew;
+                aeTime += AE_DT;
+
+                // Record central value
+                const center = aePhi[Math.floor(AE_N / 2)];
+                if (aeTimeSeries.length >= AE_HIST_MAX) aeTimeSeries.shift();
+                aeTimeSeries.push({ t: aeTime, val: center });
+            }
+
+            // Recompute FFT spectrum periodically (every 20 frames worth)
+            if (aeTimeSeries.length >= 64) {
+                const n = aeTimeSeries.length;
+                const re = new Float64Array(n);
+                const im2 = new Float64Array(n);
+                for (let i = 0; i < n; i++) re[i] = aeTimeSeries[i].val;
+                // Simple DFT (brute force, max 600 pts = acceptable)
+                const half = Math.floor(n / 2);
+                aeSpectrum = [];
+                for (let k = 0; k < half; k++) {
+                    let sumR = 0, sumI = 0;
+                    for (let i2 = 0; i2 < n; i2++) {
+                        const angle = -2 * Math.PI * k * i2 / n;
+                        sumR += re[i2] * Math.cos(angle);
+                        sumI += re[i2] * Math.sin(angle);
+                    }
+                    aeSpectrum.push(sumR * sumR + sumI * sumI);
+                }
+            }
+        }
+
+        function aeGetMetrics() {
+            // Find peak frequency
+            let peakIdx = 0, peakVal = 0;
+            for (let i = 1; i < aeSpectrum.length; i++) {
+                if (aeSpectrum[i] > peakVal) { peakVal = aeSpectrum[i]; peakIdx = i; }
+            }
+            const n = aeTimeSeries.length;
+            const dt = AE_DT;
+            const omega_peak = n > 0 ? (peakIdx / n) * (2 * Math.PI / dt) : 0;
+
+            // Q factor: peak / FWHM (rough estimate from neighbors)
+            let halfPow = peakVal / 2;
+            let lo = peakIdx, hi = peakIdx;
+            while (lo > 0 && aeSpectrum[lo] > halfPow) lo--;
+            while (hi < aeSpectrum.length - 1 && aeSpectrum[hi] > halfPow) hi++;
+            const fwhm = Math.max(1, hi - lo);
+            const Q = peakIdx / fwhm;
+
+            // Count harmonics (peaks at ~2×, 3×, 4×, 5× base freq ±20%)
+            let harmonics = 0;
+            if (peakIdx > 2) {
+                for (let h = 2; h <= 5; h++) {
+                    const target = peakIdx * h;
+                    if (target >= aeSpectrum.length) break;
+                    const lo2 = Math.max(0, target - Math.floor(target * 0.2));
+                    const hi2 = Math.min(aeSpectrum.length - 1, target + Math.floor(target * 0.2));
+                    let localMax = 0;
+                    for (let j = lo2; j <= hi2; j++) localMax = Math.max(localMax, aeSpectrum[j]);
+                    if (localMax > peakVal * 0.01) harmonics++;
+                }
+            }
+
+            // Core energy (|x| < 5)
+            let eCore = 0, eTotal = 0;
+            for (let i = 0; i < AE_N; i++) {
+                const x = -AE_L + i * AE_DX;
+                const kineticApprox = 0; // simplified: just potential
+                const v = 0.5 * AE_M2 * aePhi[i] ** 2 + 0.25 * AE_LAM * aePhi[i] ** 4 + (1/6) * AE_G * aePhi[i] ** 6;
+                eTotal += v;
+                if (Math.abs(x) < 5) eCore += v;
+            }
+            const Qosc = eTotal > 0.001 ? eCore / eTotal : 0;
+
+            return { omega_peak, Q: Math.min(Q, 999), harmonics, Qosc };
+        }
+
+        function drawAetheron(ctx, isAether) {
+            const w = ctx.canvas.width, h = ctx.canvas.height;
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+            drawAetherGrid(ctx, isAether);
+
+            if (isAether) {
+                // LEFT: 1D field profile φ(x)
+                const mx = 55, my = 40, pw = w - mx - 20, ph = h - my - 60;
+
+                // Background glow
+                const grad = ctx.createLinearGradient(0, 0, 0, h);
+                grad.addColorStop(0, 'rgba(0,20,50,0.0)');
+                grad.addColorStop(0.5, 'rgba(0,50,100,0.15)');
+                grad.addColorStop(1, 'rgba(0,20,50,0.0)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, w, h);
+
+                // Axes
+                ctx.strokeStyle = '#334';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(mx, my); ctx.lineTo(mx, my + ph);
+                ctx.moveTo(mx, my + ph); ctx.lineTo(mx + pw, my + ph);
+                ctx.stroke();
+
+                // Y-axis labels
+                for (let v = -1.5; v <= 1.5; v += 0.5) {
+                    const y = my + ph / 2 - (v / 1.5) * (ph / 2);
+                    ctx.fillStyle = '#445';
+                    ctx.font = '10px Arial';
+                    ctx.fillText(v.toFixed(1), 5, y + 4);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath(); ctx.moveTo(mx, y); ctx.lineTo(mx + pw, y); ctx.stroke();
+                }
+
+                // X-axis labels
+                for (let xi = -30; xi <= 30; xi += 10) {
+                    const px2 = mx + (xi + AE_L) / (2 * AE_L) * pw;
+                    ctx.fillStyle = '#445';
+                    ctx.font = '10px Arial';
+                    ctx.fillText(xi, px2 - 8, my + ph + 15);
+                }
+
+                // Zero line
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(mx, my + ph / 2); ctx.lineTo(mx + pw, my + ph / 2);
+                ctx.stroke();
+
+                // Field profile with gradient color
+                if (aePhi.length > 0) {
+                    const grad2 = ctx.createLinearGradient(mx, 0, mx + pw, 0);
+                    grad2.addColorStop(0, 'rgba(0,80,200,0.4)');
+                    grad2.addColorStop(0.5, '#00d4ff');
+                    grad2.addColorStop(1, 'rgba(0,80,200,0.4)');
+                    ctx.strokeStyle = grad2;
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    for (let i = 0; i < AE_N; i++) {
+                        const px2 = mx + (i / AE_N) * pw;
+                        const py2 = my + ph / 2 - (aePhi[i] / 1.5) * (ph / 2);
+                        i === 0 ? ctx.moveTo(px2, py2) : ctx.lineTo(px2, py2);
+                    }
+                    ctx.stroke();
+
+                    // Fill under curve
+                    ctx.fillStyle = 'rgba(0,212,255,0.08)';
+                    ctx.beginPath();
+                    ctx.moveTo(mx, my + ph / 2);
+                    for (let i = 0; i < AE_N; i++) {
+                        const px2 = mx + (i / AE_N) * pw;
+                        const py2 = my + ph / 2 - (aePhi[i] / 1.5) * (ph / 2);
+                        ctx.lineTo(px2, py2);
+                    }
+                    ctx.lineTo(mx + pw, my + ph / 2);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Core boundary markers
+                const coreX = mx + (AE_L - 5) / (2 * AE_L) * pw;
+                const coreX2 = mx + (AE_L + 5) / (2 * AE_L) * pw;
+                ctx.strokeStyle = 'rgba(255,200,0,0.4)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath(); ctx.moveTo(coreX, my); ctx.lineTo(coreX, my + ph); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(coreX2, my); ctx.lineTo(coreX2, my + ph); ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Labels
+                ctx.fillStyle = '#00d4ff';
+                ctx.font = 'bold 13px Arial';
+                ctx.fillText('⚛️ Champ ΔM — φ(x, t)', mx + 10, my - 8);
+                ctx.fillStyle = '#888';
+                ctx.font = '11px Arial';
+                ctx.fillText('x (unités sim.)', mx + pw / 2 - 30, my + ph + 32);
+                ctx.fillStyle = '#ffcc00';
+                ctx.font = '10px Arial';
+                ctx.fillText('core |x|<5', coreX + 2, my + 14);
+
+                // Time label
+                ctx.fillStyle = '#555';
+                ctx.font = '11px Arial';
+                ctx.fillText(`t = ${aeTime.toFixed(1)}`, w - 80, my + ph + 15);
+
+                // State label
+                if (!aeRunning && aeTime < 1) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                    ctx.fillRect(mx + pw/2 - 130, my + ph/2 - 20, 260, 36);
+                    ctx.fillStyle = '#ffcc00';
+                    ctx.font = 'bold 13px Arial';
+                    ctx.fillText('▶ Cliquez "⚛️ Lancer Ætheron" pour démarrer', mx + pw/2 - 125, my + ph/2 + 2);
+                }
+
+            } else {
+                // RIGHT: Hydrogen 1s orbital |Ψ|² density map
+                const cx = w / 2, cy = h / 2;
+                const a0 = 1.0; // Bohr radius (normalized)
+                const scale = Math.min(w, h) / 12; // pixels per a0
+
+                // Density map
+                const imgData = ctx.createImageData(w, h);
+                for (let py2 = 0; py2 < h; py2++) {
+                    for (let px2 = 0; px2 < w; px2++) {
+                        const rx = (px2 - cx) / scale;
+                        const ry = (py2 - cy) / scale;
+                        const r = Math.sqrt(rx * rx + ry * ry);
+                        const psi2 = Math.exp(-2 * r / a0) / (Math.PI * a0 * a0 * a0);
+                        const bright = Math.min(1, psi2 * 80);
+                        const idx = (py2 * w + px2) * 4;
+                        imgData.data[idx]   = Math.floor(bright * 0   + (1 - bright) * 5);
+                        imgData.data[idx+1] = Math.floor(bright * 150 + (1 - bright) * 5);
+                        imgData.data[idx+2] = Math.floor(bright * 255 + (1 - bright) * 8);
+                        imgData.data[idx+3] = 255;
+                    }
+                }
+                ctx.putImageData(imgData, 0, 0);
+
+                // Contour rings at r = a0, 2a0, 3a0
+                [1, 2, 3].forEach((n, i) => {
+                    ctx.strokeStyle = `rgba(0,212,255,${0.4 - i * 0.12})`;
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([3, 5]);
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, n * a0 * scale, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.fillStyle = 'rgba(0,212,255,0.6)';
+                    ctx.font = '10px Arial';
+                    ctx.setLineDash([]);
+                    ctx.fillText(`${n}a₀`, cx + n * a0 * scale + 4, cy - 4);
+                });
+
+                // Cross hair at nucleus
+                ctx.strokeStyle = '#ff6644';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(cx - 8, cy); ctx.lineTo(cx + 8, cy);
+                ctx.moveTo(cx, cy - 8); ctx.lineTo(cx, cy + 8);
+                ctx.stroke();
+
+                // Labels
+                ctx.fillStyle = '#00aaff';
+                ctx.font = 'bold 13px Arial';
+                ctx.fillText('🔵 Orbitale H 1s  |Ψ|² = (1/πa₀³)·e^(−2r/a₀)', 12, 28);
+                ctx.fillStyle = '#666';
+                ctx.font = '11px Arial';
+                ctx.fillText('Densité de probabilité quantique — MQ standard', 12, 48);
+                ctx.fillStyle = '#888';
+                ctx.font = '10px Arial';
+                ctx.fillText('Localisation similaire ≠ origine commune', 12, h - 14);
+            }
+        }
+
+        function drawAetherExtra() {
+            const w = ctxE.canvas.width, h = ctxE.canvas.height;
+            ctxE.fillStyle = '#050510';
+            ctxE.fillRect(0, 0, w, h);
+
+            const mLeft = 55, mTop = 45, mBot = 40;
+            const halfW = w / 2 - 10;
+
+            // ── LEFT: Time series φ(0,t) ──
+            const tsW = halfW - mLeft - 10;
+            const tsH = h - mTop - mBot;
+
+            ctxE.strokeStyle = '#334';
+            ctxE.lineWidth = 1;
+            ctxE.beginPath();
+            ctxE.moveTo(mLeft, mTop); ctxE.lineTo(mLeft, mTop + tsH);
+            ctxE.moveTo(mLeft, mTop + tsH); ctxE.lineTo(mLeft + tsW, mTop + tsH);
+            ctxE.stroke();
+
+            ctxE.fillStyle = '#00d4ff';
+            ctxE.font = 'bold 12px Arial';
+            ctxE.fillText('φ(x=0, t) — Série temporelle', mLeft + 10, mTop - 8);
+
+            if (aeTimeSeries.length > 2) {
+                const n = aeTimeSeries.length;
+                const tMin = aeTimeSeries[0].t;
+                const tMax = aeTimeSeries[n - 1].t;
+                const vRange = 1.5;
+
+                // Axes labels
+                for (let v = -1; v <= 1; v += 0.5) {
+                    const y = mTop + tsH / 2 - (v / vRange) * (tsH / 2);
+                    ctxE.fillStyle = '#445';
+                    ctxE.font = '10px Arial';
+                    ctxE.fillText(v.toFixed(1), 5, y + 4);
+                    ctxE.strokeStyle = 'rgba(255,255,255,0.04)';
+                    ctxE.lineWidth = 1;
+                    ctxE.beginPath(); ctxE.moveTo(mLeft, y); ctxE.lineTo(mLeft + tsW, y); ctxE.stroke();
+                }
+
+                // Zero line
+                ctxE.strokeStyle = 'rgba(255,255,255,0.08)';
+                ctxE.lineWidth = 1;
+                const zy = mTop + tsH / 2;
+                ctxE.beginPath(); ctxE.moveTo(mLeft, zy); ctxE.lineTo(mLeft + tsW, zy); ctxE.stroke();
+
+                // Time series curve
+                const tspan = tMax - tMin || 1;
+                ctxE.strokeStyle = '#00d4ff';
+                ctxE.lineWidth = 1.5;
+                ctxE.beginPath();
+                aeTimeSeries.forEach((pt, i) => {
+                    const px2 = mLeft + ((pt.t - tMin) / tspan) * tsW;
+                    const py2 = mTop + tsH / 2 - (pt.val / vRange) * (tsH / 2);
+                    i === 0 ? ctxE.moveTo(px2, py2) : ctxE.lineTo(px2, py2);
+                });
+                ctxE.stroke();
+
+                // t label
+                ctxE.fillStyle = '#445';
+                ctxE.font = '10px Arial';
+                ctxE.fillText(`t = ${aeTimeSeries[n-1].t.toFixed(0)}`, mLeft + tsW - 50, mTop + tsH + 30);
+            } else {
+                ctxE.fillStyle = '#445';
+                ctxE.font = '12px Arial';
+                ctxE.fillText('En attente de simulation…', mLeft + tsW / 2 - 60, mTop + tsH / 2);
+            }
+
+            // ── RIGHT: Power spectrum ──
+            const spLeft = w / 2 + 10;
+            const spW = w - spLeft - mLeft;
+
+            ctxE.strokeStyle = '#334';
+            ctxE.lineWidth = 1;
+            ctxE.beginPath();
+            ctxE.moveTo(spLeft, mTop); ctxE.lineTo(spLeft, mTop + tsH);
+            ctxE.moveTo(spLeft, mTop + tsH); ctxE.lineTo(spLeft + spW, mTop + tsH);
+            ctxE.stroke();
+
+            ctxE.fillStyle = '#00ff88';
+            ctxE.font = 'bold 12px Arial';
+            ctxE.fillText('Spectre de Puissance S̃(ω) — Modes harmoniques', spLeft + 10, mTop - 8);
+
+            if (aeSpectrum.length > 10) {
+                const maxPow = Math.max(...aeSpectrum.slice(1));
+                if (maxPow > 0) {
+                    // Find peak
+                    let peakIdx = 1, peakVal = 0;
+                    for (let i = 1; i < aeSpectrum.length; i++) {
+                        if (aeSpectrum[i] > peakVal) { peakVal = aeSpectrum[i]; peakIdx = i; }
+                    }
+
+                    // Draw spectrum bars (only first 1/4 to focus on interesting region)
+                    const showN = Math.min(aeSpectrum.length, Math.floor(aeSpectrum.length / 4) + 20);
+                    const barW = spW / showN;
+                    for (let i = 1; i < showN; i++) {
+                        const barH = (aeSpectrum[i] / maxPow) * tsH;
+                        const bx = spLeft + (i / showN) * spW;
+                        const by = mTop + tsH - barH;
+                        const isHarmonic = peakIdx > 2 && (i % peakIdx < Math.max(2, peakIdx * 0.15));
+                        ctxE.fillStyle = i === peakIdx ? '#00ff88' :
+                            (isHarmonic ? 'rgba(255,200,0,0.7)' : 'rgba(0,180,255,0.4)');
+                        ctxE.fillRect(bx, by, Math.max(1, barW - 0.5), barH);
+                    }
+
+                    // Mark fundamental and harmonics
+                    const freqScale = spW / showN;
+                    [1, 2, 3, 4, 5].forEach((h) => {
+                        const hIdx = peakIdx * h;
+                        if (hIdx >= showN) return;
+                        const hx = spLeft + (hIdx / showN) * spW;
+                        ctxE.strokeStyle = h === 1 ? '#00ff88' : 'rgba(255,200,0,0.6)';
+                        ctxE.lineWidth = h === 1 ? 2 : 1;
+                        ctxE.setLineDash([3, 4]);
+                        ctxE.beginPath(); ctxE.moveTo(hx, mTop); ctxE.lineTo(hx, mTop + tsH); ctxE.stroke();
+                        ctxE.setLineDash([]);
+                        ctxE.fillStyle = h === 1 ? '#00ff88' : '#ffcc00';
+                        ctxE.font = '10px Arial';
+                        ctxE.fillText(h === 1 ? 'ω₀' : `${h}ω₀`, hx - 6, mTop + 14 + (h % 2) * 12);
+                    });
+
+                    // Metrics overlay
+                    const { omega_peak, Q, harmonics } = aeGetMetrics();
+                    ctxE.fillStyle = 'rgba(0,0,0,0.6)';
+                    ctxE.fillRect(spLeft + spW - 160, mTop + 4, 152, 58);
+                    ctxE.strokeStyle = 'rgba(0,212,255,0.3)';
+                    ctxE.lineWidth = 1;
+                    ctxE.strokeRect(spLeft + spW - 160, mTop + 4, 152, 58);
+                    ctxE.fillStyle = '#00d4ff';
+                    ctxE.font = '11px Arial';
+                    ctxE.fillText(`ω_peak ≈ ${omega_peak.toFixed(2)}`, spLeft + spW - 152, mTop + 20);
+                    ctxE.fillText(`Q = ${Q.toFixed(1)}  (Addend.: 67.6)`, spLeft + spW - 152, mTop + 34);
+                    ctxE.fillText(`Harmoniques: ${harmonics}/5 détectées`, spLeft + spW - 152, mTop + 48);
+                }
+            } else {
+                ctxE.fillStyle = '#445';
+                ctxE.font = '12px Arial';
+                ctxE.fillText('En attente de données spectrales…', spLeft + spW / 2 - 80, mTop + tsH / 2);
+            }
+
+            // Disclaimer
+            ctxE.fillStyle = 'rgba(255,170,0,0.7)';
+            ctxE.font = '10px Arial';
+            ctxE.fillText('⚠️ Analogie classique — non émergence QM  |  Addendum IV: zenodo.org/records/17954376', 12, h - 8);
+        }
+
+        function launchAetheron() {
+            initAetheron();
+            aeRunning = true;
+        }
+
         // MAIN LOOP
         function animate() {
             if(animating) {
@@ -3189,6 +3746,7 @@
                 else if(mode === 'galaxy') updateGalaxy(dt);
                 else if(mode === 'blackhole') updateBlackHole(dt);
                 else if(mode === 'jwst') updateJWST(dt);
+                else if(mode === 'aetheron') updateAetheron(dt);
                 else updateBrain(dt);
             }
             
@@ -3210,6 +3768,10 @@
                 drawJWST(ctxL, true);
                 drawJWST(ctxR, false);
                 drawJWSTExtra();
+            } else if(mode === 'aetheron') {
+                drawAetheron(ctxL, true);
+                drawAetheron(ctxR, false);
+                drawAetherExtra();
             } else {
                 drawBrain(ctxL, true);
                 drawBrain(ctxR, false);
@@ -3306,6 +3868,23 @@
                     const ratio = (jwstFcoreAether[i] && jwstFcoreLCDM[i] && jwstFcoreLCDM[i] > 0.001)
                         ? (jwstFcoreAether[i] / jwstFcoreLCDM[i]).toFixed(3) : '';
                     csv += `${i},${t},${fa},${fl},${ratio}\n`;
+                }
+            } else if(mode === 'aetheron') {
+                csv = `# ÆTHER/TSTU — Ætheron 1D ΔM Field | Paper IV (DOI:10.5281/zenodo.17815846) | ${ts}\n`;
+                csv += `# Addendum IV (DOI:10.5281/zenodo.17954376)\n`;
+                csv += `# Potentiel sextique V(φ)=½m²φ²+(λ/4)φ⁴+(g/6)φ⁶ | m²=${AE_M2} λ=${AE_LAM} g=${AE_G}\n`;
+                csv += `# N=${AE_N} points, L=${AE_L}, dx=${AE_DX.toFixed(4)}, dt=${AE_DT}\n\n`;
+                csv += `t,phi_centre\n`;
+                aeTimeSeries.forEach(pt => {
+                    csv += `${pt.t.toFixed(3)},${pt.val.toFixed(6)}\n`;
+                });
+                if(aeSpectrum.length > 0) {
+                    csv += `\n# Spectre de puissance S̃(ω)\nomega_k,power\n`;
+                    const n = aeTimeSeries.length || 1;
+                    aeSpectrum.forEach((pow, k) => {
+                        const omega = (k / n) * (2 * Math.PI / AE_DT);
+                        csv += `${omega.toFixed(4)},${pow.toExponential(4)}\n`;
+                    });
                 }
             } else {
                 csv = `# ÆTHER/TSTU — Synchronisation Neuronale Kuramoto | β=${beta.toFixed(3)} μ=${mu.toFixed(3)} N=${neurons.length} | ${ts}\n`;
