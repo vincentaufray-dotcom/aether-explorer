@@ -502,7 +502,7 @@
             </div>
             
             <div class="button-row">
-                <button onclick="resetSim()" class="action-btn success">🔄 Reset</button>
+                <button onclick="resetSim()" class="action-btn success">🔄 Reset (β=0.095 μ=1.018)</button>
                 <button onclick="toggleAnim()" class="action-btn">⏯️ Play/Pause</button>
                 <button id="trailsBtn" onclick="toggleTrails()" class="action-btn">✨ Traces</button>
                 <button id="gridBtn" onclick="toggleGrid()" class="action-btn">📐 Grille</button>
@@ -543,7 +543,7 @@
         </div>
 
         <div class="share-box">
-            <button class="export-btn" onclick="exportData()">📤 EXPORTER DONNÉES CSV</button>
+            <button class="export-btn" onclick="exportData()">📤 EXPORTER OBSERVABLES PHYSIQUES (CSV)</button>
             <div style="margin-top:14px;">
                 <a href="https://zenodo.org/communities/aether-cosmology" target="_blank"
                    style="color:#00d4ff;font-size:0.9em;text-decoration:none;opacity:0.8;">
@@ -727,7 +727,7 @@
                 text.textContent = 'ÉCRANTAGE (Solaire)';
                 fill.style.background = 'linear-gradient(90deg, #0088cc, #00aaff)';
             } else if(tension < 60) {
-                text.textContent = 'TRANSITION (Planète 9)';
+                text.textContent = 'TRANSITION (Anomalies TNO)';
                 fill.style.background = 'linear-gradient(90deg, #0088cc, #00d4ff, #00ffff)';
             } else if(tension < 85) {
                 text.textContent = 'TENSION (Galaxie)';
@@ -839,6 +839,10 @@
             perturbTimer = PERTURB_DURATION;
         }
 
+        // Valeurs fit TSTU — Paper II (Pantheon+) β=0.095, Paper I μ=1.018
+        const BETA_FIT = 0.095;
+        const MU_FIT   = 1.018;
+
         function resetSim() {
             time = 0;
             planets.forEach(p => {
@@ -854,6 +858,14 @@
             syncHistory = [];
             initNeurons(numNeurons);
             document.getElementById('timelineFill').style.width = '0%';
+
+            // Remettre β et μ aux valeurs du fit (Paper I & II)
+            beta = BETA_FIT;
+            mu   = MU_FIT;
+            document.getElementById('betaSlider').value = beta;
+            document.getElementById('betaValue').innerText = beta.toFixed(3);
+            document.getElementById('muSlider').value = mu;
+            document.getElementById('muValue').innerText = mu.toFixed(3);
         }
 
         function updateUI() {
@@ -888,6 +900,7 @@
                     'Observez les différences orbitales TSTU vs GR, particulièrement visibles pour les planètes lointaines.';
                     
                 updatePlanetLegend();
+                document.querySelector('#legendLeft .legend-title').innerText = 'Dynamique en temps réel — Cliquez pour focus';
             } else if(mode === 'p9') {
                 document.getElementById('titleLeft').innerText = '🔵 ÆTHER/TSTU (Clustering φ)';
                 document.getElementById('titleRight').innerText = '⚪ GR Standard (besoin P9)';
@@ -907,6 +920,7 @@
                     '<div class="legend-item" style="color:#00d4ff;">● Flèches = direction des périhélies</div>' +
                     '<div class="legend-item" style="color:#aaa;">● Zone bleue = clustering prédit par φ</div>' +
                     '<div class="legend-item" style="color:#ff4444;">● Zone rouge = incertitude GR (P9 requise)</div>';
+                document.querySelector('#legendLeft .legend-title').innerText = 'Légende — objets TNO';
             } else if(mode === 'galaxy') {
                 document.getElementById('titleLeft').innerText = '🌀 ÆTHER (Pas de Matière Noire)';
                 document.getElementById('titleRight').innerText = '⚫ Modèle Matière Noire';
@@ -936,12 +950,15 @@
                 document.getElementById('l3').innerText = "φ/φ₀";
                 document.getElementById('l4').innerText = "R_s (km)";
                 
-                document.getElementById('infoTitle').innerText = '🕳️ Formation Trou Noir - Animation Visuelle';
+                document.getElementById('infoTitle').innerText = '🕳️ Formation Trou Noir — ÆTHER vs Standard';
                 document.getElementById('infoContent').innerHTML = 
-                    '<strong>Cliquez "💥 Effondrement" pour déclencher l\'animation.</strong> Observez : ' +
-                    '(1) Étoile massive en rotation, (2) Compression progressive avec disque d\'accrétion, ' +
-                    '(3) Formation horizon des événements, (4) Phase finale avec jets polaires. ' +
-                    'Le champ φ → φ₀ (restauration vide) élimine la singularité infinie.';
+                    '<strong>Cliquez "💥 Effondrement" pour lancer l\'animation.</strong><br><br>' +
+                    '🔵 <strong>Panneau ÆTHER :</strong> Le champ φ résiste à la compression infinie. ' +
+                    'À la formation de l\'horizon, φ → φ₀ (vide restauré) — la singularité est évitée. ' +
+                    'L\'énergie est expulsée sous forme de <em>jets polaires</em> (signature observationnelle réelle).<br><br>' +
+                    '⚫ <strong>Panneau Standard (GR) :</strong> L\'effondrement continue sans limite. ' +
+                    'La densité ρ → ∞ au centre — singularité nue. ' +
+                    'Les équations de la relativité générale <em>s\'effondrent</em> à ce point : c\'est une brisure de la physique connue.';
             } else {
                 document.getElementById('trailsBtn').style.display = 'none';
                 document.getElementById('gridBtn').style.display = 'none';
@@ -1342,103 +1359,180 @@
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, w, h);
             drawAetherGrid(ctx, isTSTU);
-            
-            // ACCRETION DISK ANIMATION
-            if(isTSTU && collapsing) {
-                accretionParticles.forEach(p => {
-                    const logR = Math.log10(p.r * 1000);
-                    const pixR = logR * scale;
-                    const x = cx + pixR * Math.cos(p.theta);
-                    const y = cy + pixR * Math.sin(p.theta);
-                    
-                    const intensity = Math.min(1, p.r / 200);
-                    ctx.fillStyle = `rgba(255, ${100 + intensity * 100}, 0, ${intensity})`;
-                    ctx.beginPath();
-                    ctx.arc(x, y, 2, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-            }
-            
-            for(let i = 1; i <= 15; i++) {
-                const r = Math.pow(10, i * Math.log10(maxR) / 15);
-                const rho = bhDensity * Math.pow(bhRadius / r, 3);
-                const phi = phiField(r, rho, beta);
-                const intensity = Math.min(200, (phi - 1.0) * 400);
-                const logR = Math.log10(r);
-                const pixR = logR * scale;
-                ctx.strokeStyle = `rgba(0, ${intensity}, 255, 0.15)`;
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.arc(cx, cy, pixR, 0, Math.PI * 2);
-                ctx.stroke();
-            }
-            
+
             const rs = schwarzschildRadius(mass);
-            if(rs < maxR) {
-                const logRs = Math.log10(rs);
-                const pixRs = logRs * scale;
-                ctx.strokeStyle = '#ff0000';
+            const logRad = Math.log10(Math.max(10, bhRadius));
+            const pixRad = logRad * scale;
+            const logRs  = Math.log10(Math.max(10, rs));
+            const pixRs  = logRs * scale;
+
+            if(isTSTU) {
+                // ── ÆTHER PANEL ─────────────────────────────────────────────
+                // φ-field rings
+                for(let i = 1; i <= 15; i++) {
+                    const r = Math.pow(10, i * Math.log10(maxR) / 15);
+                    const phi = phiField(r / 1000, beta, mu, 1.0);
+                    const intensity = Math.min(180, (phi - 1.0) * 3000);
+                    const pixR = Math.log10(r) * scale;
+                    ctx.strokeStyle = `rgba(0, ${intensity}, 255, 0.18)`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, pixR, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Accretion disk particles
+                if(collapsing) {
+                    accretionParticles.forEach(p => {
+                        const pixR = Math.log10(p.r * 1000) * scale;
+                        const x = cx + pixR * Math.cos(p.theta);
+                        const y = cy + pixR * Math.sin(p.theta);
+                        const intensity = Math.min(1, p.r / 200);
+                        ctx.fillStyle = `rgba(255, ${100 + intensity * 100}, 0, ${intensity * 0.8})`;
+                        ctx.beginPath();
+                        ctx.arc(x, y, 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    });
+                }
+
+                if(phase === 'BLACK_HOLE') {
+                    // Polar jets — ÆTHER signature: no singularity, energy expelled
+                    const jetLen = Math.min(w/2 - 20, pixRad * 2.5);
+                    for(let side of [-1, 1]) {
+                        const jetGrad = ctx.createLinearGradient(cx, cy, cx, cy + side * (pixRad + jetLen));
+                        jetGrad.addColorStop(0, 'rgba(0, 212, 255, 0.9)');
+                        jetGrad.addColorStop(0.5, 'rgba(0, 150, 255, 0.5)');
+                        jetGrad.addColorStop(1, 'rgba(0, 100, 255, 0)');
+                        ctx.strokeStyle = jetGrad;
+                        ctx.lineWidth = 18;
+                        ctx.lineCap = 'round';
+                        ctx.beginPath();
+                        ctx.moveTo(cx, cy + side * pixRad);
+                        ctx.lineTo(cx, cy + side * (pixRad + jetLen));
+                        ctx.stroke();
+                        ctx.lineCap = 'butt';
+                    }
+
+                    // Black hole: accretion ring + dark center
+                    const bhGrad = ctx.createRadialGradient(cx, cy, pixRad * 0.5, cx, cy, pixRad * 1.6);
+                    bhGrad.addColorStop(0, 'rgba(0,0,0,0)');
+                    bhGrad.addColorStop(0.55, '#000000');
+                    bhGrad.addColorStop(0.75, '#ff4400');
+                    bhGrad.addColorStop(1, '#ffaa00');
+                    ctx.fillStyle = bhGrad;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, pixRad * 1.6, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, pixRad * 0.55, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // φ restoration label
+                    ctx.fillStyle = 'rgba(0,30,60,0.85)';
+                    ctx.fillRect(cx - 130, cy + pixRad * 1.7, 260, 38);
+                    ctx.strokeStyle = '#00d4ff';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(cx - 130, cy + pixRad * 1.7, 260, 38);
+                    ctx.fillStyle = '#00d4ff';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('φ → φ₀  |  Vide restauré  |  Pas de singularité', cx, cy + pixRad * 1.7 + 24);
+                    ctx.textAlign = 'left';
+
+                } else {
+                    // Collapsing star
+                    const starGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pixRad);
+                    starGrad.addColorStop(0, collapsing ? '#ffff00' : '#ffff88');
+                    starGrad.addColorStop(0.7, collapsing ? '#ff8800' : '#ffaa44');
+                    starGrad.addColorStop(1, collapsing ? '#ff2200' : '#ff6600');
+                    ctx.fillStyle = starGrad;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, pixRad, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Phase label
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                ctx.fillRect(10, 10, 195, 42);
+                ctx.strokeStyle = phase === 'BLACK_HOLE' ? '#00ff88' : (phase === 'HORIZON' ? '#ffaa00' : '#00d4ff');
+                ctx.lineWidth = 2;
+                ctx.strokeRect(10, 10, 195, 42);
+                ctx.fillStyle = phase === 'BLACK_HOLE' ? '#00ff88' : (phase === 'HORIZON' ? '#ffaa00' : '#00d4ff');
+                ctx.font = 'bold 15px Arial';
+                ctx.fillText('PHASE: ' + phase, 18, 36);
+
+            } else {
+                // ── STANDARD / GR PANEL ──────────────────────────────────────
+                // Schwarzschild radius ring (red dashed)
+                ctx.strokeStyle = 'rgba(255, 50, 50, 0.6)';
                 ctx.lineWidth = 2;
                 ctx.setLineDash([8, 4]);
                 ctx.beginPath();
                 ctx.arc(cx, cy, pixRs, 0, Math.PI * 2);
                 ctx.stroke();
                 ctx.setLineDash([]);
-            }
-            
-            const logRad = Math.log10(bhRadius);
-            const pixRad = logRad * scale;
-            
-            if(phase === 'BLACK_HOLE') {
-                // BLACK HOLE WITH JETS
-                if(isTSTU) {
-                    // Polar jets
-                    ctx.strokeStyle = 'rgba(0, 212, 255, 0.6)';
-                    ctx.lineWidth = 15;
+
+                if(phase === 'BLACK_HOLE') {
+                    // Standard: singularity at center — pulsing red-white point of infinite density
+                    const bhGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pixRad * 1.5);
+                    bhGrad.addColorStop(0, '#ffffff');
+                    bhGrad.addColorStop(0.08, '#ff2200');
+                    bhGrad.addColorStop(0.5, '#660000');
+                    bhGrad.addColorStop(0.75, '#ff4400');
+                    bhGrad.addColorStop(1, '#ffaa00');
+                    ctx.fillStyle = bhGrad;
                     ctx.beginPath();
-                    ctx.moveTo(cx, cy - pixRad);
-                    ctx.lineTo(cx, cy - pixRad - 80);
-                    ctx.moveTo(cx, cy + pixRad);
-                    ctx.lineTo(cx, cy + pixRad + 80);
-                    ctx.stroke();
+                    ctx.arc(cx, cy, pixRad * 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Singularity flash at center
+                    const singPulse = 0.5 + 0.5 * Math.sin(time * 8);
+                    const singGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 18);
+                    singGrad.addColorStop(0, `rgba(255, 255, 255, ${singPulse})`);
+                    singGrad.addColorStop(0.4, `rgba(255, 100, 100, ${singPulse * 0.8})`);
+                    singGrad.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                    ctx.fillStyle = singGrad;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Singularity label
+                    ctx.fillStyle = 'rgba(60,0,0,0.9)';
+                    ctx.fillRect(cx - 130, cy + pixRad * 1.6, 260, 52);
+                    ctx.strokeStyle = '#ff4444';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(cx - 130, cy + pixRad * 1.6, 260, 52);
+                    ctx.fillStyle = '#ff4444';
+                    ctx.font = 'bold 13px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('SINGULARITÉ  ρ → ∞', cx, cy + pixRad * 1.6 + 20);
+                    ctx.fillStyle = '#ff8888';
+                    ctx.font = '11px Arial';
+                    ctx.fillText('Espace-temps brisé — GR échoue', cx, cy + pixRad * 1.6 + 38);
+                    ctx.textAlign = 'left';
+
+                } else {
+                    // Collapsing star (same visual but no jets, no restoration)
+                    const starGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pixRad);
+                    starGrad.addColorStop(0, collapsing ? '#ffff00' : '#ffff88');
+                    starGrad.addColorStop(0.7, collapsing ? '#ff8800' : '#ffaa44');
+                    starGrad.addColorStop(1, collapsing ? '#ff2200' : '#ff6600');
+                    ctx.fillStyle = starGrad;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, pixRad, 0, Math.PI * 2);
+                    ctx.fill();
                 }
-                
-                const bhGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pixRad * 1.5);
-                bhGrad.addColorStop(0, '#000000');
-                bhGrad.addColorStop(0.6, '#000000');
-                bhGrad.addColorStop(0.85, '#ff4400');
-                bhGrad.addColorStop(1, '#ffaa00');
-                ctx.fillStyle = bhGrad;
-                ctx.beginPath();
-                ctx.arc(cx, cy, pixRad * 1.5, 0, Math.PI * 2);
-                ctx.fill();
-                
-                ctx.fillStyle = '#000000';
-                ctx.beginPath();
-                ctx.arc(cx, cy, pixRad, 0, Math.PI * 2);
-                ctx.fill();
-            } else {
-                const starGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pixRad);
-                starGrad.addColorStop(0, collapsing ? '#ffff00' : '#ffff88');
-                starGrad.addColorStop(0.7, collapsing ? '#ff8800' : '#ffaa44');
-                starGrad.addColorStop(1, collapsing ? '#ff0000' : '#ff6600');
-                ctx.fillStyle = starGrad;
-                ctx.beginPath();
-                ctx.arc(cx, cy, pixRad, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // PHASE LABEL ON CANVAS
-            if(isTSTU) {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(10, 10, 180, 40);
-                ctx.strokeStyle = '#00d4ff';
+
+                // Phase label (gray for standard)
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                ctx.fillRect(10, 10, 195, 42);
+                ctx.strokeStyle = phase === 'BLACK_HOLE' ? '#ff4444' : '#888';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(10, 10, 180, 40);
-                
-                ctx.fillStyle = phase === 'BLACK_HOLE' ? '#00ff00' : (phase === 'HORIZON' ? '#ffaa00' : '#00d4ff');
-                ctx.font = 'bold 16px Arial';
-                ctx.fillText('PHASE: ' + phase, 20, 35);
+                ctx.strokeRect(10, 10, 195, 42);
+                ctx.fillStyle = phase === 'BLACK_HOLE' ? '#ff6666' : '#aaa';
+                ctx.font = 'bold 15px Arial';
+                ctx.fillText('PHASE: ' + phase, 18, 36);
             }
         }
         
@@ -1459,12 +1553,18 @@
             });
             const syncOrder = Math.sqrt(sumX**2 + sumY**2) / neurons.length;
             
-            // Connections with sync-based opacity
-            const connOpacity = isTSTU ? (syncOrder * 0.3) : 0.1;
-            ctx.strokeStyle = isTSTU ? `rgba(0, 212, 255, ${connOpacity})` : 'rgba(100, 100, 100, 0.1)';
+            // Connections - draw cross-connections for visual network effect
+            const connOpacity = isTSTU ? Math.max(0.08, syncOrder * 0.3) : 0.08;
             ctx.lineWidth = 1;
+            const N = neurons.length;
+            // Draw connections to neighbors at distance step N/8 and N/4 (visible chords)
+            const steps = [Math.max(1, Math.floor(N/8)), Math.max(2, Math.floor(N/4))];
             neurons.forEach((n, i) => {
-                n.connections.forEach(j => {
+                steps.forEach(step => {
+                    const j = (i + step) % N;
+                    ctx.strokeStyle = isTSTU
+                        ? `rgba(0, 212, 255, ${connOpacity})`
+                        : `rgba(120, 120, 120, ${connOpacity})`;
                     ctx.beginPath();
                     ctx.moveTo(cx + n.x, cy + n.y);
                     ctx.lineTo(cx + neurons[j].x, cy + neurons[j].y);
@@ -1476,32 +1576,35 @@
             neurons.forEach(n => {
                 const phase = isTSTU ? n.phase_tstu : n.phase_gr;
                 
-                // Color code by sync status (TSTU only)
+                // Color code by sync status + individual phase variation
                 let color;
                 if(isTSTU) {
                     if(syncOrder < 0.3) {
-                        // Chaos - Red
-                        color = `hsl(0, 100%, 50%)`;
+                        // Chaos - hue varies wildly per neuron phase
+                        const hue = ((phase % (2 * Math.PI)) / (2 * Math.PI)) * 360;
+                        color = `hsl(${hue.toFixed(0)}, 100%, 55%)`;
                     } else if(syncOrder < 0.7) {
-                        // Transition - Yellow
-                        color = `hsl(60, 100%, 50%)`;
+                        // Transition - yellow with phase-based brightness
+                        const bright = 45 + 20 * Math.cos(phase);
+                        color = `hsl(60, 100%, ${bright.toFixed(0)}%)`;
                     } else {
-                        // Synchronized - Green
-                        color = `hsl(120, 100%, 50%)`;
+                        // Synchronized - green with subtle phase shimmer
+                        const bright = 48 + 12 * Math.cos(phase);
+                        color = `hsl(120, 100%, ${bright.toFixed(0)}%)`;
                     }
                 } else {
-                    // Standard - grayscale based on phase
-                    const brightness = 50 + 30 * Math.cos(phase);
-                    color = `hsl(0, 0%, ${brightness}%)`;
+                    const brightness = 45 + 30 * Math.cos(phase);
+                    color = `hsl(0, 0%, ${brightness.toFixed(0)}%)`;
                 }
                 
                 ctx.fillStyle = color;
                 ctx.beginPath();
                 ctx.arc(cx + n.x, cy + n.y, 6, 0, Math.PI * 2);
                 ctx.fill();
-                
-                ctx.strokeStyle = '#ffffff';
+                ctx.strokeStyle = 'rgba(255,255,255,0.6)';
                 ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(cx + n.x, cy + n.y, 6, 0, Math.PI * 2);
                 ctx.stroke();
             });
             
@@ -1864,7 +1967,7 @@
                 document.getElementById('m1').textContent = (bhRadius / 1000).toFixed(1);
                 document.getElementById('m2').textContent = bhDensity.toExponential(1);
                 
-                const phi = phiField(0, bhDensity, beta);
+                const phi = phiField(0.1, beta, mu, bhDensity / 1e6);
                 document.getElementById('m3').textContent = phi.toFixed(3);
                 
                 const rs = schwarzschildRadius(mass);
@@ -1938,26 +2041,97 @@
         }
 
         function exportData() {
-            let csv = "temps,x_tstu,y_tstu,x_gr,y_gr\n";
-            if(mode === 'p9') {
-                for(let i=0; i<p9.trailL.length; i++) {
-                    if(p9.trailR[i]) {
-                        csv += `${(i*0.025).toFixed(3)},${p9.trailL[i].x.toFixed(2)},${p9.trailL[i].y.toFixed(2)},${p9.trailR[i].x.toFixed(2)},${p9.trailR[i].y.toFixed(2)}\n`;
-                    }
-                }
-            } else if(mode === 'solar') {
+            let csv = '';
+            const ts = new Date().toISOString().slice(0,16).replace('T','_').replace(':','-');
+
+            if(mode === 'solar') {
+                // Export: précession angulaire différentielle TSTU vs GR par planète
+                csv = `# ÆTHER/TSTU — Observables Solaires | β=${beta.toFixed(3)} μ=${mu.toFixed(3)} | ${ts}\n`;
+                csv += `# Précession différentielle cumulée TSTU vs GR\n`;
+                csv += `planete,demi_grand_axe_UA,periode_orbitale_ans,delta_theta_deg,delta_theta_arcsec_par_siecle,phi_r,geff_r\n`;
                 planets.forEach(p => {
-                    csv += `\n# ${p.name}\n`;
-                    for(let i=0; i<p.trailL.length; i++) {
-                        if(p.trailR[i]) {
-                            csv += `${(i*0.025).toFixed(3)},${p.trailL[i].x.toFixed(2)},${p.trailL[i].y.toFixed(2)},${p.trailR[i].x.toFixed(2)},${p.trailR[i].y.toFixed(2)}\n`;
-                        }
-                    }
+                    const dtheta_deg = (p.theta_tstu - p.theta_gr) * 180 / Math.PI;
+                    const orbites = time / (2 * Math.PI);
+                    const dtheta_as_siecle = orbites > 0 
+                        ? (dtheta_deg * 3600 * 100) / (orbites * p.spd)
+                        : 0;
+                    const phi = phiField(p.a, beta, mu, 1.0);
+                    const geff = effectiveGravity(p.a, beta, mu, 1.0);
+                    csv += `${p.name},${p.a.toFixed(3)},${p.spd.toFixed(3)},${dtheta_deg.toFixed(6)},${dtheta_as_siecle.toFixed(4)},${phi.toFixed(6)},${geff.toFixed(6)}\n`;
+                });
+                csv += `\n# Champ scalaire φ(r) le long du rayon solaire\n`;
+                csv += `r_UA,phi_r,geff_r,screening\n`;
+                for(let r = 0.1; r <= 40; r += 0.5) {
+                    const phi = phiField(r, beta, mu, 1.0);
+                    const geff = effectiveGravity(r, beta, mu, 1.0);
+                    const rs = screeningRadius(beta);
+                    csv += `${r.toFixed(1)},${phi.toFixed(6)},${geff.toFixed(6)},${r < rs ? 'screened' : 'tensioned'}\n`;
+                }
+
+            } else if(mode === 'p9') {
+                csv = `# ÆTHER/TSTU — Anomalies TNO | β=${beta.toFixed(3)} μ=${mu.toFixed(3)} | ${ts}\n`;
+                csv += `# Clustering des périhélies — TSTU vs Standard\n`;
+                csv += `objet,a_UA,ecc,perihelie_observe_deg,perihelie_tstu_deg,perihelie_gr_deg,ecart_tstu_deg,ecart_gr_deg\n`;
+                tnoObjects.forEach(o => {
+                    const ecart_tstu = Math.abs(o.peri_tstu - tnoMeanObs);
+                    const ecart_gr = Math.abs(o.peri_gr - tnoMeanObs);
+                    csv += `${o.name},${o.a},${o.ecc.toFixed(3)},${o.peri_obs.toFixed(1)},${o.peri_tstu.toFixed(2)},${o.peri_gr.toFixed(2)},${ecart_tstu.toFixed(2)},${ecart_gr.toFixed(2)}\n`;
+                });
+                csv += `\nmoyenne_observee_deg,${tnoMeanObs.toFixed(2)}\n`;
+                const spread_tstu = tnoObjects.reduce((s,o) => s + Math.abs(o.peri_tstu - tnoMeanObs), 0) / tnoObjects.length;
+                const spread_gr = tnoObjects.reduce((s,o) => s + Math.abs(o.peri_gr - tnoMeanObs), 0) / tnoObjects.length;
+                csv += `dispersion_tstu_deg,${spread_tstu.toFixed(2)}\n`;
+                csv += `dispersion_gr_deg,${spread_gr.toFixed(2)}\n`;
+                csv += `phi_vide_externe,${phiField(200, beta, mu, 1.0).toFixed(6)}\n`;
+
+            } else if(mode === 'galaxy') {
+                csv = `# ÆTHER/TSTU — Courbes de Rotation Galactique | β=${beta.toFixed(3)} μ=${mu.toFixed(3)} | ${ts}\n`;
+                csv += `r_kpc,v_kepler_kms,v_observe_kms,v_tstu_kms,ecart_tstu_obs_pct,phi_r,geff_r\n`;
+                for(let r = 0.5; r <= 50; r += 0.5) {
+                    const Menc = galaxyMass * Math.pow(r / galaxyRadius, 1.5);
+                    const vk = rotationVelocityKepler(r, Menc) * 200;
+                    const vobs = rotationVelocityObserved(r);
+                    const vtstu = rotationVelocityTSTU(r, Menc, beta, mu) * 200;
+                    const ecart = ((vtstu - vobs) / vobs * 100);
+                    const phi = phiField(r, beta, mu, 10);
+                    const geff = effectiveGravity(r, beta, mu, 10);
+                    csv += `${r.toFixed(1)},${vk.toFixed(2)},${vobs.toFixed(2)},${vtstu.toFixed(2)},${ecart.toFixed(2)},${phi.toFixed(6)},${geff.toFixed(6)}\n`;
+                }
+
+            } else if(mode === 'blackhole') {
+                csv = `# ÆTHER/TSTU — Profil Trou Noir | β=${beta.toFixed(3)} μ=${mu.toFixed(3)} masse=${mass}M☉ | ${ts}\n`;
+                csv += `phase_actuelle,${phase}\n`;
+                csv += `rayon_actuel_km,${(bhRadius/1000).toFixed(1)}\n`;
+                csv += `rayon_schwarzschild_km,${(schwarzschildRadius(mass)/1000).toFixed(1)}\n\n`;
+                csv += `r_km,phi_r,densite_norm,ratio_r_rs\n`;
+                const rs = schwarzschildRadius(mass);
+                for(let logr = 1; logr <= 7; logr += 0.1) {
+                    const r = Math.pow(10, logr);
+                    const rho = (r < bhRadius) ? bhDensity : bhDensity * Math.pow(bhRadius / r, 3);
+                    const phi = phiField(r / 1000, beta, mu, rho / 1e6);
+                    csv += `${r.toFixed(0)},${phi.toFixed(6)},${(rho/bhDensity).toExponential(3)},${(r/rs).toFixed(4)}\n`;
+                }
+
+            } else { // brain
+                csv = `# ÆTHER/TSTU — Synchronisation Neuronale Kuramoto | β=${beta.toFixed(3)} μ=${mu.toFixed(3)} N=${neurons.length} | ${ts}\n`;
+                csv += `# Paramètre d'ordre r(t) — TSTU vs Standard\n`;
+                csv += `# K_tstu=${(0.6 + beta*mu*8).toFixed(3)}  K_gr=0.080  K_critique≈0.250\n\n`;
+                csv += `t_ms,r_tstu,r_gr,etat_tstu,perturbe\n`;
+                syncHistory.forEach(pt => {
+                    const etat = pt.r_tstu < 0.3 ? 'chaos' : (pt.r_tstu < 0.7 ? 'transition' : 'synchronise');
+                    csv += `${pt.t.toFixed(1)},${pt.r_tstu.toFixed(4)},${pt.r_gr.toFixed(4)},${etat},${pt.perturbed ? 1 : 0}\n`;
+                });
+                // Current neuron phases snapshot
+                csv += `\n# Snapshot phases neurones au t=${(time*100).toFixed(0)}ms\n`;
+                csv += `neurone,phase_tstu_rad,phase_gr_rad,omega_rad_s\n`;
+                neurons.forEach((n, i) => {
+                    csv += `${i},${n.phase_tstu.toFixed(4)},${n.phase_gr.toFixed(4)},${n.omega.toFixed(4)}\n`;
                 });
             }
+
             const a = document.createElement('a');
             a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
-            a.download = `aether_${mode}_data.csv`;
+            a.download = `aether_${mode}_observables_${ts}.csv`;
             a.click();
         }
 
