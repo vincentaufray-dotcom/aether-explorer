@@ -2004,6 +2004,12 @@
             if(newMode === 'aetheron') {
                 setTimeout(() => { aeRunning = true; animating = true; }, 400);
             }
+            // Auto-start TNO animation
+            if(newMode === 'p9') {
+                animating = true;
+                // Reset periAnimT so animation restarts fresh
+                tnoObjects.forEach(o => { o.periAnimT = 0; });
+            }
         }
 
         function toggleAnim() {
@@ -2423,17 +2429,19 @@
         
         function updateP9(dt) {
             tnoObjects.forEach(o => {
-                // Fast enough to see orbital motion — 20x faster than before
-                o.theta += 0.004 * dt * (100 / Math.max(o.a, 100));
-                // Slowly animate perihelion arrows converging (TSTU) or drifting (GR)
-                if(!o.periAnimT) o.periAnimT = 0;
-                o.periAnimT += dt * 0.3;
-                // TSTU: perihelion slowly pulled toward cluster angle
-                const target = tnoMeanObs;
-                const diff = target - o.peri_tstu_base;
-                o.peri_tstu = o.peri_tstu_base + diff * Math.min(1, o.periAnimT);
-                // GR: perihelion drifts randomly
-                o.peri_gr = o.peri_gr_base + Math.sin(o.periAnimT * 0.4 + o.a) * 15;
+                // Orbital motion — clearly visible
+                o.theta += 0.012 * dt * (150 / Math.max(o.a, 150));
+
+                // periAnimT grows forever — drives cyclic animation
+                o.periAnimT = (o.periAnimT || 0) + dt * 0.08;
+
+                // TSTU: arrows oscillate tightly around cluster angle ~300°
+                // Small amplitude wobble — they stay NEAR the target, visibly grouped
+                const wobble = Math.sin(o.periAnimT + o.a * 0.003) * 18;
+                o.peri_tstu = tnoMeanObs + wobble;
+
+                // GR: arrows wander slowly across full 360° — perpetual drift
+                o.peri_gr = o.peri_gr_base + o.periAnimT * 25 + Math.sin(o.periAnimT * 0.7 + o.ecc * 5) * 45;
             });
         }
         
@@ -2867,56 +2875,54 @@
             tnoObjects.forEach(o => {
                 const periDeg = isTSTU ? o.peri_tstu : o.peri_gr;
                 const peri = periDeg * Math.PI / 180;
-                const rPerih = o.a * (1 - o.ecc);
-                const rAph   = o.a * (1 + o.ecc);
 
-                // Draw orbit ellipse (simplified as circle scaled to semi-major axis)
-                ctx.strokeStyle = o.color + '22';
-                ctx.lineWidth = 1; ctx.setLineDash([2,4]);
+                // Draw orbit circle
+                ctx.strokeStyle = o.color + '18';
+                ctx.lineWidth = 1; ctx.setLineDash([2,5]);
                 ctx.beginPath();
                 ctx.arc(cx, cy, o.a * scl, 0, Math.PI * 2);
                 ctx.stroke(); ctx.setLineDash([]);
 
-                // Perihelion arrow — thicker and longer, color indicates clustering
-                const arrowLen = Math.max(25, Math.min(80, rPerih * scl * 2));
-                const arrowColor = isTSTU
-                    ? (peri_anim_complete ? o.color : o.color + '88')
-                    : o.color + '66';
-                ctx.strokeStyle = arrowColor;
-                ctx.lineWidth = isTSTU ? 2.5 : 1.5;
+                // PERIHELION ARROW — large, from center outward to edge of canvas
+                // This is the KEY visual: all arrows pointing same direction = clustering
+                const arrowR = Math.min(w, h) * 0.38; // arrow reaches near edge
+                const ax2 = cx + Math.cos(peri) * arrowR;
+                const ay2 = cy + Math.sin(peri) * arrowR;
+
+                ctx.strokeStyle = o.color + (isTSTU ? 'cc' : '66');
+                ctx.lineWidth = isTSTU ? 3 : 2;
                 ctx.beginPath();
                 ctx.moveTo(cx, cy);
-                ctx.lineTo(cx + Math.cos(peri) * arrowLen, cy + Math.sin(peri) * arrowLen);
+                ctx.lineTo(ax2, ay2);
                 ctx.stroke();
-                // Arrow head
-                const ax = cx + Math.cos(peri) * arrowLen;
-                const ay = cy + Math.sin(peri) * arrowLen;
-                ctx.fillStyle = arrowColor;
+
+                // Arrow head — big triangle
+                const headSize = isTSTU ? 10 : 7;
+                const angle = Math.atan2(ay2 - cy, ax2 - cx);
+                ctx.fillStyle = o.color + (isTSTU ? 'cc' : '66');
                 ctx.beginPath();
-                ctx.arc(ax, ay, isTSTU ? 4 : 3, 0, Math.PI * 2);
+                ctx.moveTo(ax2, ay2);
+                ctx.lineTo(ax2 - headSize * Math.cos(angle - 0.4), ay2 - headSize * Math.sin(angle - 0.4));
+                ctx.lineTo(ax2 - headSize * Math.cos(angle + 0.4), ay2 - headSize * Math.sin(angle + 0.4));
+                ctx.closePath();
                 ctx.fill();
 
-                // Current TNO position on orbit
-                const r_now = Math.min(o.a * scl, (o.a * (1-o.ecc*o.ecc) / (1 + o.ecc * Math.cos(o.theta - peri))) * scl);
+                // Current TNO position
+                const r_now = Math.min(o.a * scl, (o.a * (1-o.ecc*o.ecc) / Math.max(0.1, 1 + o.ecc * Math.cos(o.theta - peri))) * scl);
                 const px = cx + Math.cos(o.theta) * r_now;
                 const py = cy + Math.sin(o.theta) * r_now;
 
-                // Object dot — glowing
-                const grd = ctx.createRadialGradient(px, py, 0, px, py, 7);
+                const grd = ctx.createRadialGradient(px, py, 0, px, py, 8);
                 grd.addColorStop(0, o.color);
                 grd.addColorStop(1, 'rgba(0,0,0,0)');
                 ctx.fillStyle = grd;
-                ctx.beginPath();
-                ctx.arc(px, py, 7, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI * 2); ctx.fill();
                 ctx.fillStyle = o.color;
-                ctx.beginPath();
-                ctx.arc(px, py, isTSTU ? 4 : 3, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();
 
-                // Name label
-                ctx.fillStyle = o.color + 'cc'; ctx.font = '9px Arial';
-                ctx.fillText(o.name, px + 6, py - 2);
+                // Name near arrow tip
+                ctx.fillStyle = o.color; ctx.font = 'bold 9px Arial';
+                ctx.fillText(o.name, ax2 + Math.cos(peri) * 6, ay2 + Math.sin(peri) * 6);
             });
 
             // TSTU: clustering cone
@@ -2956,6 +2962,19 @@
             sg.addColorStop(0, '#ffff88'); sg.addColorStop(1, '#ff8800');
             ctx.fillStyle = sg;
             ctx.beginPath(); ctx.arc(cx, cy, 9, 0, Math.PI * 2); ctx.fill();
+
+            // Title at top
+            ctx.fillStyle = isTSTU ? 'rgba(0,212,255,0.9)' : 'rgba(255,100,100,0.9)';
+            ctx.font = 'bold 13px Arial';
+            const title = isTSTU
+                ? (lang==='fr' ? '✅ ÆTHER : périhélies qui convergent' : '✅ ÆTHER: perihelia converging')
+                : (lang==='fr' ? '❌ GR : périhélies dispersés (anomalie)' : '❌ GR: scattered perihelia (anomaly)');
+            ctx.fillText(title, 12, 22);
+            ctx.fillStyle = '#666'; ctx.font = '10px Arial';
+            const sub = isTSTU
+                ? (lang==='fr' ? 'Les flèches pointent dans la même direction — pas de Planète 9' : 'Arrows point same direction — no Planet 9 needed')
+                : (lang==='fr' ? 'Les flèches pointent partout — Planète 9 introuvable' : 'Arrows point everywhere — Planet 9 never found');
+            ctx.fillText(sub, 12, 38);
 
             // Stats panel
             const periAngles = tnoObjects.map(o => isTSTU ? o.peri_tstu : o.peri_gr);
