@@ -4,6 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ÆTHER Universe Explorer</title>
+
+    <!-- Google Analytics GA4 — remplacer G-XXXXXXXXXX par ton Measurement ID -->
+    <!-- Pour obtenir ton ID : analytics.google.com → Créer propriété → Flux de données web -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            page_title: 'ÆTHER Universe Explorer',
+            send_page_view: true
+        });
+        // Helper pour événements custom
+        function trackEvent(action, params) {
+            if(typeof gtag !== 'undefined') {
+                gtag('event', action, params || {});
+            }
+        }
+    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
@@ -208,6 +227,27 @@
             border: 1px solid rgba(0,180,255,0.4);
         }
         
+        .ae-regime-btn {
+            background: rgba(100,0,200,0.15);
+            border: 1px solid rgba(170,0,255,0.35);
+            color: #cc88ff;
+            border-radius: 8px;
+            padding: 5px 12px;
+            font-size: 0.82em;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+        }
+        .ae-regime-btn:hover { background: rgba(170,0,255,0.25); }
+        .ae-regime-btn.active {
+            background: rgba(170,0,255,0.35);
+            border-color: #aa00ff;
+            color: #fff;
+            font-weight: 700;
+        }
+        
         canvas { 
             background: #000; 
             border-radius: 10px; 
@@ -256,26 +296,63 @@
             border-color: #00d4ff;
         }
         
-        .timeline-bar { margin-top: 15px; }
+        .timeline-bar { margin-top: 12px; }
         .timeline-label { 
             font-size: 0.85em; 
             color: #00d4ff; 
             margin-bottom: 5px; 
             font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+        .timeline-transport {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .transport-btn {
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.3);
+            color: #00d4ff;
+            border-radius: 4px;
+            padding: 2px 7px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: background 0.15s;
+            line-height: 1.4;
+        }
+        .transport-btn:hover { background: rgba(0,212,255,0.25); }
+        .transport-btn.active { background: rgba(0,212,255,0.3); border-color: #00d4ff; }
         .timeline-progress { 
             width: 100%; 
-            height: 6px; 
+            height: 10px; 
             background: rgba(0,0,0,0.5); 
-            border-radius: 3px; 
-            overflow: hidden;
+            border-radius: 5px; 
             border: 1px solid rgba(0,212,255,0.3);
+            cursor: pointer;
+            position: relative;
+            user-select: none;
         }
+        .timeline-progress:hover { border-color: rgba(0,212,255,0.7); }
         .timeline-fill { 
             height: 100%; 
             background: linear-gradient(90deg, #00d4ff, #00ffff); 
-            border-radius: 3px; 
-            transition: width 0.1s linear;
+            border-radius: 5px; 
+            transition: width 0.05s linear;
+            pointer-events: none;
+        }
+        .timeline-thumb {
+            position: absolute;
+            top: 50%;
+            width: 14px;
+            height: 14px;
+            background: #00d4ff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            box-shadow: 0 0 6px rgba(0,212,255,0.8);
+            transition: left 0.05s linear;
         }
         
         .controls-panel { 
@@ -767,9 +844,29 @@
                 </div>
                 
                 <div class="timeline-bar">
-                    <div class="timeline-label"><span id="lblSimTime">Temps de simulation</span> : <span id="timeDisplay">0</span></div>
-                    <div class="timeline-progress">
+                    <div class="timeline-label">
+                        <span id="lblSimTime">Temps de simulation</span> : <span id="timeDisplay">0</span>
+                        <div class="timeline-transport">
+                            <button class="transport-btn" onclick="transportStep(-10)" title="Reculer (−10)">⏮</button>
+                            <button class="transport-btn" onclick="transportStep(-1)" title="Reculer (−1)">⏪</button>
+                            <button class="transport-btn" id="transportPlayBtn" onclick="toggleAnim()" title="Play/Pause">⏸</button>
+                            <button class="transport-btn" onclick="transportStep(1)" title="Avancer (+1)">⏩</button>
+                            <button class="transport-btn" onclick="transportStep(10)" title="Avancer (+10)">⏭</button>
+                        </div>
+                    </div>
+                    <div class="timeline-progress" id="timelineProgress" title="Cliquez ou glissez pour naviguer">
                         <div class="timeline-fill" id="timelineFill" style="width: 0%;"></div>
+                        <div class="timeline-thumb" id="timelineThumb" style="left: 0%;"></div>
+                    </div>
+                    <div id="phaseExplainer" style="display:none; font-size:0.78em; color:#aaa; margin-top:6px; padding:6px 10px; background:rgba(0,0,20,0.7); border-radius:6px; border-left:3px solid #ffaa00;"></div>
+                    <!-- Ætheron screening bar — visible only in aetheron mode -->
+                    <div id="aeScreeningBar" style="display:none; margin-top:8px;">
+                        <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-bottom:6px;">
+                            <button class="ae-regime-btn active" id="aeBtn0" onclick="selectAeRegime(0)">🌌 <span id="aeLabel0">Cosmologique</span></button>
+                            <button class="ae-regime-btn" id="aeBtn1" onclick="selectAeRegime(1)">🌍 <span id="aeLabel1">Terre</span></button>
+                            <button class="ae-regime-btn" id="aeBtn2" onclick="selectAeRegime(2)">☀️ <span id="aeLabel2">Soleil</span></button>
+                        </div>
+                        <div id="aeRegimeExplainer" style="font-size:0.78em; padding:6px 10px; background:rgba(0,0,20,0.7); border-radius:6px; border-left:3px solid #aa00ff; color:#ccc;"></div>
                     </div>
                 </div>
             </div>
@@ -935,13 +1032,13 @@
                 solar_titleL:'🔵 ÆTHER/TSTU (9 planètes)', solar_titleR:'⚪ Relativité Générale',
                 solar_m1:'Précession Mercure (″/siècle)', solar_m2:'Rayon Screening (AU)',
                 solar_m3:'Déviation (%)', solar_m4:'Années', solar_infoTitle:'☉ Système Solaire Complet',
-                solar_infoText:'Visualisation complète du système solaire (Mercure → Pluton). Le champ scalaire φ est <strong>écranté</strong> près du Soleil (β &lt; 0.1) : β_eff &lt; 10⁻⁷ (facteur ×10⁶, Addendum A Table 1). La tension augmente vers les planètes externes (régime non-écranté).',
+                solar_infoText:'<strong>Le problème :</strong> La Relativité Générale prédit très bien les orbites planétaires — mais elle requiert une constante cosmologique Λ mystérieuse pour expliquer l\'accélération de l\'univers, et ne dit rien sur l\'origine du couplage entre matière et géométrie.<br><br><strong>Ce que TSTU prédit ici :</strong> Un champ scalaire φ modifie G de manière locale. Près du Soleil (haute densité), il est <strong>écranté</strong> — la physique newtonienne est préservée, les tests Cassini et LLR sont satisfaits. Vers les planètes externes, φ commence à se libérer. La précession de Mercure est reproduite sans invoquer de paramètre libre cosmologique.<br><br>β_eff &lt; 10⁻⁷ dans le Système Solaire (Addendum A Table 1). <span style="color:#ffaa00">Cliquez une planète pour son contexte physique.</span>',
                 solar_legendTitle:'Dynamique en temps réel — Cliquez pour focus',
                 p9_titleL:'🔵 ÆTHER/TSTU (Clustering φ)', p9_titleR:'⚪ GR Standard (besoin P9)',
                 p9_m1:'Objets TNO affichés', p9_m2:'Clustering observé (°)',
                 p9_m3:'Clustering ÆTHER (°)', p9_m4:'Tension φ externe',
                 p9_infoTitle:'🔭 Anomalies TNO — Clustering sans Planète 9',
-                p9_infoText:'Les objets trans-neptuniens extrêmes (Sedna, VP₁₁₃…) ont leurs périhélies <strong>regroupées</strong> (~300°). ÆTHER/TSTU explique ce regroupement par la <strong>tension accrue du champ φ dans le vide externe</strong> — <em>sans masse supplémentaire</em>.',
+                p9_infoText:'<strong>Le problème :</strong> Les objets trans-neptuniens extrêmes (Sedna, VP₁₁₃, 2015 BP₅₁₉…) ont leurs périhélies anormalement regroupées autour de ~300°. ΛCDM ne peut pas l\'expliquer — il faudrait une <strong>Planète 9</strong> de 5-10 masses terrestres à ~500 UA. Mais après 10 ans de recherche intensive, <em>aucune planète n\'a été trouvée</em>.<br><br><strong>Ce que TSTU prédit ici :</strong> Au-delà de Neptune, la densité est si faible que le champ φ n\'est plus écranté. Sa tension crée un biais directionnel qui attire statistiquement les périhélies — <em>sans aucune masse supplémentaire</em>. Les mêmes paramètres β=0.095 et μ=1.018 que pour la cosmologie reproduisent le clustering observé.',
                 p9_legendTitle:'Légende — objets TNO',
                 p9_leg1:'● Flèches = direction des périhélies', p9_leg2:'● Zone bleue = clustering prédit par φ', p9_leg3:'● Zone rouge = incertitude GR (P9 requise)',
                 gal_titleL:'🌀 ÆTHER (Pas de Matière Noire)', gal_titleR:'⚫ Modèle Matière Noire',
@@ -949,26 +1046,27 @@
                 gal_m1:'v @ 10 kpc (km/s)', gal_m2:'Masse Manquante (%)',
                 gal_m3:'Correction ÆTHER (%)', gal_m4:'Temps (Myr)',
                 gal_infoTitle:'🌀 Rotation Galactique',
-                gal_infoText:'Dans les halos galactiques et vides cosmiques, φ est <strong>tendu</strong> (μ > 1). ÆTHER/TSTU explique les courbes de rotation plates <strong>sans nécessiter de matière noire</strong>.',
+                gal_infoText:'<strong>Le problème :</strong> Les étoiles en périphérie des galaxies orbitent <em>trop vite</em> — beaucoup plus vite que ne le prédit la gravité newtonienne de la matière visible. Depuis les années 1970, la physique standard invoque une <strong>matière noire</strong> hypothétique formant un halo invisible (85% de la masse galactique). Après 50 ans, <em>aucune particule de matière noire n\'a jamais été détectée directement</em>.<br><br><strong>Ce que TSTU prédit ici :</strong> Dans les halos galactiques, la densité est faible — φ est peu écranté et augmente G_eff. Les étoiles bleues (panneau gauche) sont en régime φ-actif : leur vitesse orbitale est naturellement amplifiée. Les paramètres sont fixés par Pantheon+ (β=0.095, μ=1.018) — pas ajustés sur les galaxies. Glissez μ pour voir l\'effet en temps réel.',
                 bh_titleL:'🕳️ Trou Noir ÆTHER', bh_titleR:'⚫ Trou Noir Standard',
                 bh_extraTitle:'📊 Profil Champ Scalaire φ(r) et Densité ρ(r)',
                 bh_m1:'Rayon (km)', bh_m2:'Densité (ρ/ρ₀)', bh_m3:'φ/φ₀', bh_m4:'R_s (km)',
                 bh_infoTitle:'🕳️ Formation Trou Noir — ÆTHER vs Standard',
-                bh_infoText:'<strong>Cliquez "💥 Effondrement" pour lancer l\'animation.</strong><br><br>🔵 <strong>Panneau ÆTHER :</strong> φ → φ₀ (vide restauré), singularité évitée, jets polaires.<br><br>⚫ <strong>Panneau Standard :</strong> ρ → ∞ au centre — singularité nue, GR échoue.',
+                bh_infoText:'<strong>Le problème :</strong> La Relativité Générale prédit qu\'un effondrement gravitationnel massif crée une <strong>singularité</strong> — un point où la densité devient infinie et les équations cessent de fonctionner. C\'est un aveu d\'échec mathématique. La physique telle qu\'on la connaît s\'arrête à ce point.<br><br><strong>Ce que TSTU prédit ici :</strong> Le champ φ résiste à la compression infinie. En approchant r→0, β_eff → 0 : le couplage au champ s\'annule, bloquant l\'effondrement avant la singularité. L\'énergie est expulsée sous forme de <strong>jets polaires relativistes</strong> — observés réellement dans les AGN et quasars. Le vide est restauré : φ → φ₀.<br><br>Comparez les deux panneaux : à gauche, TSTU évite la singularité. À droite, GR produit ρ → ∞.',
                 brain_titleL:'🧠 Conscience ÆTHER (Synchronisé)', brain_titleR:'⚪ Oscillateurs Indépendants (Chaos)',
                 brain_extraTitle:'📊 Paramètre d\'Ordre de Synchronisation',
                 brain_m1:'Ordre Sync (r)', brain_m2:'K_eff (Hz)', brain_m3:'État Cohérence', brain_m4:'Temps (ms)',
                 brain_infoTitle:'🧠 Émergence de la Conscience — Kuramoto × ÆTHER (Paper VII)',
-                brain_infoText:'<strong>Paper VII :</strong> N neurones pyramidaux L5 à 40 Hz (Δf=10.6 Hz, patch-clamp). K<sub>eff</sub>=33.3 Hz (ÆTHER) dérivé sans paramètre libre via D×Y_HH×τ_syn. K<sub>c</sub>=19.9 Hz (Strogatz numérique). Ratio K<sub>eff</sub>/K<sub>c</sub> ≈ <strong>2</strong> → criticité auto-organisée.<br><br>K_GR=8 Hz &lt; K<sub>c</sub> → chaos permanent. Cliquez <em>"⚡ Perturber"</em> : simule une rupture topologique (kétamine). Le réseau ÆTHER <strong>récupère</strong>.',
+                brain_infoText:'<strong>Le problème :</strong> Pourquoi le cerveau est-il conscient ? La physique standard n\'a pas de réponse — la conscience reste un phénomène inexpliqué. On sait que les cerveaux conscients opèrent à la <strong>criticité</strong> (frontière ordre/chaos), mais on ne sait pas pourquoi ils s\'y maintiennent naturellement.<br><br><strong>Ce que TSTU explore ici (Paper VII, exploratoire) :</strong> Le même invariant géométrique Y du champ φ qui couple à la gravité pourrait coupler aux gradients ioniques des neurones pyramidaux L5. Il en résulterait K_eff = D×Y_HH×τ_syn = <strong>33.3 Hz</strong>, exactement <strong>2×K_c</strong> = criticité auto-organisée — sans paramètre libre.<br><br>Panneau gauche : réseau ÆTHER (K_eff = 33.3 Hz > K_c). Panneau droit : GR standard (K_GR = 8 Hz &lt; K_c) → chaos permanent. Cliquez <em>"⚡ Perturber"</em> pour simuler une anesthésie (kétamine).',
                 jwst_titleL:'🔵 ÆTHER — Geff = G×(1+ε∆)', jwst_titleR:'⚫ ΛCDM — Gravité Standard',
                 jwst_extraTitle:'📊 Course Cosmique : f_core(t) & SMF observée z~8-10 (Labbé+2023, Harikane+2022, Finkelstein+2023)',
                 jwst_m1:'f_core ÆTHER (%)', jwst_m2:'f_core ΛCDM (%)', jwst_m3:'Avance ÆTHER', jwst_m4:'Étape',
                 jwst_infoTitle:'🔭 JWST — Galaxies Massives à z≳8 (Paper III Addendum)',
+                jwst_infoText:'<strong>Le problème :</strong> Le télescope James Webb a observé des galaxies <em>extrêmement massives</em> (>10¹⁰ M☉) dès z≈8-10, soit seulement 500-700 millions d\'années après le Big Bang. ΛCDM prédit qu\'il est <em>impossible</em> d\'assembler autant de matière aussi vite — la gravité standard n\'a pas le temps. Ce résultat a créé une tension majeure avec le modèle standard.<br><br><strong>Ce que TSTU prédit ici (Paper III) :</strong> À haut redshift, le champ φ est non-écranté dans les vides primordiaux. G_eff = G×(1+ε∆) accélère l\'effondrement gravitationnel des premières structures. La fonction de masse stellaire est décalée de ΔlogM★ ~ 0.5-1.0 — les galaxies massives se forment naturellement plus tôt.<br><br>Lancez la simulation pour voir les deux univers s\'effondrer : ÆTHER (cyan) vs ΛCDM (gris). Le panneau droit montre les données JWST réelles (Labbé+2023, Harikane+2022) vs les prédictions théoriques.',
                 aetheron_titleL:'⚛️ Ætheron — Champ ΔM 1D (Paper IV)', aetheron_titleR:'🔬 Analogue BEC ¹⁶⁴Dy — Paper VIII',
                 aetheron_extraTitle:'📊 Série temporelle ΔM & Spectre | Courbe Q(ω) Vakhitov-Kolokolov',
-                aetheron_m1:'ω_peak (unités sim.)', aetheron_m2:'Facteur Q', aetheron_m3:'Harmoniques détectées', aetheron_m4:'Énergie core Q_osc',
+                aetheron_m1:'ω_peak (unités sim.)', aetheron_m2:'α = λ₄²/(λ₆m²)', aetheron_m3:'Harmoniques détectées', aetheron_m4:'Énergie core Q_osc',
                 aetheron_infoTitle:'⚛️ Ætherons — Oscillons Classiques & Analogue BEC (Papers IV + VIII)',
-                aetheron_infoText:'<strong>Gauche (Paper IV) :</strong> Oscillon 1D leapfrog, potentiel sextique V(φ)=½m²φ²−λ₄φ⁴/4+λ₆φ⁶/6. Stable si α=λ₄²/(λ₆m²)>4. Régimes screening : β_eff=8.8×10⁻² (cosmo) → 4.2×10⁻⁸ (Terre) — Addendum A, Table 1.<br><br><strong>Droite (Paper VIII) :</strong> Courbe Q(ω) VK — mapping TSTU→BEC ¹⁶⁴Dy. Q_max=21.7 (α=9), 37.9 (α=5), 63.2 (α=3). Fenêtre Feshbach B∈[150,207]G. Le critère VK (dQ/dω=0) marque le seuil de stabilité.<br><br>⚠️ Addendum IV : analogues classiques — non émergence QM.',
+                aetheron_infoText:'<strong>Qu\'est-ce qu\'un Ætheron ?</strong><br>Un Ætheron est une solution localisée et auto-entretenue du champ scalaire ΔM de TSTU — une sorte de « énergie coincée dans l\'espace ». Imaginez une vague qui ne se disperse pas : au lieu de s\'étaler, elle rebondit indéfiniment sur elle-même grâce à la forme non-linéaire du potentiel. Ces structures sont des candidats théoriques à la matière noire ultra-légère.<br><br><strong>Gauche (Paper IV) :</strong> Oscillon 1D leapfrog, potentiel sextique V(φ)=½m²φ²−λ₄φ⁴/4+λ₆φ⁶/6. Stable si α=λ₄²/(λ₆m²)>4. Régimes screening : β_eff=8.8×10⁻² (cosmo) → 4.2×10⁻⁸ (Terre) — Addendum A, Table 1.<br><br><strong>Droite (Paper VIII) :</strong> Courbe Q(ω) VK — mapping TSTU→BEC ¹⁶⁴Dy. Q_max=21.7 (α=9), 37.9 (α=5), 63.2 (α=3). Fenêtre Feshbach B∈[150,207]G. Le critère VK (dQ/dω=0) marque le seuil de stabilité.<br><br>⚠️ Addendum IV : analogues classiques — non émergence QM.',
                 lblAetheron:'Ætheron',
             },
             en: {
@@ -990,13 +1088,13 @@
                 solar_titleL:'🔵 ÆTHER/TSTU (9 planets)', solar_titleR:'⚪ General Relativity',
                 solar_m1:'Mercury Precession (″/century)', solar_m2:'Screening Radius (AU)',
                 solar_m3:'Deviation (%)', solar_m4:'Years', solar_infoTitle:'☉ Complete Solar System',
-                solar_infoText:'Full solar system (Mercury → Pluto). The scalar field φ is <strong>screened</strong> near the Sun (β &lt; 0.1): β_eff &lt; 10⁻⁷ (factor ×10⁶, Addendum A Table 1). Tension increases toward outer planets (unscreened regime).',
+                solar_infoText:'<strong>The problem:</strong> General Relativity predicts planetary orbits very well — but requires a mysterious cosmological constant Λ to explain cosmic acceleration, and says nothing about the origin of the matter-geometry coupling.<br><br><strong>What TSTU predicts here:</strong> A scalar field φ modifies G locally. Near the Sun (high density), it is <strong>screened</strong> — Newtonian physics is preserved, Cassini and LLR tests are satisfied. Toward outer planets, φ begins to emerge. Mercury\'s perihelion precession is reproduced without invoking a free cosmological parameter.<br><br>β_eff &lt; 10⁻⁷ in the Solar System (Addendum A Table 1). <span style="color:#ffaa00">Click a planet for its physical context.</span>',
                 solar_legendTitle:'Real-time dynamics — Click to focus',
                 p9_titleL:'🔵 ÆTHER/TSTU (φ Clustering)', p9_titleR:'⚪ Standard GR (needs P9)',
                 p9_m1:'TNO objects shown', p9_m2:'Observed clustering (°)',
                 p9_m3:'ÆTHER clustering (°)', p9_m4:'φ external tension',
                 p9_infoTitle:'🔭 TNO Anomalies — Clustering without Planet 9',
-                p9_infoText:'Extreme trans-Neptunian objects (Sedna, VP₁₁₃…) have <strong>clustered</strong> perihelia (~300°). ÆTHER/TSTU explains this via <strong>enhanced φ field tension in the outer void</strong> — <em>without extra mass</em>.',
+                p9_infoText:'<strong>The problem:</strong> Extreme trans-Neptunian objects (Sedna, VP₁₁₃, 2015 BP₅₁₉…) have anomalously clustered perihelia around ~300°. ΛCDM cannot explain this — it would require a <strong>Planet 9</strong> of 5-10 Earth masses at ~500 AU. But after 10 years of intensive searches, <em>no planet has been found</em>.<br><br><strong>What TSTU predicts here:</strong> Beyond Neptune, density is so low that the φ field is no longer screened. Its tension creates a directional bias that statistically pulls perihelia together — <em>without any extra mass</em>. The same parameters β=0.095 and μ=1.018 as for cosmology reproduce the observed clustering.',
                 p9_legendTitle:'Legend — TNO objects',
                 p9_leg1:'● Arrows = perihelion directions', p9_leg2:'● Blue zone = φ-ÆTHER clustering', p9_leg3:'● Red zone = GR uncertainty (P9 needed)',
                 gal_titleL:'🌀 ÆTHER (No Dark Matter)', gal_titleR:'⚫ Dark Matter Model',
@@ -1004,31 +1102,33 @@
                 gal_m1:'v @ 10 kpc (km/s)', gal_m2:'Missing Mass (%)',
                 gal_m3:'ÆTHER Correction (%)', gal_m4:'Time (Myr)',
                 gal_infoTitle:'🌀 Galactic Rotation',
-                gal_infoText:'In galactic halos and cosmic voids, φ is <strong>tensioned</strong> (μ > 1). ÆTHER/TSTU explains flat rotation curves <strong>without dark matter</strong>.',
+                gal_infoText:'<strong>The problem:</strong> Stars at the edges of galaxies orbit <em>too fast</em> — far faster than Newtonian gravity from visible matter predicts. Since the 1970s, standard physics invokes a hypothetical <strong>dark matter</strong> forming an invisible halo (85% of galactic mass). After 50 years, <em>no dark matter particle has ever been directly detected</em>.<br><br><strong>What TSTU predicts here:</strong> In galactic halos, density is low — φ is weakly screened and increases G_eff. Blue stars (left panel) are in the φ-active regime: their orbital speed is naturally amplified. Parameters are fixed by Pantheon+ (β=0.095, μ=1.018) — not tuned to galaxies. Slide μ to see the effect in real time.',
                 bh_titleL:'🕳️ ÆTHER Black Hole', bh_titleR:'⚫ Standard Black Hole',
                 bh_extraTitle:'📊 Scalar Field Profile φ(r) and Density ρ(r)',
                 bh_m1:'Radius (km)', bh_m2:'Density (ρ/ρ₀)', bh_m3:'φ/φ₀', bh_m4:'R_s (km)',
                 bh_infoTitle:'🕳️ Black Hole Formation — ÆTHER vs Standard',
-                bh_infoText:'<strong>Click "💥 Collapse" to start.</strong><br><br>🔵 <strong>ÆTHER panel:</strong> φ → φ₀ (void restored), no singularity, polar jets.<br><br>⚫ <strong>Standard panel:</strong> ρ → ∞ at centre — naked singularity, GR breaks down.',
+                bh_infoText:'<strong>The problem:</strong> General Relativity predicts that massive gravitational collapse creates a <strong>singularity</strong> — a point where density becomes infinite and the equations break down. This is a mathematical admission of failure. Physics as we know it stops at this point.<br><br><strong>What TSTU predicts here:</strong> The φ field resists infinite compression. Approaching r→0, β_eff → 0: the field coupling vanishes, halting collapse before the singularity. Energy is expelled as <strong>relativistic polar jets</strong> — actually observed in AGN and quasars. The void is restored: φ → φ₀.<br><br>Compare both panels: left, TSTU avoids the singularity. Right, GR produces ρ → ∞.',
                 brain_titleL:'🧠 ÆTHER Consciousness (Synchronized)', brain_titleR:'⚪ Independent Oscillators (Chaos)',
                 brain_extraTitle:'📊 Synchronization Order Parameter',
                 brain_m1:'Sync Order (r)', brain_m2:'K_eff (Hz)', brain_m3:'Coherence State', brain_m4:'Time (ms)',
                 brain_infoTitle:'🧠 Emergence of Consciousness — Kuramoto × ÆTHER (Paper VII)',
-                brain_infoText:'<strong>Paper VII:</strong> N Layer-5 pyramidal neurons at 40 Hz (Δf=10.6 Hz, patch-clamp). K<sub>eff</sub>=33.3 Hz (ÆTHER) derived without free parameters via D×Y_HH×τ_syn. K<sub>c</sub>=19.9 Hz (numerical Strogatz). Ratio K<sub>eff</sub>/K<sub>c</sub> ≈ <strong>2</strong> → self-organised criticality.<br><br>K_GR=8 Hz &lt; K<sub>c</sub> → permanent chaos. Click <em>"⚡ Perturb"</em>: simulates topology breaking (ketamine). ÆTHER network <strong>recovers</strong>.',
+                brain_infoText:'<strong>The problem:</strong> Why is the brain conscious? Standard physics has no answer — consciousness remains unexplained. We know conscious brains operate at <strong>criticality</strong> (order/chaos boundary), but not why they naturally maintain this state.<br><br><strong>What TSTU explores here (Paper VII, exploratory):</strong> The same geometric invariant Y of the φ field that couples to gravity might couple to ionic gradients of L5 pyramidal neurons. This would give K_eff = D×Y_HH×τ_syn = <strong>33.3 Hz</strong>, exactly <strong>2×K_c</strong> = self-organised criticality — with no free parameter.<br><br>Left panel: ÆTHER network (K_eff = 33.3 Hz > K_c). Right panel: standard GR (K_GR = 8 Hz &lt; K_c) → permanent chaos. Click <em>"⚡ Perturb"</em> to simulate anaesthesia (ketamine).',
                 jwst_titleL:'🔵 ÆTHER — Geff = G×(1+ε∆)', jwst_titleR:'⚫ ΛCDM — Standard Gravity',
                 jwst_extraTitle:'📊 Cosmic Race: f_core(t) & Observed SMF z~8-10 (Labbé+2023, Harikane+2022, Finkelstein+2023)',
                 jwst_m1:'f_core ÆTHER (%)', jwst_m2:'f_core ΛCDM (%)', jwst_m3:'ÆTHER Advance', jwst_m4:'Step',
                 jwst_infoTitle:'🔭 JWST — Massive Galaxies at z≳8 (Paper III Addendum)',
+                jwst_infoText:'<strong>The problem:</strong> The James Webb Space Telescope observed <em>extremely massive</em> galaxies (>10¹⁰ M☉) as early as z≈8-10, just 500-700 million years after the Big Bang. ΛCDM predicts it is <em>impossible</em> to assemble so much mass so quickly — standard gravity does not have enough time. This result created a major tension with the standard model.<br><br><strong>What TSTU predicts here (Paper III):</strong> At high redshift, the φ field is unscreened in primordial voids. G_eff = G×(1+ε∆) accelerates gravitational collapse of the first structures. The stellar mass function is shifted by ΔlogM★ ~ 0.5-1.0 — massive galaxies naturally form earlier.<br><br>Launch the simulation to watch the two universes collapse: ÆTHER (cyan) vs ΛCDM (grey). The right panel shows real JWST data (Labbé+2023, Harikane+2022) vs theoretical predictions.',
                 aetheron_titleL:'⚛️ Ætheron — 1D ΔM Field (Paper IV)', aetheron_titleR:'🔬 BEC Analogue ¹⁶⁴Dy — Paper VIII',
                 aetheron_extraTitle:'📊 ΔM Time Series & Spectrum | Q(ω) Vakhitov-Kolokolov Curve',
-                aetheron_m1:'ω_peak (sim. units)', aetheron_m2:'Q Factor', aetheron_m3:'Harmonics detected', aetheron_m4:'Core energy Q_osc',
+                aetheron_m1:'ω_peak (sim. units)', aetheron_m2:'α = λ₄²/(λ₆m²)', aetheron_m3:'Harmonics detected', aetheron_m4:'Core energy Q_osc',
                 aetheron_infoTitle:'⚛️ Ætherons — Classical Oscillons & BEC Analogue (Papers IV + VIII)',
-                aetheron_infoText:'<strong>Left (Paper IV):</strong> 1D leapfrog oscillon, sextic potential V(φ)=½m²φ²−λ₄φ⁴/4+λ₆φ⁶/6. Stable if α=λ₄²/(λ₆m²)>4.<br><br><strong>Right (Paper VIII):</strong> Q(ω) VK curve — TSTU→BEC ¹⁶⁴Dy mapping. Q_max=21.7 (α=9), 37.9 (α=5), 63.2 (α=3). Feshbach window B∈[150,207]G. VK criterion (dQ/dω=0) marks stability threshold.<br><br>⚠️ Addendum IV: classical analogs — not QM emergence.',
+                aetheron_infoText:'<strong>What is an Ætheron?</strong><br>An Ætheron is a localised, self-sustaining solution of the TSTU scalar field ΔM — a kind of “energy locked in space”. Picture a wave that never disperses: instead of spreading out, it bounces back on itself indefinitely thanks to the non-linear shape of the potential. These structures are theoretical candidates for ultra-light dark matter.<br><br><strong>Left (Paper IV):</strong> 1D leapfrog oscillon, sextic potential V(φ)=½m²φ²−λ₄φ⁴/4+λ₆φ⁶/6. Stable if α=λ₄²/(λ₆m²)>4.<br><br><strong>Right (Paper VIII):</strong> Q(ω) VK curve — TSTU→BEC ¹⁶⁴Dy mapping. Q_max=21.7 (α=9), 37.9 (α=5), 63.2 (α=3). Feshbach window B∈[150,207]G. VK criterion (dQ/dω=0) marks stability threshold.<br><br>⚠️ Addendum IV: classical analogs — not QM emergence.',
                 lblAetheron:'Ætheron',
             }
         };
 
         function setLang(l) {
+            trackEvent('lang_switch', {lang: l});
             lang = l;
             const t = i18n[l];
             document.getElementById('langFR').style.background = l==='fr' ? 'rgba(0,212,255,0.35)' : 'rgba(0,0,0,0.3)';
@@ -1051,6 +1151,31 @@
             const zenodoSpan = document.getElementById('lblZenodoCommunity');
             if(zenodoSpan) zenodoSpan.textContent = l === 'fr' ? 'Communauté Zenodo — Papers I–IX' : 'Zenodo Community — Papers I–IX';
             updateUI();
+            updatePhaseExplainer();
+            // Refresh rigor badges with new lang
+            const BADGE2 = {
+                heuristic:   (lg) => `<span class="rigor-badge rigor-heuristic" title="${lg==='fr'?'Lois effectives φ(r) — non résolution Einstein modifiée':'Effective φ(r) laws — not modified Einstein solution'}">⚠️ ${lg==='fr'?'Lois effectives heuristiques':'Effective heuristic laws'}</span>`,
+                numeric:     (lg) => `<span class="rigor-badge rigor-numeric" title="${lg==='fr'?'Simulation numérique rigoureuse — schéma symplectique, énergie conservée':'Rigorous numerical simulation — symplectic scheme, energy conserved'}">✅ ${lg==='fr'?'Simulation numérique (N-body / PDE)':'Numerical simulation (N-body / PDE)'}</span>`,
+                analytic:    (lg) => `<span class="rigor-badge rigor-analytic" title="${lg==='fr'?'Prédiction analytique Paper VIII — testable ¹⁶⁴Dy':'Analytical prediction Paper VIII — testable ¹⁶⁴Dy'}">📐 ${lg==='fr'?'Prédiction analytique (Paper VIII)':'Analytical prediction (Paper VIII)'}</span>`,
+                qualitative: (lg) => `<span class="rigor-badge rigor-heuristic" title="${lg==='fr'?'Animation illustrative — non résolution GR numérique':'Illustrative animation — not numerical GR solution'}">⚠️ ${lg==='fr'?'Illustration qualitative':'Qualitative illustration'}</span>`,
+            };
+            const rigorMap2 = { solar:{left:'heuristic',right:'heuristic'}, p9:{left:'heuristic',right:'heuristic'}, galaxy:{left:'heuristic',right:'heuristic'}, blackhole:{left:'qualitative',right:'qualitative'}, brain:{left:'numeric',right:'heuristic'}, jwst:{left:'numeric',right:'numeric'}, aetheron:{left:'numeric',right:'analytic'} };
+            const rm2 = rigorMap2[mode] || {left:'heuristic',right:'heuristic'};
+            const bL = document.getElementById('rigorBadgeLeft');
+            const bR = document.getElementById('rigorBadgeRight');
+            if(bL) bL.innerHTML = BADGE2[rm2.left](lang);
+            if(bR) bR.innerHTML = BADGE2[rm2.right](lang);
+            // Refresh aetheron regime labels if visible
+            if(mode === 'aetheron') {
+                const regLabels = l === 'fr'
+                    ? ['Cosmologique', 'Terre', 'Soleil']
+                    : ['Cosmological', 'Earth', 'Sun'];
+                [0,1,2].forEach(i => {
+                    const lbl = document.getElementById('aeLabel' + i);
+                    if(lbl) lbl.textContent = regLabels[i];
+                });
+                if(typeof updateAeRegimeExplainer === 'function') updateAeRegimeExplainer();
+            }
         }
 
         // ── METHODOLOGY MODAL ────────────────────────────────────────────────
@@ -1377,7 +1502,7 @@
             ]
         };
 
-        function startTour() {
+        function startTour() { trackEvent('tour_start', {lang: lang});
             tourStep = 0;
             document.getElementById('tourOverlay').classList.add('active');
             renderTourStep();
@@ -1514,6 +1639,7 @@
             jwstDone = false;
         }
         initJWST();
+        setTimeout(initScrubber, 200);
 
         function jwstFcore(particles) {
             const cx = JWST_L / 2, cy = JWST_L / 2;
@@ -1564,16 +1690,65 @@
         const ctxE = document.getElementById('canvasExtra').getContext('2d');
 
         // DATA - COMPLETE SOLAR SYSTEM (9 planets!)
+        // Planet context info for dynamic explanation panel
+        const planetInfo = {
+            "Mercure": {
+                fr: "Mercure est le test clé de TSTU. À 0.387 UA, le champ φ est écranté par la densité solaire (β_eff ≈ 10⁻⁷). La différence de vitesse angulaire accumulée produit une précession de périhélie. En RG, cette précession vaut 43″/siècle. TSTU produit un effet similaire via G_eff(r).",
+                en: "Mercury is the key test of TSTU. At 0.387 AU, the φ field is screened by solar density (β_eff ≈ 10⁻⁷). The cumulative angular velocity difference produces perihelion precession. In GR this is 43″/century. TSTU produces a similar effect via G_eff(r).",
+                beta_eff: "~10⁻⁷", screening: "Fort", phi: "~φ₀"
+            },
+            "Vénus": {
+                fr: "Vénus à 0.72 UA reste en régime écranté. La différence TSTU/GR est très faible ici — l'orbite est quasi-circulaire et le champ φ reste proche de φ₀.",
+                en: "Venus at 0.72 AU remains in the screened regime. The TSTU/GR difference is very small here — the orbit is nearly circular and the φ field stays close to φ₀.",
+                beta_eff: "~10⁻⁶", screening: "Fort", phi: "≈φ₀"
+            },
+            "Terre": {
+                fr: "La Terre à 1 UA : l'écrantage chameleon est actif (β_eff ≈ 4.2×10⁻⁸, Addendum A Table 1). G_eff ≈ G standard. C'est pourquoi les tests de gravité terrestres ne détectent pas le champ φ.",
+                en: "Earth at 1 AU: chameleon screening is active (β_eff ≈ 4.2×10⁻⁸, Addendum A Table 1). G_eff ≈ G standard. This is why terrestrial gravity tests do not detect the φ field.",
+                beta_eff: "4.2×10⁻⁸", screening: "Fort", phi: "≈φ₀"
+            },
+            "Mars": {
+                fr: "Mars à 1.52 UA : l'écrantage commence à diminuer. β_eff augmente légèrement. L'effet TSTU reste sub-percent sur l'orbite, compatible avec les données de Mars Reconnaissance Orbiter.",
+                en: "Mars at 1.52 AU: screening begins to diminish. β_eff slightly increases. The TSTU effect remains sub-percent on the orbit, compatible with Mars Reconnaissance Orbiter data.",
+                beta_eff: "~10⁻⁶", screening: "Modéré", phi: "φ₀+ε"
+            },
+            "Jupiter": {
+                fr: "Jupiter à 5.2 UA : transition vers le régime semi-écranté. Le champ φ commence à s'écarter de φ₀. L'effet sur les lunes de Jupiter (Io, Europe) reste négligeable — compatible avec les observations Cassini.",
+                en: "Jupiter at 5.2 AU: transition to semi-screened regime. The φ field begins to deviate from φ₀. Effect on Jupiter moons (Io, Europa) remains negligible — compatible with Cassini observations.",
+                beta_eff: "~10⁻⁴", screening: "Partiel", phi: "φ₀+Δφ"
+            },
+            "Saturne": {
+                fr: "Saturne à 9.5 UA : régime de transition. La sonde Cassini a contraint β_eff < 10⁻⁵ ici — le screening chameleon assure la compatibilité (Addendum A, Table 1). L'effet TSTU reste invisible aux tests orbitaux.",
+                en: "Saturn at 9.5 AU: transition regime. The Cassini probe constrained β_eff < 10⁻⁵ here — chameleon screening ensures compatibility (Addendum A, Table 1). The TSTU effect remains invisible to orbital tests.",
+                beta_eff: "<10⁻⁵", screening: "Partiel", phi: "φ₀+Δφ"
+            },
+            "Uranus": {
+                fr: "Uranus à 19 UA : écrantage faible. Le champ φ s'écarte significativement de φ₀. La tension du champ commence à produire un biais orbital mesurable en principe — mais les anomalies TNO commencent au-delà (Sedna : 76 UA).",
+                en: "Uranus at 19 AU: weak screening. The φ field significantly departs from φ₀. Field tension begins producing a measurable orbital bias in principle — but TNO anomalies start beyond (Sedna: 76 AU).",
+                beta_eff: "~10⁻′", screening: "Faible", phi: "φ₀++"
+            },
+            "Neptune": {
+                fr: "Neptune à 30 UA : régime peu écranté. C'est ici que les anomalies de clustering des TNO commencent à être sensibles à la tension du champ φ. Voir mode TNO pour les détails.",
+                en: "Neptune at 30 AU: weakly screened regime. This is where TNO clustering anomalies begin to be sensitive to the φ field tension. See TNO mode for details.",
+                beta_eff: "~β/10", screening: "Faible", phi: "φ tendu"
+            },
+            "Pluton": {
+                fr: "Pluton à 39 UA : champ φ quasi non-écranté. La tension du champ atteint ~88% de sa valeur cosmologique (β_eff ≈ 0.088). C'est la frontière entre le Système Solaire et le vide cosmique.",
+                en: "Pluto at 39 AU: near-unscreened φ field. Field tension reaches ~88% of its cosmological value (β_eff ≈ 0.088). This is the boundary between the Solar System and the cosmic void.",
+                beta_eff: "~0.088", screening: "Très faible", phi: "φ cosmologique"
+            }
+        };
+
         const planets = [
-            {name: "Mercure", a: 0.387, spd: 0.241, color: "#999", size: 3, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
-            {name: "Vénus", a: 0.723, spd: 0.615, color: "#ffcc66", size: 5, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
-            {name: "Terre", a: 1.000, spd: 1.000, color: "#4488ff", size: 5, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
-            {name: "Mars", a: 1.524, spd: 1.881, color: "#ff6644", size: 4, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
-            {name: "Jupiter", a: 5.203, spd: 11.86, color: "#ffaa44", size: 10, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
-            {name: "Saturne", a: 9.537, spd: 29.46, color: "#eecc88", size: 9, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
-            {name: "Uranus", a: 19.19, spd: 84.01, color: "#88ddff", size: 7, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
-            {name: "Neptune", a: 30.07, spd: 164.8, color: "#4466ff", size: 7, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]},
-            {name: "Pluton", a: 39.48, spd: 248.0, color: "#ccaa88", size: 2, theta_tstu:0, theta_gr:0, trailL:[], trailR:[]}
+            {name: "Mercure", a: 0.387, spd: 0.241, color: "#999", size: 3, theta_tstu:0, theta_gr:0, trailL:[], trailR:[], precAngle:0, orbits:0},
+            {name: "Vénus", a: 0.723, spd: 0.615, color: "#ffcc66", size: 5, theta_tstu:0, theta_gr:0, trailL:[], trailR:[], precAngle:0, orbits:0},
+            {name: "Terre", a: 1.000, spd: 1.000, color: "#4488ff", size: 5, theta_tstu:0, theta_gr:0, trailL:[], trailR:[], precAngle:0, orbits:0},
+            {name: "Mars", a: 1.524, spd: 1.881, color: "#ff6644", size: 4, theta_tstu:0, theta_gr:0, trailL:[], trailR:[], precAngle:0, orbits:0},
+            {name: "Jupiter", a: 5.203, spd: 11.86, color: "#ffaa44", size: 10, theta_tstu:0, theta_gr:0, trailL:[], trailR:[], precAngle:0, orbits:0},
+            {name: "Saturne", a: 9.537, spd: 29.46, color: "#eecc88", size: 9, theta_tstu:0, theta_gr:0, trailL:[], trailR:[], precAngle:0, orbits:0},
+            {name: "Uranus", a: 19.19, spd: 84.01, color: "#88ddff", size: 7, theta_tstu:0, theta_gr:0, trailL:[], trailR:[], precAngle:0, orbits:0},
+            {name: "Neptune", a: 30.07, spd: 164.8, color: "#4466ff", size: 7, theta_tstu:0, theta_gr:0, trailL:[], trailR:[], precAngle:0, orbits:0},
+            {name: "Pluton", a: 39.48, spd: 248.0, color: "#ccaa88", size: 2, theta_tstu:0, theta_gr:0, trailL:[], trailR:[], precAngle:0, orbits:0}
         ];
         
         let p9 = {
@@ -1804,35 +1979,192 @@
             const idMap = { solar:'btnSolar', p9:'btnP9', galaxy:'btnGalaxy', blackhole:'btnBlackHole', brain:'btnBrain', jwst:'btnJwst', aetheron:'btnAetheron' };
             const btn = document.getElementById(idMap[mode] || '');
             if(btn) btn.classList.add('active');
-            
+
             document.getElementById('zenodoLeft').href = zenodoDOIs[mode];
             document.getElementById('zenodoRight').href = zenodoDOIs[mode];
-            
+
+            // Track mode switch
+            trackEvent('mode_switch', { mode_name: newMode, lang: lang });
+
             resetSim();
             updateUI();
+            updatePhaseExplainer();
+
+            // Auto-start collapse when entering blackhole mode
+            if(newMode === 'blackhole') {
+                setTimeout(() => {
+                    collapsing = true; animating = true;
+                    updatePhaseExplainer();
+                }, 800);
+            }
+            // Auto-start Aetheron simulation
+            if(newMode === 'aetheron') {
+                setTimeout(() => { aeRunning = true; animating = true; }, 400);
+            }
         }
 
-        function toggleAnim() { animating = !animating; }
+        function toggleAnim() {
+            animating = !animating;
+            const btn = document.getElementById('transportPlayBtn');
+            if(btn) btn.textContent = animating ? '⏸' : '▶';
+        }
+
+        // Transport step — mode-aware scrubbing
+        function transportStep(n) {
+            if(mode === 'blackhole') {
+                const rs = schwarzschildRadius(mass);
+                const step = 1e4 * Math.abs(n);
+                if(n < 0) {
+                    const targetRadius = Math.min(1e6, bhRadius + step * Math.abs(n));
+                    bhRadius = Math.max(rs, targetRadius);
+                    bhDensity = Math.max(1.0, bhDensity * Math.pow(0.98, Math.abs(n)));
+                    if(bhRadius >= 1e6 * 0.99) { phase = 'STABLE'; collapsing = false; }
+                    else if(bhRadius > rs * 1.5) phase = 'COLLAPSING';
+                    else if(bhRadius > rs * 1.05) phase = 'HORIZON';
+                    else phase = 'BLACK_HOLE';
+                } else {
+                    if(!collapsing) { collapsing = true; animating = true; }
+                    for(let i = 0; i < Math.abs(n) * 20; i++) updateBlackHole(0.016);
+                }
+                updateMetrics();
+            } else if(mode === 'aetheron') {
+                if(n > 0) {
+                    // Fast-forward: run N*50 leapfrog steps
+                    if(!aeRunning) { aeRunning = true; animating = true; }
+                    for(let i = 0; i < Math.abs(n) * 50; i++) updateAetheron(AE_DT);
+                } else {
+                    // Rewind: reinit and replay to earlier time
+                    const targetTime = Math.max(0, aeTime + n * 5);
+                    initAetheron();
+                    aeRunning = true;
+                    while(aeTime < targetTime) updateAetheron(AE_DT);
+                }
+                updateMetrics();
+            } else if(mode === 'jwst') {
+                if(n > 0) {
+                    if(!jwstRunning) { jwstRunning = true; animating = true; }
+                    for(let i = 0; i < Math.abs(n) * 5; i++) {
+                        if(jwstStep < JWST_T_MAX) {
+                            jwstLeapStep(jwstAether, G * (1 + jwstEpsDelta));
+                            jwstLeapStep(jwstLCDM, G);
+                            jwstFcoreAether.push(jwstFcore(jwstAether));
+                            jwstFcoreLCDM.push(jwstFcore(jwstLCDM));
+                            jwstStep++;
+                        }
+                    }
+                    updateMetrics();
+                } else {
+                    const back = Math.min(jwstStep - 1, Math.abs(n) * 5);
+                    jwstStep = Math.max(0, jwstStep - back);
+                    jwstFcoreAether = jwstFcoreAether.slice(0, jwstStep);
+                    jwstFcoreLCDM   = jwstFcoreLCDM.slice(0, jwstStep);
+                    updateMetrics();
+                }
+            } else {
+                // Generic: adjust simulation time for other modes
+                time += n * 0.5;
+                if(time < 0) time = 0;
+            }
+        }
+
+        // Scrubber interaction
+        function initScrubber() {
+            const bar = document.getElementById('timelineProgress');
+            if(!bar) return;
+            let dragging = false;
+
+            function seekTo(clientX) {
+                const rect = bar.getBoundingClientRect();
+                const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+                if(mode === 'blackhole') {
+                    const rs = schwarzschildRadius(mass);
+                    bhRadius = rs + (1e6 - rs) * (1 - frac);
+                    bhDensity = Math.max(1, Math.pow(frac * 100 + 1, 3));
+                    if(frac < 0.05) { phase = 'STABLE'; collapsing = false; }
+                    else if(frac < 0.5) { phase = 'COLLAPSING'; collapsing = true; }
+                    else if(frac < 0.9) { phase = 'HORIZON'; collapsing = true; }
+                    else { phase = 'BLACK_HOLE'; collapsing = true; bhRadius = rs; }
+                    updateMetrics();
+                } else if(mode === 'aetheron') {
+                    const targetTime = frac * 100;
+                    if(targetTime > aeTime) {
+                        if(!aeRunning) { aeRunning = true; animating = true; }
+                        while(aeTime < targetTime && aeTime < 100) updateAetheron(AE_DT);
+                    } else {
+                        initAetheron();
+                        aeRunning = true;
+                        while(aeTime < targetTime) updateAetheron(AE_DT);
+                    }
+                    updateMetrics();
+                } else if(mode === 'jwst') {
+                    const targetStep = Math.floor(frac * JWST_T_MAX);
+                    if(targetStep > jwstStep) {
+                        jwstRunning = true;
+                        while(jwstStep < targetStep && jwstStep < JWST_T_MAX) {
+                            jwstLeapStep(jwstAether, G * (1 + jwstEpsDelta));
+                            jwstLeapStep(jwstLCDM, G);
+                            jwstFcoreAether.push(jwstFcore(jwstAether));
+                            jwstFcoreLCDM.push(jwstFcore(jwstLCDM));
+                            jwstStep++;
+                        }
+                    } else if(targetStep < jwstStep) {
+                        jwstStep = Math.max(0, targetStep);
+                        jwstFcoreAether = jwstFcoreAether.slice(0, jwstStep);
+                        jwstFcoreLCDM   = jwstFcoreLCDM.slice(0, jwstStep);
+                    }
+                    updateMetrics();
+                }
+                // Update visual immediately
+                setTimelineProgress(frac * 100);
+            }
+
+            bar.addEventListener('mousedown', e => { dragging = true; seekTo(e.clientX); });
+            bar.addEventListener('touchstart', e => { dragging = true; seekTo(e.touches[0].clientX); }, {passive:true});
+            document.addEventListener('mousemove', e => { if(dragging) seekTo(e.clientX); });
+            document.addEventListener('touchmove', e => { if(dragging) seekTo(e.touches[0].clientX); }, {passive:true});
+            document.addEventListener('mouseup', () => { dragging = false; });
+            document.addEventListener('touchend', () => { dragging = false; });
+        }
+
+        function setTimelineProgress(pct) {
+            const fill = document.getElementById('timelineFill');
+            const thumb = document.getElementById('timelineThumb');
+            if(fill) fill.style.width = pct + '%';
+            if(thumb) thumb.style.left = pct + '%';
+        }
         function toggleTrails() { 
             showTrails = !showTrails; 
             planets.forEach(p => { p.trailL = []; p.trailR = []; });
             p9.trailL = []; p9.trailR = [];
         }
         function toggleGrid() { showGrid = !showGrid; }
-        function startCollapse() { collapsing = true; animating = true; }
-        function launchJWST() {
+        function startCollapse() {
+            if(phase === 'BLACK_HOLE') {
+                collapsing = false; bhRadius = 1e6; bhDensity = 1.0; phase = 'STABLE';
+                setTimeout(() => { collapsing = true; animating = true; updateCollapseBtn(); }, 100);
+            } else {
+                collapsing = true; animating = true;
+            }
+            updateCollapseBtn();
+        }
+        function updateCollapseBtn() {
+            const lbl = document.getElementById('lblCollapse');
+            if(!lbl) return;
+            const l = lang || 'fr';
+            lbl.textContent = phase === 'BLACK_HOLE' ? (l==='fr'?'Recommencer':'Restart') : (l==='fr'?'Effondrement':'Collapse');
+        }
+        function launchJWST() { trackEvent('jwst_launch', {eps_delta: jwstEpsDelta});
             if(jwstDone) { initJWST(); }  // reset if already done
             jwstRunning = true;
             animating = true;
         }
-        function perturbNetwork() {
-            // Fully randomize ALL phases — dramatic disruption
+        function perturbNetwork() { trackEvent('brain_perturb', {});
             neurons.forEach(n => {
                 n.phase_tstu = Math.random() * 2 * Math.PI;
                 n.phase_gr   = Math.random() * 2 * Math.PI;
             });
-            // Trigger recovery period: coupling temporarily weakened (simulates acute perturbation)
             perturbTimer = PERTURB_DURATION;
+            updatePhaseExplainer();
         }
 
         // Valeurs fit TSTU — Paper II (Pantheon+) β=0.095, Paper I μ=1.018
@@ -1844,6 +2176,8 @@
             planets.forEach(p => {
                 p.theta_tstu = Math.random() * Math.PI * 2;
                 p.theta_gr = p.theta_tstu;
+                p.precAngle = 0;
+                p.orbits = 0;
                 p.trailL = []; p.trailR = [];
             });
             p9.a_tstu = 0; p9.a_gr = 0; p9.trailL = []; p9.trailR = [];
@@ -1855,7 +2189,7 @@
             initNeurons(numNeurons);
             initJWST();
             initAetheron();
-            document.getElementById('timelineFill').style.width = '0%';
+            setTimelineProgress(0);
 
             // Remettre β et μ aux valeurs du fit (Paper I & II)
             beta = BETA_FIT;
@@ -1911,6 +2245,8 @@
             document.getElementById('jwstBtn').style.display = 'none';
             document.getElementById('aetheronBtn').style.display = 'none';
             document.getElementById('screeningBtn').style.display = 'none';
+            const aeBar = document.getElementById('aeScreeningBar');
+            if(aeBar) aeBar.style.display = 'none';
 
             if(mode === 'solar') {
                 document.getElementById('titleLeft').innerText = t.solar_titleL;
@@ -1998,10 +2334,9 @@
                 document.getElementById('l3').innerText = t.jwst_m3;
                 document.getElementById('l4').innerText = t.jwst_m4 + ' / ' + JWST_T_MAX;
                 document.getElementById('infoTitle').innerText = t.jwst_infoTitle;
-                const jwstInfo = lang === 'fr'
-                    ? '<strong>Tension JWST :</strong> Le JWST observe des galaxies massives (M★ ≳ 10¹⁰ M☉) à z≳8–10, bien plus abondantes que prédit par ΛCDM.<br><br><strong>Solution ÆTHER :</strong> G<sub>eff</sub> = G×(1+ε∆). Les surdensités s\'effondrent <em>plus tôt</em>.<br><br>Cliquez <strong>"🚀 Lancer la Course"</strong> (N=300, CI identiques).'
-                    : '<strong>JWST Tension:</strong> JWST observes massive galaxies (M★ ≳ 10¹⁰ M☉) at z≳8–10, far more abundant than ΛCDM predicts.<br><br><strong>ÆTHER Solution:</strong> G<sub>eff</sub> = G×(1+ε∆). Overdensities collapse <em>earlier</em>.<br><br>Click <strong>"🚀 Launch the Race"</strong> (N=300, identical ICs).';
-                document.getElementById('infoContent').innerHTML = jwstInfo;
+                document.getElementById('infoContent').innerHTML = t.jwst_infoText || (lang === 'fr'
+                    ? '<strong>Tension JWST :</strong> Le JWST observe des galaxies massives (M★ ≳ 10¹⁰ M☉) à z≳8–10, bien plus abondantes que prédit par ΛCDM.<br><br><strong>Solution ÆTHER :</strong> G<sub>eff</sub> = G×(1+ε∆). Les surdensités s\'effondrent <em>plus tôt</em>.<br><br>Cliquez <strong>"🚀 Lancer la Course"</strong>.'
+                    : '<strong>JWST Tension:</strong> JWST observes massive galaxies (M★ ≳ 10¹⁰ M☉) at z≳8–10, far more abundant than ΛCDM predicts.<br><br><strong>ÆTHER Solution:</strong> G<sub>eff</sub> = G×(1+ε∆). Overdensities collapse <em>earlier</em>.<br><br>Click <strong>"🚀 Launch the Race"</strong>.');
             } else if(mode === 'aetheron') {
                 document.getElementById('trailsBtn').style.display = 'none';
                 document.getElementById('gridBtn').style.display = 'none';
@@ -2009,8 +2344,20 @@
                 document.getElementById('titleRight').innerText = t.aetheron_titleR;
                 extra.style.display = 'block';
                 document.getElementById('extraTitle').innerText = t.aetheron_extraTitle;
-                document.getElementById('aetheronBtn').style.display = 'inline-block';
-                document.getElementById('screeningBtn').style.display = 'inline-block';
+                document.getElementById('aetheronBtn').style.display = 'none'; // replaced by auto-start
+                document.getElementById('screeningBtn').style.display = 'none'; // replaced by aeScreeningBar
+                document.getElementById('aeScreeningBar').style.display = 'block';
+                // Update regime button labels with current lang
+                const regLabels = lang === 'fr'
+                    ? ['Cosmologique', 'Terre', 'Soleil']
+                    : ['Cosmological', 'Earth', 'Sun'];
+                [0,1,2].forEach(i => {
+                    const lbl = document.getElementById('aeLabel' + i);
+                    if(lbl) lbl.textContent = regLabels[i];
+                    const btn = document.getElementById('aeBtn' + i);
+                    if(btn) btn.classList.toggle('active', i === aeRegimeIdx);
+                });
+                updateAeRegimeExplainer();
                 legend.style.display = 'none';
                 document.getElementById('l1').innerText = t.aetheron_m1;
                 document.getElementById('l2').innerText = t.aetheron_m2;
@@ -2043,19 +2390,28 @@
             planets.forEach(p => {
                 const geff = effectiveGravity(p.a, beta, mu, 1.0);
                 const omega_tstu = Math.sqrt(geff / Math.pow(p.a, 3));
+                const prevTheta = p.theta_tstu;
                 p.theta_tstu += omega_tstu * dt;
-                
+
                 const omega_gr = Math.sqrt(1.0 / Math.pow(p.a, 3));
                 p.theta_gr += omega_gr * dt;
-                
+
+                // Track cumulative precession angle (TSTU - GR difference)
+                p.precAngle += (omega_tstu - omega_gr) * dt;
+
+                // Count orbits for Mercury
+                if(p.name === "Mercure" || p.name === "Mercury") {
+                    if(prevTheta % (2*Math.PI) > p.theta_tstu % (2*Math.PI)) p.orbits++;
+                }
+
                 const x_t = p.a * Math.cos(p.theta_tstu);
                 const y_t = p.a * Math.sin(p.theta_tstu);
                 const x_g = p.a * Math.cos(p.theta_gr);
                 const y_g = p.a * Math.sin(p.theta_gr);
-                
+
                 p.trailL.push({x: x_t, y: y_t});
                 p.trailR.push({x: x_g, y: y_g});
-                
+
                 const maxTrail = p.a > 10 ? 100 : 150;
                 if(p.trailL.length > maxTrail) p.trailL.shift();
                 if(p.trailR.length > maxTrail) p.trailR.shift();
@@ -2091,22 +2447,99 @@
                     if(p.r < 10) p.r = 250;
                 }
             });
-            
+
             if(!collapsing) return;
             const rs = schwarzschildRadius(mass);
+            const prevPhase = phase;
+
             if(bhRadius > rs * 1.5) {
                 phase = 'COLLAPSING';
                 bhRadius -= 5e4 * dt;
                 bhDensity *= Math.pow(1.01, dt * 100);
             } else if(bhRadius > rs * 1.05) {
                 phase = 'HORIZON';
-                bhRadius -= 1e4 * dt;
-                bhDensity *= Math.pow(1.05, dt * 100);
+                // Slowed down 5× so user can read the legend
+                bhRadius -= 2e3 * dt;
+                bhDensity *= Math.pow(1.05, dt * 20);
             } else {
                 phase = 'BLACK_HOLE';
                 bhRadius = rs;
                 bhDensity = 1e10;
-                // Keep particles animating even after collapse
+            }
+
+            // Update phase explainer when phase changes
+            if(phase !== prevPhase) updatePhaseExplainer();
+        }
+
+        function updatePhaseExplainer(r_override) {
+            const el = document.getElementById('phaseExplainer');
+            if(!el) return;
+            const l = lang || 'fr';
+
+            if(mode === 'blackhole') {
+                const explanations = {
+                    COLLAPSING: {
+                        fr: '💫 Effondrement : la pression de radiation ne compense plus la gravité. La matière tombe vers le centre. Le champ φ commence à se comprimer.',
+                        en: '💫 Collapsing: radiation pressure no longer balances gravity. Matter falls inward. The φ field starts to compress.',
+                        color: '#ff8800'
+                    },
+                    HORIZON: {
+                        fr: '🌀 Horizon en formation : le rayon approche R_Schwarzschild = 2GM/c². Dans TSTU, φ résiste — β_eff → 0 empêche la compression infinie. L\'énergie sera expulsée en jets polaires.',
+                        en: '🌀 Horizon forming: radius approaches R_Schwarzschild = 2GM/c². In TSTU, φ resists — β_eff → 0 prevents infinite compression. Energy will be expelled as polar jets.',
+                        color: '#ffaa00'
+                    },
+                    BLACK_HOLE: {
+                        fr: '🕳️ Trou noir formé : φ → φ₀ (vide restauré). Jets polaires = énergie expulsée. Pas de singularité ρ→∞. Comparez avec le panneau droit (GR) où ρ→∞ brise les équations.',
+                        en: '🕳️ Black hole formed: φ → φ₀ (void restored). Polar jets = expelled energy. No singularity ρ→∞. Compare with right panel (GR) where ρ→∞ breaks equations.',
+                        color: '#00ff88'
+                    },
+                    STABLE: { fr: '', en: '', color: '#aaa' }
+                };
+                const exp = explanations[phase];
+                if(!exp || !exp[l]) { el.style.display = 'none'; return; }
+                el.style.display = 'block';
+                el.style.borderLeftColor = exp.color;
+                el.textContent = exp[l];
+
+            } else if(mode === 'brain') {
+                // Use passed r value or recompute
+                let r = r_override;
+                if(r === undefined || r === null) {
+                    let sx = 0, sy = 0;
+                    neurons.forEach(n => { sx += Math.cos(n.phase_tstu); sy += Math.sin(n.phase_tstu); });
+                    r = Math.sqrt(sx*sx + sy*sy) / (neurons.length || 1);
+                }
+                const isPerturbed = perturbTimer > 0;
+                const K_cur = K_EFF_HZ * (isPerturbed ? Math.max(0.05, perturbTimer / PERTURB_DURATION) : 1.0);
+
+                let text, color;
+                if(isPerturbed) {
+                    color = '#ff4444';
+                    text = l === 'fr'
+                        ? `⚡ Perturbation (kétamine) : K_eff chute à ${K_cur.toFixed(1)} Hz < K_c=${K_C_NUM} Hz. Le réseau perd la synchronisation. Il récupère dès que K_eff remonte au-dessus de K_c.`
+                        : `⚡ Perturbation (ketamine): K_eff drops to ${K_cur.toFixed(1)} Hz < K_c=${K_C_NUM} Hz. Network loses synchronisation. It recovers once K_eff rises back above K_c.`;
+                } else if(r < 0.3) {
+                    color = '#ff6644';
+                    text = l === 'fr'
+                        ? `🔴 Chaos (r=${r.toFixed(2)}) : neurones désynchronisés. K_GR=${K_GR_HZ} Hz < K_c=${K_C_NUM} Hz — sous le seuil. Aucune conscience possible (panneau droit).`
+                        : `🔴 Chaos (r=${r.toFixed(2)}): desynchronised neurons. K_GR=${K_GR_HZ} Hz < K_c=${K_C_NUM} Hz — below threshold. No consciousness possible (right panel).`;
+                } else if(r < 0.7) {
+                    color = '#ffaa00';
+                    text = l === 'fr'
+                        ? `🟡 Transition (r=${r.toFixed(2)}) : synchronisation en cours. K_eff=${K_cur.toFixed(1)} Hz approche K_c=${K_C_NUM} Hz. La conscience émerge progressivement (Paper VII).`
+                        : `🟡 Transition (r=${r.toFixed(2)}): synchronisation building. K_eff=${K_cur.toFixed(1)} Hz approaching K_c=${K_C_NUM} Hz. Consciousness emerging progressively (Paper VII).`;
+                } else {
+                    color = '#00ff88';
+                    text = l === 'fr'
+                        ? `🟢 Synchronisé (r=${r.toFixed(2)}) : K_eff=${K_cur.toFixed(1)} Hz ≈ 2×K_c — criticité auto-organisée (Paper VII). β=0.095 place K_eff exactement au-dessus du seuil sans paramètre libre. Cliquez ⚡ Perturber.`
+                        : `🟢 Synchronised (r=${r.toFixed(2)}): K_eff=${K_cur.toFixed(1)} Hz ≈ 2×K_c — self-organised criticality (Paper VII). β=0.095 places K_eff exactly above threshold with no free parameter. Click ⚡ Perturb.`;
+                }
+                el.style.display = 'block';
+                el.style.borderLeftColor = color;
+                el.textContent = text;
+
+            } else {
+                el.style.display = 'none';
             }
         }
         
@@ -2146,35 +2579,81 @@
             const r_gr   = Math.sqrt(sx_g**2 + sy_g**2) / N;
             syncHistory.push({ t: time * 100, r_tstu, r_gr, perturbed: perturbTimer > 0 });
             if(syncHistory.length > SYNC_HISTORY_MAX) syncHistory.shift();
+            // Update explainer every frame with current r value
+            if(mode === 'brain') updatePhaseExplainer(r_tstu);
         }
         
         // DRAW FUNCTIONS
         function drawSolar(ctx, isTSTU) {
             const w = ctx.canvas.width, h = ctx.canvas.height;
             const cx = w / 2, cy = h / 2;
-            
-            // Auto-scale for outer planets (Pluton at 39.5 AU)
-            const maxA = 40;
+            const mercury = planets[0];
+            const isZoomed = selectedPlanet === 0; // zoom on Mercury if selected
+
+            // Auto-scale — zoom on Mercury if selected
+            const maxA = isZoomed ? 1.2 : 40;
             const scale = (Math.min(w, h) / 2 - 60) / maxA * zoom;
-            
+
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, w, h);
-            drawAetherGrid(ctx, isTSTU);
-            
+
+            // ── φ(r) FIELD GRADIENT — coloured halo around Sun ──
             if(isTSTU) {
-                for(let r = 1; r < maxA; r += 3) {
+                const nRings = 60;
+                const maxR = isZoomed ? 1.2 : 38;
+                for(let i = 0; i < nRings; i++) {
+                    const r = (i + 0.5) * maxR / nRings;
                     const phi = phiField(r, beta, mu, 1.0);
-                    const intensity = Math.min(100, (phi - 1.0) * 4000);
-                    ctx.strokeStyle = `rgba(0, ${intensity}, 255, 0.06)`;
-                    ctx.lineWidth = 1;
+                    const phiCosmo = phiField(200, beta, mu, 1.0);
+                    const frac = Math.min(1, (phi - 1.0) / (phiCosmo - 1.0 + 1e-10));
+                    // Colour: deep blue (screened) → cyan (unscreened)
+                    const blue = Math.floor(100 + 155 * (1 - frac));
+                    const green = Math.floor(40 + 170 * frac);
+                    const alpha = isZoomed ? 0.18 : 0.07;
+                    const rPx = r * scale;
+                    const dr = maxR / nRings * scale + 1;
+                    ctx.strokeStyle = `rgba(0,${green},${blue},${alpha})`;
+                    ctx.lineWidth = dr;
                     ctx.beginPath();
-                    ctx.arc(cx, cy, r * scale, 0, Math.PI * 2);
+                    ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
                     ctx.stroke();
                 }
+
+                // φ(r) colour legend — right side
+                const legX = w - 90, legY = h - 130;
+                const grad = ctx.createLinearGradient(legX, legY, legX, legY + 90);
+                grad.addColorStop(0, 'rgba(0,210,255,0.9)');
+                grad.addColorStop(1, 'rgba(0,40,180,0.9)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(legX, legY, 10, 90);
+                ctx.fillStyle = '#00d4ff'; ctx.font = '9px Arial';
+                ctx.fillText(lang==='fr'?'φ tendu':'φ tensed', legX + 14, legY + 8);
+                ctx.fillText(lang==='fr'?'(vide)':'(void)', legX + 14, legY + 20);
+                ctx.fillStyle = '#4466ff';
+                ctx.fillText('φ\u2080 écranté', legX + 14, legY + 84);
+                ctx.fillStyle = '#555';
+                ctx.fillText(lang==='fr'?'Champ φ(r)':'φ(r) field', legX - 2, legY - 6);
             }
-            
+
+            drawAetherGrid(ctx, isTSTU);
+
+            // Orbit circles
+            planets.forEach(p => {
+                if(!isZoomed || p.a < 1.5) {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([2, 6]);
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, p.a * scale, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            });
+
+            // Trails
             if(showTrails) {
                 planets.forEach(p => {
+                    if(isZoomed && p.a > 1.5) return;
                     const trail = isTSTU ? p.trailL : p.trailR;
                     if(trail.length < 2) return;
                     ctx.strokeStyle = (isTSTU ? p.color : '#ccc') + '30';
@@ -2187,40 +2666,150 @@
                     ctx.stroke();
                 });
             }
-            
-            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 14);
-            grad.addColorStop(0, '#ffff00');
-            grad.addColorStop(1, '#ff8800');
-            ctx.fillStyle = grad;
+
+            // ── MERCURY PRECESSION ARC (TSTU left panel only) ──
+            if(isTSTU && mercury.precAngle !== 0) {
+                const mAngle = mercury.theta_tstu;
+                const arcSpan = Math.min(Math.abs(mercury.precAngle) * 8, Math.PI * 0.6);
+                const arcDir = mercury.precAngle > 0 ? 1 : -1;
+                ctx.strokeStyle = 'rgba(255,200,0,0.7)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([3,3]);
+                ctx.beginPath();
+                ctx.arc(cx, cy, mercury.a * scale * 1.12,
+                    mAngle - arcSpan * arcDir * 0.5,
+                    mAngle + arcSpan * arcDir * 0.5);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                // Arrow tip
+                const arrowAngle = mAngle + arcSpan * arcDir * 0.5;
+                const ar = mercury.a * scale * 1.12;
+                const ax2 = cx + ar * Math.cos(arrowAngle);
+                const ay2 = cy + ar * Math.sin(arrowAngle);
+                ctx.fillStyle = 'rgba(255,200,0,0.9)';
+                ctx.beginPath();
+                ctx.arc(ax2, ay2, 3, 0, Math.PI * 2);
+                ctx.fill();
+                // Label
+                ctx.fillStyle = '#ffcc00';
+                ctx.font = 'bold 10px Arial';
+                const precDeg = (mercury.precAngle * 180 / Math.PI).toFixed(3);
+                ctx.fillText(`\u0394\u03b8 = ${precDeg}\u00b0`, cx - 30, cy - mercury.a * scale * 1.3);
+            }
+
+            // ── SUN ──
+            const sunGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 14);
+            sunGrad.addColorStop(0, '#ffff88');
+            sunGrad.addColorStop(0.4, '#ffcc00');
+            sunGrad.addColorStop(1, '#ff8800');
+            ctx.fillStyle = sunGrad;
             ctx.beginPath();
             ctx.arc(cx, cy, 12, 0, Math.PI * 2);
             ctx.fill();
-            
+
+            // ── PLANETS ──
             planets.forEach((p, i) => {
+                if(isZoomed && p.a > 1.5) return;
                 const theta = isTSTU ? p.theta_tstu : p.theta_gr;
                 const x = cx + p.a * scale * Math.cos(theta);
                 const y = cy + p.a * scale * Math.sin(theta);
-                
+
+                // Selection ring
                 if(selectedPlanet === i && isTSTU) {
                     ctx.strokeStyle = '#ffffff';
                     ctx.lineWidth = 2;
                     ctx.beginPath();
-                    ctx.arc(x, y, p.size + 3, 0, Math.PI * 2);
+                    ctx.arc(x, y, p.size + 4, 0, Math.PI * 2);
                     ctx.stroke();
                 }
-                
-                ctx.fillStyle = isTSTU ? p.color : '#ccc';
+
+                // Planet dot
+                ctx.fillStyle = isTSTU ? p.color : '#888';
                 ctx.beginPath();
                 ctx.arc(x, y, p.size, 0, Math.PI * 2);
                 ctx.fill();
-                
-                // Labels for outer planets
-                if(p.a > 5 && isTSTU) {
+
+                // Labels
+                const showLabel = isZoomed ? p.a < 1.5 : p.a > 4;
+                if(showLabel && isTSTU) {
                     ctx.fillStyle = p.color;
                     ctx.font = '10px Arial';
-                    ctx.fillText(p.name.substring(0,3), x + p.size + 2, y);
+                    ctx.fillText(p.name.substring(0, 3), x + p.size + 3, y + 4);
+                }
+                if(!isZoomed && p.name === "Mercure" && isTSTU) {
+                    ctx.fillStyle = '#aaa';
+                    ctx.font = '9px Arial';
+                    ctx.fillText('Mer', x + p.size + 2, y + 3);
                 }
             });
+
+            // ── CONTEXTUAL INFO PANEL (TSTU panel only) ──
+            if(isTSTU) {
+                const pName = selectedPlanet !== null ? planets[selectedPlanet].name : null;
+                const info = pName ? (planetInfo[pName] || null) : null;
+                const l = lang || 'fr';
+
+                if(info) {
+                    // Info box bottom left
+                    const bx = 8, by = h - 118, bw = Math.min(w - 16, 300), bh = 110;
+                    ctx.fillStyle = 'rgba(5,5,20,0.88)';
+                    ctx.fillRect(bx, by, bw, bh);
+                    ctx.strokeStyle = 'rgba(0,212,255,0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(bx, by, bw, bh);
+
+                    // Planet name + screening badge
+                    ctx.fillStyle = planets[selectedPlanet].color;
+                    ctx.font = 'bold 12px Arial';
+                    ctx.fillText(pName, bx + 8, by + 18);
+
+                    ctx.fillStyle = '#00d4ff';
+                    ctx.font = '10px Arial';
+                    ctx.fillText(`\u03b2_eff: ${info.beta_eff}  |  \u00c9crantage: ${info.screening}  |  \u03c6: ${info.phi}`, bx + 8, by + 34);
+
+                    // Description text — word wrap
+                    const text = info[l] || info.fr;
+                    ctx.fillStyle = '#ccc';
+                    ctx.font = '9px Arial';
+                    const words = text.split(' ');
+                    let line = '', lineY = by + 50;
+                    words.forEach(w => {
+                        const test = line + w + ' ';
+                        if(ctx.measureText(test).width > bw - 16 && line) {
+                            ctx.fillText(line, bx + 8, lineY);
+                            line = w + ' ';
+                            lineY += 13;
+                        } else line = test;
+                        if(lineY > by + bh - 8) return;
+                    });
+                    if(lineY <= by + bh - 8) ctx.fillText(line, bx + 8, lineY);
+                } else {
+                    // Default hint
+                    ctx.fillStyle = 'rgba(5,5,20,0.75)';
+                    ctx.fillRect(8, h - 36, 260, 28);
+                    ctx.fillStyle = '#666';
+                    ctx.font = '10px Arial';
+                    ctx.fillText(l==='fr'
+                        ? '👆 Cliquez une planète pour son contexte TSTU'
+                        : '👆 Click a planet for its TSTU context', 14, h - 17);
+                }
+
+                // Mercury precession counter (always visible)
+                if(!isZoomed) {
+                    const precArcSec = (mercury.precAngle * 180 / Math.PI * 3600).toFixed(0);
+                    ctx.fillStyle = 'rgba(5,5,20,0.82)';
+                    ctx.fillRect(w - 200, 8, 192, 44);
+                    ctx.strokeStyle = 'rgba(255,200,0,0.4)';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(w - 200, 8, 192, 44);
+                    ctx.fillStyle = '#ffcc00';
+                    ctx.font = 'bold 11px Arial';
+                    ctx.fillText('Précession Mercure (TSTU)', w - 196, 23);
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '13px Arial';
+                    ctx.fillText(`\u0394\u03b8 = ${precArcSec}\u2033 (cumulé)`, w - 196, 44);
+                }
+            }
         }
         
         function drawP9(ctx, isTSTU) {
@@ -2289,51 +2878,69 @@
                 }
             });
             
-            // Show clustering analysis
+            // Compute angular spread of perihelions
+            const periAngles = tnoObjects.map(o => isTSTU ? o.peri_tstu : o.peri_gr);
+            const meanAngle = periAngles.reduce((s,a) => s+a, 0) / periAngles.length;
+            const spread = Math.sqrt(periAngles.reduce((s,a) => {
+                const d = a - meanAngle; const nd = ((d+180)%360)-180;
+                return s + nd*nd;
+            }, 0) / periAngles.length);
+
             if(isTSTU) {
-                // TSTU: perihelions clustered by phi tension
-                ctx.fillStyle = 'rgba(0,212,255,0.12)';
-                ctx.beginPath();
+                // Clustering cone
                 const clusterAngle = tnoMeanObs * Math.PI / 180;
+                ctx.fillStyle = 'rgba(0,212,255,0.10)';
+                ctx.beginPath();
                 ctx.moveTo(cx, cy);
-                ctx.arc(cx, cy, 55, clusterAngle - 0.35, clusterAngle + 0.35);
+                ctx.arc(cx, cy, 70, clusterAngle - 0.4, clusterAngle + 0.4);
                 ctx.closePath();
                 ctx.fill();
                 ctx.strokeStyle = '#00d4ff';
                 ctx.lineWidth = 2;
                 ctx.stroke();
-                
-                ctx.fillStyle = '#00d4ff';
-                ctx.font = 'bold 12px Arial';
-                ctx.fillText('Zone clustering φ-ÆTHER', cx + 60, cy - 60);
-                ctx.font = '10px Arial';
-                ctx.fillStyle = '#aaa';
-                ctx.fillText('Tension φ > 1 (vide externe)', cx + 60, cy - 45);
-                ctx.fillText('→ pas de planète nécessaire', cx + 60, cy - 30);
+
+                // Stats panel
+                const px2 = 12, py2 = h - 118;
+                ctx.fillStyle = 'rgba(5,5,20,0.88)';
+                ctx.fillRect(px2, py2, 230, 110);
+                ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 1;
+                ctx.strokeRect(px2, py2, 230, 110);
+                ctx.fillStyle = '#00d4ff'; ctx.font = 'bold 11px Arial';
+                ctx.fillText('Clustering φ-ÆTHER', px2+8, py2+18);
+                ctx.fillStyle = '#aaa'; ctx.font = '10px Arial';
+                ctx.fillText((lang==='fr'?'Direction moyenne : ':'Mean direction: ') + meanAngle.toFixed(1) + '°', px2+8, py2+36);
+                ctx.fillText((lang==='fr'?'Dispersion : ±':'Spread: ±') + spread.toFixed(1) + '°', px2+8, py2+50);
+                ctx.fillText(lang==='fr'?'Observé (Sedna/VP113) : ~300°':'Observed (Sedna/VP113): ~300°', px2+8, py2+64);
+                ctx.fillStyle = '#00ff88';
+                ctx.fillText(lang==='fr'?'→ Champ φ tendu — sans Planète 9':'→ Tensed φ field — no Planet 9', px2+8, py2+82);
+                ctx.fillStyle = '#666'; ctx.font = '9px Arial';
+                ctx.fillText(lang==='fr'?'β_eff ≈ 0.088 au-delà de Neptune':'β_eff ≈ 0.088 beyond Neptune', px2+8, py2+98);
             } else {
-                // Standard: perihelions scattered, needs Planet 9
-                ctx.fillStyle = '#ff4444';
-                ctx.font = 'bold 12px Arial';
-                ctx.fillText('Périhélies dispersés (GR)', cx - w/2 + 20, 35);
-                ctx.font = '10px Arial';
-                ctx.fillStyle = '#aaa';
-                ctx.fillText('→ Planète 9 requise (non observée)', cx - w/2 + 20, 52);
-                
-                // Show hypothetical P9 zone
-                ctx.strokeStyle = 'rgba(255,68,68,0.3)';
-                ctx.lineWidth = 8;
-                ctx.setLineDash([12,8]);
+                // Scatter indication
+                const px2 = 12, py2 = h - 118;
+                ctx.fillStyle = 'rgba(20,5,5,0.88)';
+                ctx.fillRect(px2, py2, 230, 110);
+                ctx.strokeStyle = '#ff4444'; ctx.lineWidth = 1;
+                ctx.strokeRect(px2, py2, 230, 110);
+                ctx.fillStyle = '#ff4444'; ctx.font = 'bold 11px Arial';
+                ctx.fillText('GR Standard — Anomalie', px2+8, py2+18);
+                ctx.fillStyle = '#aaa'; ctx.font = '10px Arial';
+                ctx.fillText((lang==='fr'?'Direction moyenne : ':'Mean direction: ') + meanAngle.toFixed(1) + '°', px2+8, py2+36);
+                ctx.fillText((lang==='fr'?'Dispersion : ±':'Spread: ±') + spread.toFixed(1) + (lang==='fr'?'° (aléatoire)':'° (random)'), px2+8, py2+50);
+                ctx.fillText(lang==='fr'?'Observé : clustering inexplicable':'Observed: unexplained clustering', px2+8, py2+64);
+                ctx.fillStyle = '#ff6666';
+                ctx.fillText(lang==='fr'?'→ Planète 9 requise (non observée)':'→ Planet 9 required (undetected)', px2+8, py2+82);
+                ctx.fillStyle = '#666'; ctx.font = '9px Arial';
+                ctx.fillText(lang==='fr'?'10 ans de recherche — aucune détection':'10 years searching — no detection', px2+8, py2+98);
+
+                // P9 hypothetical ring
+                ctx.strokeStyle = 'rgba(255,68,68,0.25)';
+                ctx.lineWidth = 6; ctx.setLineDash([10,8]);
                 ctx.beginPath();
-                ctx.arc(cx, cy, w/2 - 40, 0, Math.PI * 2);
-                ctx.stroke();
-                ctx.setLineDash([]);
-                ctx.fillStyle = 'rgba(255,68,68,0.15)';
-                ctx.beginPath();
-                ctx.arc(cx, cy, w/2 - 40, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#ff4444';
-                ctx.font = '11px Arial';
-                ctx.fillText('? Zone Planète 9 hypothétique', cx - 80, cy + w/2 - 55);
+                ctx.arc(cx, cy, w/2 - 50, 0, Math.PI * 2);
+                ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle = '#ff4444'; ctx.font = '10px Arial';
+                ctx.fillText(lang==='fr'?'? Orbite P9 hypothétique':'? Hypothetical P9 orbit', cx - 70, 28);
             }
         }
         
@@ -2341,49 +2948,99 @@
             const w = ctx.canvas.width, h = ctx.canvas.height;
             const cx = w / 2, cy = h / 2;
             const scale = 6.5 * zoom;
-            
+
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, w, h);
             drawAetherGrid(ctx, isTSTU);
-            
-            const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 25);
-            coreGrad.addColorStop(0, '#ffff88');
-            coreGrad.addColorStop(0.6, '#ffaa44');
-            coreGrad.addColorStop(1, '#000000');
-            ctx.fillStyle = coreGrad;
-            ctx.beginPath();
-            ctx.arc(cx, cy, 25, 0, Math.PI * 2);
-            ctx.fill();
-            
+
+            // φ field halo (TSTU) or dark matter halo annotation (standard)
             if(isTSTU) {
                 for(let r = 5; r < galaxyRadius; r += 4) {
                     const phi = phiField(r, beta, mu, 10);
                     const intensity = Math.min(120, (phi - 1.0) * 2500);
-                    ctx.strokeStyle = `rgba(0, ${intensity}, 255, 0.04)`;
+                    ctx.strokeStyle = `rgba(0,${intensity},255,0.05)`;
                     ctx.lineWidth = 1;
                     ctx.beginPath();
                     ctx.arc(cx, cy, r * scale, 0, Math.PI * 2);
                     ctx.stroke();
                 }
+                // Annotate flat zone
+                const flatR = galaxyRadius * 0.6 * scale;
+                ctx.strokeStyle = 'rgba(0,212,255,0.25)';
+                ctx.lineWidth = 1; ctx.setLineDash([4,6]);
+                ctx.beginPath();
+                ctx.arc(cx, cy, flatR, 0, Math.PI * 2);
+                ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(0,212,255,0.6)'; ctx.font = '9px Arial';
+                ctx.fillText(lang==='fr'?'courbe plate':'flat curve', cx + flatR * 0.65, cy - flatR * 0.65);
             } else {
                 for(let r = 10; r < galaxyRadius * 1.8; r += 8) {
-                    ctx.strokeStyle = 'rgba(100, 100, 100, 0.03)';
+                    ctx.strokeStyle = 'rgba(100,100,100,0.03)';
                     ctx.lineWidth = 1;
                     ctx.beginPath();
                     ctx.arc(cx, cy, r * scale, 0, Math.PI * 2);
                     ctx.stroke();
                 }
+                // Dark matter halo circle
+                ctx.strokeStyle = 'rgba(255,150,50,0.18)';
+                ctx.lineWidth = 2; ctx.setLineDash([6,6]);
+                ctx.beginPath();
+                ctx.arc(cx, cy, galaxyRadius * 1.5 * scale, 0, Math.PI * 2);
+                ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle = 'rgba(255,150,50,0.5)'; ctx.font = '9px Arial';
+                ctx.fillText(lang==='fr'?'halo matière noire (non observé)':'dark matter halo (unobserved)', cx + 10, cy - galaxyRadius*1.5*scale + 14);
             }
-            
+
+            // Galactic core
+            const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 25);
+            coreGrad.addColorStop(0, '#ffff88');
+            coreGrad.addColorStop(0.6, '#ffaa44');
+            coreGrad.addColorStop(1, '#000');
+            ctx.fillStyle = coreGrad;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Stars — colour by velocity regime
             stars.forEach(s => {
                 const theta = isTSTU ? s.theta_tstu : s.theta_gr;
                 const x = cx + s.r * scale * Math.cos(theta);
                 const y = cy + s.r * scale * Math.sin(theta);
-                ctx.fillStyle = isTSTU ? 'rgba(0, 212, 255, 0.7)' : 'rgba(200, 200, 200, 0.6)';
+                // Highlight stars in flat vs keplerian regime
+                const inFlat = s.r > galaxyRadius * 0.15;
+                if(isTSTU) {
+                    ctx.fillStyle = inFlat ? 'rgba(0,212,255,0.75)' : 'rgba(255,220,100,0.75)';
+                } else {
+                    ctx.fillStyle = inFlat ? 'rgba(255,120,60,0.65)' : 'rgba(200,200,200,0.6)';
+                }
                 ctx.beginPath();
-                ctx.arc(x, y, 1.3, 0, Math.PI * 2);
+                ctx.arc(x, y, 1.5, 0, Math.PI * 2);
                 ctx.fill();
             });
+
+            // Info panel
+            const infoY = h - 72;
+            ctx.fillStyle = 'rgba(5,5,20,0.85)';
+            ctx.fillRect(8, infoY, 250, 64);
+            ctx.strokeStyle = isTSTU ? '#00d4ff' : '#ff8844'; ctx.lineWidth = 1;
+            ctx.strokeRect(8, infoY, 250, 64);
+            if(isTSTU) {
+                ctx.fillStyle = '#00d4ff'; ctx.font = 'bold 11px Arial';
+                ctx.fillText('ÆTHER : G_eff = G×(1+2β²δφ/φ)', 16, infoY+16);
+                ctx.fillStyle = '#aaa'; ctx.font = '10px Arial';
+                ctx.fillText('β=0.095, μ=1.018 — fixés par Pantheon+', 16, infoY+30);
+                ctx.fillStyle = '#00ff88';
+                ctx.fillText('• Bleu : courbe plate (champ φ actif)', 16, infoY+46);
+                ctx.fillStyle = '#ffcc44';
+                ctx.fillText(lang==='fr'?'• Jaune : noyau gal. (régime Kepler)':'• Yellow: gal. core (Kepler regime)', 140, infoY+46);
+            } else {
+                ctx.fillStyle = '#ff8844'; ctx.font = 'bold 11px Arial';
+                ctx.fillText('GR Standard : besoin de matière noire', 16, infoY+16);
+                ctx.fillStyle = '#aaa'; ctx.font = '10px Arial';
+                ctx.fillText(lang==='fr'?'~85% de la masse galactique non observée':'~85% of galactic mass unobserved', 16, infoY+30);
+                ctx.fillStyle = '#ff6644';
+                ctx.fillText(lang==='fr'?'• Orange : étoiles > régime keplérien attendu':'• Orange: stars > expected Keplerian regime', 16, infoY+46);
+            }
         }
         
         function drawBlackHole(ctx, isTSTU) {
@@ -2488,15 +3145,66 @@
                     ctx.fill();
                 }
 
-                // Phase label
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-                ctx.fillRect(10, 10, 195, 42);
-                ctx.strokeStyle = phase === 'BLACK_HOLE' ? '#00ff88' : (phase === 'HORIZON' ? '#ffaa00' : '#00d4ff');
-                ctx.lineWidth = 2;
-                ctx.strokeRect(10, 10, 195, 42);
-                ctx.fillStyle = phase === 'BLACK_HOLE' ? '#00ff88' : (phase === 'HORIZON' ? '#ffaa00' : '#00d4ff');
-                ctx.font = 'bold 15px Arial';
-                ctx.fillText('PHASE: ' + phase, 18, 36);
+                // ── DYNAMIC PHASE LEGEND ──────────────────────────────────
+                const phaseData = {
+                    STABLE: {
+                        label: lang==='fr' ? '⭐ ÉTOILE STABLE' : '⭐ STABLE STAR',
+                        color: '#ffcc44',
+                        fr: 'Étoile massive (20 M☉). Le champ φ est partiellement écranté par la densité stellaire. G_eff ≈ G standard. Pression de radiation équilibre la gravité.',
+                        en: 'Massive star (20 M☉). The φ field is partially screened by stellar density. G_eff ≈ G standard. Radiation pressure balances gravity.'
+                    },
+                    COLLAPSING: {
+                        label: lang==='fr' ? '💫 EFFONDREMENT' : '💫 COLLAPSING',
+                        color: '#ff8800',
+                        fr: 'Pression de radiation insuffisante — effondrement gravitationnel. Le champ φ comprime vers φ₀. La densité augmente exponentiellement. Disque d\'accrétion en formation.',
+                        en: 'Radiation pressure insufficient — gravitational collapse. The φ field compresses toward φ₀. Density increases exponentially. Accretion disk forming.'
+                    },
+                    HORIZON: {
+                        label: lang==='fr' ? '🌀 HORIZON EN FORMATION' : '🌀 HORIZON FORMING',
+                        color: '#ff4400',
+                        fr: 'Rayon ≈ 1.05 × R_Schwarzschild. L\'horizon des événements se referme. Dans TSTU, φ résiste à la compression : β_eff → 0 empêche l\'effondrement vers r=0.',
+                        en: 'Radius ≈ 1.05 × R_Schwarzschild. Event horizon closing. In TSTU, φ resists compression: β_eff → 0 prevents collapse toward r=0.'
+                    },
+                    BLACK_HOLE: {
+                        label: lang==='fr' ? '🕳️ TROU NOIR — φ RESTAURÉ' : '🕳️ BLACK HOLE — φ RESTORED',
+                        color: '#00ff88',
+                        fr: 'φ → φ₀ au centre : vide restauré, pas de singularité. L\'énergie est expulsée en jets polaires relativistes (observés dans les AGN réels). R_s = ' + schwarzschildRadius(mass).toFixed(0) + ' km.',
+                        en: 'φ → φ₀ at centre: void restored, no singularity. Energy expelled as relativistic polar jets (observed in real AGN). R_s = ' + schwarzschildRadius(mass).toFixed(0) + ' km.'
+                    }
+                };
+                const pd = phaseData[phase] || phaseData.STABLE;
+                const legText = pd[lang] || pd.fr;
+                const legH = 80;
+                const legY = h - legH - 8;
+                ctx.fillStyle = 'rgba(5,5,20,0.88)';
+                ctx.fillRect(8, legY, w - 16, legH);
+                ctx.strokeStyle = pd.color;
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(8, legY, w - 16, legH);
+                ctx.fillStyle = pd.color;
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText(pd.label, 16, legY + 18);
+                // Progress bar
+                const progress = phase === 'STABLE' ? 0 : phase === 'COLLAPSING' ? 0.35 : phase === 'HORIZON' ? 0.75 : 1.0;
+                ctx.fillStyle = 'rgba(255,255,255,0.08)';
+                ctx.fillRect(w - 110, legY + 6, 100, 10);
+                ctx.fillStyle = pd.color;
+                ctx.fillRect(w - 110, legY + 6, 100 * progress, 10);
+                ctx.fillStyle = '#888'; ctx.font = '9px Arial';
+                ctx.fillText(lang==='fr'?'progression':'progress', w - 110, legY + 28);
+                // Description
+                ctx.fillStyle = '#ccc'; ctx.font = '10px Arial';
+                const words = legText.split(' ');
+                let line2 = '', lineY2 = legY + 36;
+                words.forEach(wd => {
+                    const test = line2 + wd + ' ';
+                    if(ctx.measureText(test).width > w - 32 && line2) {
+                        ctx.fillText(line2, 16, lineY2);
+                        line2 = wd + ' '; lineY2 += 13;
+                    } else line2 = test;
+                    if(lineY2 > legY + legH - 4) return;
+                });
+                if(lineY2 <= legY + legH - 4) ctx.fillText(line2, 16, lineY2);
 
             } else {
                 // ── STANDARD / GR PANEL ──────────────────────────────────────
@@ -2542,7 +3250,7 @@
                     ctx.fillStyle = '#ff4444';
                     ctx.font = 'bold 13px Arial';
                     ctx.textAlign = 'center';
-                    ctx.fillText('SINGULARITÉ  ρ → ∞', cx, cy + pixRad * 1.6 + 20);
+                    ctx.fillText(lang==='fr'?'SINGULARITÉ  ρ → ∞':'SINGULARITY  ρ → ∞', cx, cy + pixRad * 1.6 + 20);
                     ctx.fillStyle = '#ff8888';
                     ctx.font = '11px Arial';
                     ctx.fillText('Espace-temps brisé — GR échoue', cx, cy + pixRad * 1.6 + 38);
@@ -2560,15 +3268,45 @@
                     ctx.fill();
                 }
 
-                // Phase label (gray for standard)
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
-                ctx.fillRect(10, 10, 195, 42);
-                ctx.strokeStyle = phase === 'BLACK_HOLE' ? '#ff4444' : '#888';
-                ctx.lineWidth = 2;
-                ctx.strokeRect(10, 10, 195, 42);
-                ctx.fillStyle = phase === 'BLACK_HOLE' ? '#ff6666' : '#aaa';
-                ctx.font = 'bold 15px Arial';
-                ctx.fillText('PHASE: ' + phase, 18, 36);
+                // ── GR DYNAMIC LEGEND ──
+                const grPhaseData = {
+                    STABLE: { label: lang==='fr'?'⭐ ÉTOILE STABLE':'⭐ STABLE STAR', color:'#aaa',
+                        fr:'RG standard : équilibre hydrostatique. Aucune déviation observable par rapport à Newton. Les tests solaires confirment G=G_Newton ici.',
+                        en:'Standard GR: hydrostatic equilibrium. No observable deviation from Newton. Solar tests confirm G=G_Newton here.' },
+                    COLLAPSING: { label: lang==='fr'?'💫 EFFONDREMENT':'💫 COLLAPSING', color:'#ff8800',
+                        fr:'Effondrement gravitationnel standard (Oppenheimer-Snyder 1939). Aucun mécanisme n\'arrête la contraction vers r=0.',
+                        en:'Standard gravitational collapse (Oppenheimer-Snyder 1939). No mechanism stops contraction toward r=0.' },
+                    HORIZON: { label: lang==='fr'?'🌀 HORIZON':'🌀 HORIZON', color:'#ff4400',
+                        fr:'Horizon des événements formé à R_s = 2GM/c². Rien ne peut s\'échapper. La contraction continue vers la singularité.',
+                        en:'Event horizon formed at R_s = 2GM/c². Nothing escapes. Contraction continues toward singularity.' },
+                    BLACK_HOLE: { label: lang==='fr'?'🔴 SINGULARITÉ ρ→∞':'🔴 SINGULARITY ρ→∞', color:'#ff4444',
+                        fr:'Singularité nue : ρ → ∞, courbure → ∞. Les équations de la RG cessent de fonctionner. Pas de jets, pas de restauration du vide. Brisure mathématique.',
+                        en:'Naked singularity: ρ → ∞, curvature → ∞. GR equations break down. No jets, no void restoration. Mathematical breakdown.' }
+                };
+                const gpd = grPhaseData[phase] || grPhaseData.STABLE;
+                const glegText = gpd[lang] || gpd.fr;
+                const glegH = 80;
+                const glegY = h - glegH - 8;
+                ctx.fillStyle = 'rgba(20,5,5,0.88)';
+                ctx.fillRect(8, glegY, w - 16, glegH);
+                ctx.strokeStyle = gpd.color;
+                ctx.lineWidth = 1.5;
+                ctx.strokeRect(8, glegY, w - 16, glegH);
+                ctx.fillStyle = gpd.color;
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText(gpd.label, 16, glegY + 18);
+                ctx.fillStyle = '#ccc'; ctx.font = '10px Arial';
+                const gwords = glegText.split(' ');
+                let gline = '', glineY = glegY + 36;
+                gwords.forEach(wd => {
+                    const test = gline + wd + ' ';
+                    if(ctx.measureText(test).width > w - 32 && gline) {
+                        ctx.fillText(gline, 16, glineY);
+                        gline = wd + ' '; glineY += 13;
+                    } else gline = test;
+                    if(glineY > glegY + glegH - 4) return;
+                });
+                if(glineY <= glegY + glegH - 4) ctx.fillText(gline, 16, glineY);
             }
         }
         
@@ -2644,47 +3382,87 @@
                 ctx.stroke();
             });
             
-            // STATUS BOX ON CANVAS (TSTU only)
+            // STATUS BOX ON CANVAS (TSTU)
             if(isTSTU) {
                 const perturbFactor = perturbTimer > 0 ? Math.max(0.05, perturbTimer / PERTURB_DURATION) : 1.0;
                 const K_cur_hz = K_EFF_HZ * perturbFactor;
                 const isPerturbed = perturbTimer > 0;
-                
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
-                ctx.fillRect(10, 10, 260, 112);
+
+                ctx.fillStyle = 'rgba(0,0,0,0.88)';
+                ctx.fillRect(10, 10, 265, 120);
                 ctx.strokeStyle = isPerturbed ? '#ff4444' : '#00d4ff';
                 ctx.lineWidth = 2;
-                ctx.strokeRect(10, 10, 260, 112);
-                
+                ctx.strokeRect(10, 10, 265, 120);
+
                 ctx.fillStyle = '#00d4ff';
-                ctx.font = 'bold 13px Arial';
-                ctx.fillText('ÉTAT SYNCHRONISATION:', 20, 30);
-                
-                let status, statusColor;
-                if(syncOrder < 0.3) { status = 'CHAOS 🔴'; statusColor = '#ff4444'; }
-                else if(syncOrder < 0.7) { status = 'TRANSITION 🟡'; statusColor = '#ffaa00'; }
-                else { status = 'SYNCHRONISÉ 🟢'; statusColor = '#00ff00'; }
-                
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText('ÉTAT SYNCHRONISATION ÆTHER:', 18, 28);
+
+                let status, statusColor, consciousLabel;
+                if(syncOrder < 0.3) {
+                    status = 'CHAOS 🔴'; statusColor = '#ff4444';
+                    consciousLabel = isPerturbed ? '⚡ ANESTHÉSIE (kétamine)' : '⚫ INCONSCIENT';
+                } else if(syncOrder < 0.7) {
+                    status = 'TRANSITION 🟡'; statusColor = '#ffaa00';
+                    consciousLabel = '🟡 TRANSITION';
+                } else {
+                    status = 'SYNCHRONISÉ 🟢'; statusColor = '#00ff88';
+                    consciousLabel = '🟢 CONSCIENT — criticité SOC';
+                }
+
                 ctx.fillStyle = statusColor;
-                ctx.font = 'bold 17px Arial';
-                ctx.fillText(status, 20, 54);
-                
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText(status, 18, 50);
+
+                // Consciousness badge
+                ctx.fillStyle = statusColor === '#00ff88' ? 'rgba(0,80,40,0.7)' : 'rgba(60,0,0,0.7)';
+                ctx.fillRect(18, 57, 238, 20);
+                ctx.fillStyle = statusColor;
+                ctx.font = 'bold 11px Arial';
+                ctx.fillText(consciousLabel, 24, 70);
+
                 ctx.fillStyle = '#aaa';
-                ctx.font = '11px Arial';
-                ctx.fillText(`r = ${syncOrder.toFixed(3)}   |   K = ${K_cur_hz.toFixed(1)} Hz`, 20, 73);
-                ctx.fillText(`K_eff = ${K_EFF_HZ} Hz  |  K_c = ${K_C_NUM} Hz  |  ratio ≈ ${(K_EFF_HZ/K_C_NUM).toFixed(1)}`, 20, 88);
-                
+                ctx.font = '10px Arial';
+                ctx.fillText(`r = ${syncOrder.toFixed(3)}  |  K = ${K_cur_hz.toFixed(1)} Hz  |  K_eff/K_c = ${(K_cur_hz/K_C_NUM).toFixed(2)}`, 18, 86);
+                ctx.fillText(`K_eff=${K_EFF_HZ} Hz  K_c=${K_C_NUM} Hz  ratio≈${(K_EFF_HZ/K_C_NUM).toFixed(1)}  (Paper VII)`, 18, 100);
+
                 if(isPerturbed) {
                     ctx.fillStyle = '#ff6644';
-                    ctx.font = 'bold 11px Arial';
-                    ctx.fillText(`⚡ PERTURBATION — récupération…`, 20, 104);
+                    ctx.font = 'bold 10px Arial';
+                    ctx.fillText(lang==='fr'?'Récupération en cours…':'Recovery in progress…', 18, 114);
                     ctx.fillStyle = '#ff4444';
-                    ctx.fillRect(20, 110, Math.max(0, (perturbTimer / PERTURB_DURATION)) * 220, 5);
+                    ctx.fillRect(18, 118, Math.max(0, (perturbTimer / PERTURB_DURATION)) * 230, 4);
                 } else {
-                    ctx.fillStyle = '#888';
-                    ctx.font = '11px Arial';
-                    ctx.fillText(`K_eff/K_c ≈ 2 → criticité auto-organisée (Paper VII)`, 20, 104);
+                    ctx.fillStyle = '#555';
+                    ctx.font = '10px Arial';
+                    ctx.fillText(lang==='fr'?'Cliquez ⚡ Perturber pour simuler anesthésie':'Click ⚡ Perturb to simulate anaesthesia', 18, 116);
                 }
+            } else {
+                // GR status box
+                const perturbFactor = perturbTimer > 0 ? Math.max(0.05, perturbTimer / PERTURB_DURATION) : 1.0;
+                ctx.fillStyle = 'rgba(0,0,0,0.88)';
+                ctx.fillRect(10, 10, 265, 90);
+                ctx.strokeStyle = '#555';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(10, 10, 265, 90);
+
+                ctx.fillStyle = '#aaa';
+                ctx.font = 'bold 12px Arial';
+                ctx.fillText('ÉTAT SYNCHRONISATION GR:', 18, 28);
+
+                ctx.fillStyle = '#ff6644';
+                ctx.font = 'bold 16px Arial';
+                ctx.fillText(lang==='fr'?'CHAOS PERMANENT 🔴':'PERMANENT CHAOS 🔴', 18, 50);
+
+                ctx.fillStyle = 'rgba(60,0,0,0.7)';
+                ctx.fillRect(18, 55, 238, 20);
+                ctx.fillStyle = '#ff6644';
+                ctx.font = 'bold 11px Arial';
+                ctx.fillText(lang==='fr'?'⚫ INCONSCIENT — sous-critique':'⚫ UNCONSCIOUS — sub-critical', 24, 68);
+
+                ctx.fillStyle = '#666';
+                ctx.font = '10px Arial';
+                ctx.fillText(`K_GR = ${K_GR_HZ} Hz  <  K_c = ${K_C_NUM} Hz  →  r ≈ 0`, 18, 86);
             }
         }
         
@@ -2767,7 +3545,7 @@
             ctxE.fillStyle = '#888';
             ctxE.fillText('--- Kepler', w - 230, 25);
             ctxE.fillStyle = '#ffaa00';
-            ctxE.fillText('— Observé', w - 230, 45);
+            ctxE.fillText(lang==='fr'?'— Observé':'— Observed', w - 230, 45);
             ctxE.fillStyle = '#00d4ff';
             ctxE.fillText('— ÆTHER', w - 230, 65);
         }
@@ -2875,7 +3653,7 @@
             // Axis labels
             ctxE.fillStyle = '#00d4ff';
             ctxE.font = '13px Arial';
-            ctxE.fillText('Temps (ms)', w/2 - 35, h - 10);
+            ctxE.fillText(lang==='fr'?'Temps (ms)':'Time (ms)', w/2 - 35, h - 10);
             ctxE.save();
             ctxE.translate(14, h/2 + 40);
             ctxE.rotate(-Math.PI/2);
@@ -2885,7 +3663,7 @@
             // Title
             ctxE.fillStyle = '#00d4ff';
             ctxE.font = 'bold 13px Arial';
-            ctxE.fillText('Évolution de la Synchronisation en Temps Réel', m + 10, 22);
+            ctxE.fillText(lang==='fr'?'Évolution de la Synchronisation en Temps Réel':'Real-Time Synchronisation Evolution', m + 10, 22);
             
             if(syncHistory.length < 2) return;
             
@@ -2971,7 +3749,7 @@
                 document.getElementById('m4').textContent = (time / (2 * Math.PI)).toFixed(1);
                 
                 const progress = (time % (2 * Math.PI * 10)) / (2 * Math.PI * 10) * 100;
-                document.getElementById('timelineFill').style.width = progress + '%';
+                setTimelineProgress(progress);
                 document.getElementById('timeDisplay').textContent = (time / (2 * Math.PI)).toFixed(1) + ' années';
             } else if(mode === 'p9') {
                 document.getElementById('m1').textContent = tnoObjects.length;
@@ -2983,7 +3761,7 @@
                 document.getElementById('m4').textContent = phiExt.toFixed(4);
                 
                 const progress = (time % 100) / 100 * 100;
-                document.getElementById('timelineFill').style.width = progress + '%';
+                setTimelineProgress(progress);
                 document.getElementById('timeDisplay').textContent = (time * 10).toFixed(1) + ' années';
             } else if(mode === 'galaxy') {
                 const Menc = galaxyMass * Math.pow(10 / galaxyRadius, 1.5);
@@ -3000,7 +3778,7 @@
                 document.getElementById('m4').textContent = (time * 10).toFixed(1);
                 
                 const progress = (time % 100) / 100 * 100;
-                document.getElementById('timelineFill').style.width = progress + '%';
+                setTimelineProgress(progress);
                 document.getElementById('timeDisplay').textContent = (time * 10).toFixed(1) + ' Myr';
             } else if(mode === 'blackhole') {
                 document.getElementById('m1').textContent = (bhRadius / 1000).toFixed(1);
@@ -3013,8 +3791,8 @@
                 document.getElementById('m4').textContent = (rs / 1000).toFixed(1);
                 
                 const progress = collapsing ? Math.min(100, (1 - bhRadius / 1e6) * 100) : 0;
-                document.getElementById('timelineFill').style.width = progress + '%';
-                document.getElementById('timeDisplay').textContent = collapsing ? 'Effondrement...' : phase;
+                setTimelineProgress(progress);
+                document.getElementById('timeDisplay').textContent = collapsing ? 'Effondrement...' : phase; updateCollapseBtn();
             } else if(mode === 'jwst') {
                 const fcA = jwstFcoreAether.length ? jwstFcoreAether[jwstFcoreAether.length-1] : 0;
                 const fcL = jwstFcoreLCDM.length   ? jwstFcoreLCDM[jwstFcoreLCDM.length-1]   : 0;
@@ -3024,17 +3802,19 @@
                 document.getElementById('m3').textContent = advance;
                 document.getElementById('m4').textContent = jwstStep + ' / ' + JWST_T_MAX;
                 const progress = jwstStep / JWST_T_MAX * 100;
-                document.getElementById('timelineFill').style.width = progress + '%';
+                setTimelineProgress(progress);
                 const tGyr = (jwstStep / JWST_T_MAX) * 14;
                 document.getElementById('timeDisplay').textContent = tGyr.toFixed(1) + ' Gyr';
             } else if(mode === 'aetheron') {
                 const metrics = aeGetMetrics();
-                document.getElementById('m1').textContent = metrics.omega_peak.toFixed(2);
-                document.getElementById('m2').textContent = metrics.Q.toFixed(1);
+                document.getElementById('m1').textContent = metrics.omega_peak.toFixed(3);
+                // Replace fake Q factor with alpha stability parameter
+                const ae_alpha = (AE_LAM * AE_LAM) / (AE_G * AE_M2);
+                document.getElementById('m2').textContent = Math.abs(ae_alpha).toFixed(2) + (Math.abs(ae_alpha) > 4 ? ' ✅' : ' ❌');
                 document.getElementById('m3').textContent = metrics.harmonics + '/5';
                 document.getElementById('m4').textContent = metrics.Qosc.toFixed(3);
                 const progress = (aeTime % 100) / 100 * 100;
-                document.getElementById('timelineFill').style.width = progress + '%';
+                setTimelineProgress(progress);
                 document.getElementById('timeDisplay').textContent = 't = ' + aeTime.toFixed(1);
             } else {
                 let sumX_tstu = 0, sumY_tstu = 0;
@@ -3057,7 +3837,7 @@
                 document.getElementById('m4').textContent = (time * 100).toFixed(0);
                 
                 const progress = (time % 10) / 10 * 100;
-                document.getElementById('timelineFill').style.width = progress + '%';
+                setTimelineProgress(progress);
                 document.getElementById('timeDisplay').textContent = (time * 100).toFixed(0) + ' ms';
             }
         }
@@ -3149,11 +3929,11 @@
             if(jwstDone) {
                 ctx.fillStyle = isAether ? '#00ff88' : '#ff8888';
                 ctx.font = 'bold 12px Arial';
-                ctx.fillText(isAether ? '✅ Collapse précoce — JWST expliqué' : '❌ Structures tardives — tension JWST', 18, 68);
+                ctx.fillText(isAether ? (lang==='fr'?'✅ Collapse précoce — JWST expliqué':'✅ Early collapse — JWST explained') : (lang==='fr'?'❌ Structures tardives — tension JWST':'❌ Late structures — JWST tension'), 18, 68);
             } else if(!jwstRunning) {
                 ctx.fillStyle = '#ffcc00';
                 ctx.font = 'bold 12px Arial';
-                ctx.fillText('▶ Cliquez "🚀 Lancer la Course" pour démarrer', 18, 68);
+                ctx.fillText(lang==='fr'?'▶ Cliquez "🚀 Lancer la Course" pour démarrer':'▶ Click "🚀 Launch the Race" to start', 18, 68);
             } else {
                 ctx.fillStyle = isAether ? '#00d4ff' : '#aaa';
                 ctx.font = '12px Arial';
@@ -3202,7 +3982,7 @@
 
             ctxE.fillStyle = '#00d4ff';
             ctxE.font = '13px Arial';
-            ctxE.fillText("Fraction masse centrale f_core(t)", m, m-8);
+            ctxE.fillText(lang==='fr'?'Fraction masse centrale f_core(t)':'Central mass fraction f_core(t)', m, m-8);
             ctxE.fillStyle = '#888';
             ctxE.font = '11px Arial';
             ctxE.fillText('Temps cosmique (Gyr)', (m + lw)/2 - 40, h-8);
@@ -3937,7 +4717,7 @@
             } else {
                 ctxE.fillStyle = '#445';
                 ctxE.font = '12px Arial';
-                ctxE.fillText('En attente de simulation…', mLeft + tsW / 2 - 60, mTop + tsH / 2);
+                ctxE.fillText(lang==='fr'?'En attente de simulation…':'Waiting for simulation…', mLeft + tsW / 2 - 60, mTop + tsH / 2);
             }
 
             // ── RIGHT: Power spectrum ──
@@ -3965,7 +4745,7 @@
             const mature = aeTime > 40;
             ctxE.fillStyle = mature ? 'rgba(0,255,100,0.7)' : 'rgba(255,180,0,0.8)';
             ctxE.font = '10px Arial';
-            ctxE.fillText(mature ? `✅ Régime stationnaire (t=${aeTime.toFixed(0)})` : `⏳ Attendre t>40 pour spectre fiable (t=${aeTime.toFixed(0)})`, spLeft + 10, mTop + 24);
+            ctxE.fillText(mature ? (lang==='fr'?`✅ Régime stationnaire (t=${aeTime.toFixed(0)})`:`✅ Steady state (t=${aeTime.toFixed(0)})`) : (lang==='fr'?`⏳ Attendre t>40 pour spectre fiable (t=${aeTime.toFixed(0)})`:`⏳ Wait t>40 for reliable spectrum (t=${aeTime.toFixed(0)})`), spLeft + 10, mTop + 24);
 
             if (aeSpectrum.length > 10) {
                 const maxPow = Math.max(...aeSpectrum.slice(1));
@@ -4021,7 +4801,7 @@
             } else {
                 ctxE.fillStyle = '#445';
                 ctxE.font = '12px Arial';
-                ctxE.fillText('En attente de données spectrales…', spLeft + spW / 2 - 80, mTop + tsH / 2);
+                ctxE.fillText(lang==='fr'?'En attente de données spectrales…':'Waiting for spectral data…', spLeft + spW / 2 - 80, mTop + tsH / 2);
             }
 
             // Disclaimer
@@ -4030,16 +4810,51 @@
             ctxE.fillText('⚠️ Analogie classique — non émergence QM  |  Addendum IV: zenodo.org/records/17954376', 12, h - 8);
         }
 
-        function launchAetheron() {
+        // Ætheron regime descriptions — bilingual
+        const AE_REGIME_DESC = {
+            fr: [
+                '🌌 <strong>Cosmologique</strong> — β_eff = 8.8×10⁻² (champ φ non-écranté dans les voids). Amplitude A₀=0.9 : oscillon fortement non-linéaire, harmoniques visibles dans le spectre DFT. Représente les Ætherons dans le vide cosmique.',
+                '🌍 <strong>Terre (écranté)</strong> — β_eff = 4.2×10⁻⁸ (Addendum A Table 1). Amplitude A₀=0.35 : oscillon faiblement excité, spectre plus propre. Le champ φ est comprimé par la densité terrestre (5.5 g/cm³). Facteur de screening ×2.3×10⁶.',
+                '☀️ <strong>Soleil (écranté)</strong> — β_eff = 9.0×10⁻⁸ (Addendum A Table 1). Amplitude A₀=0.30 : oscillation très atténuée. Densité solaire centrale (~150 g/cm³) écrase presque complètement le champ. Compatible contraintes Cassini (<10⁻⁵).'
+            ],
+            en: [
+                '🌌 <strong>Cosmological</strong> — β_eff = 8.8×10⁻² (unscreened φ field in cosmic voids). Amplitude A₀=0.9: strongly non-linear oscillon, harmonics visible in DFT spectrum. Represents Ætherons in the cosmic void.',
+                '🌍 <strong>Earth (screened)</strong> — β_eff = 4.2×10⁻⁸ (Addendum A Table 1). Amplitude A₀=0.35: weakly excited oscillon, cleaner spectrum. The φ field is compressed by terrestrial density (5.5 g/cm³). Screening factor ×2.3×10⁶.',
+                '☀️ <strong>Sun (screened)</strong> — β_eff = 9.0×10⁻⁸ (Addendum A Table 1). Amplitude A₀=0.30: strongly attenuated oscillation. Solar core density (~150 g/cm³) almost completely suppresses the field. Compatible with Cassini constraints (<10⁻⁵).'
+            ]
+        };
+
+        function selectAeRegime(idx) { trackEvent('aetheron_regime', {regime: AE_REGIMES[idx]?.key || idx});
+            aeRegimeIdx = idx;
+            const r = AE_REGIMES[idx];
+            // Update screening button label (in controls panel)
+            const lbl = document.getElementById('lblScreeningBtn');
+            if(lbl) lbl.textContent = (lang==='fr'?'Screening: ':'Screening: ') + r.label;
+            // Update quick-switch button states
+            [0,1,2].forEach(i => {
+                const btn = document.getElementById('aeBtn' + i);
+                if(btn) btn.classList.toggle('active', i === idx);
+            });
+            // Update explainer
+            updateAeRegimeExplainer();
+            // Restart sim
             initAetheron();
             aeRunning = true;
+            animating = true;
         }
 
-        function cycleScreening() {
-            aeRegimeIdx = (aeRegimeIdx + 1) % AE_REGIMES.length;
-            const r = AE_REGIMES[aeRegimeIdx];
-            document.getElementById('lblScreeningBtn').textContent = 'Screening: ' + r.label;
-            // Restart sim with new regime
+        function updateAeRegimeExplainer() {
+            const el = document.getElementById('aeRegimeExplainer');
+            if(!el) return;
+            const l = lang || 'fr';
+            const descs = AE_REGIME_DESC[l] || AE_REGIME_DESC.fr;
+            el.innerHTML = descs[aeRegimeIdx] || descs[0];
+            // Color by regime
+            const colors = ['#00d4ff', '#44ff88', '#ffcc00'];
+            el.style.borderLeftColor = colors[aeRegimeIdx] || '#aa00ff';
+        }
+
+        function launchAetheron() {
             initAetheron();
             aeRunning = true;
         }
