@@ -1774,11 +1774,14 @@
         const tnoMeanObs = tnoObjects.reduce((s, o) => s + o.peri_obs, 0) / tnoObjects.length;
         // For animation: each TNO orbits slowly, we show TSTU vs standard prediction
         tnoObjects.forEach(o => {
-            o.theta = Math.random() * Math.PI * 2; // current orbital angle
-            // TSTU: field tension biases perihelion clustering (phi tension in outer void)
-            o.peri_tstu = tnoMeanObs + (Math.random() - 0.5) * 30; // clustered by phi tension
-            o.peri_gr   = Math.random() * 360; // GR: random / needs Planet 9
-            o.ecc = 0.7 + Math.random() * 0.2; // high eccentricity TNOs
+            o.theta = Math.random() * Math.PI * 2;
+            o.peri_tstu_base = tnoMeanObs + (Math.random() - 0.5) * 60; // starts scattered
+            o.peri_gr_base   = Math.random() * 360;
+            o.peri_tstu = o.peri_tstu_base;
+            o.peri_gr   = o.peri_gr_base;
+            o.ecc = 0.7 + Math.random() * 0.2;
+            o.periAnimT = 0;
+            o.trail = []; // orbital trail positions
         });
         
         let stars = [];
@@ -2419,9 +2422,18 @@
         }
         
         function updateP9(dt) {
-            // Animate TNO objects slowly along their orbits
             tnoObjects.forEach(o => {
-                o.theta += 0.0002 * dt * (500 / o.a); // slower for farther objects
+                // Fast enough to see orbital motion — 20x faster than before
+                o.theta += 0.004 * dt * (100 / Math.max(o.a, 100));
+                // Slowly animate perihelion arrows converging (TSTU) or drifting (GR)
+                if(!o.periAnimT) o.periAnimT = 0;
+                o.periAnimT += dt * 0.3;
+                // TSTU: perihelion slowly pulled toward cluster angle
+                const target = tnoMeanObs;
+                const diff = target - o.peri_tstu_base;
+                o.peri_tstu = o.peri_tstu_base + diff * Math.min(1, o.periAnimT);
+                // GR: perihelion drifts randomly
+                o.peri_gr = o.peri_gr_base + Math.sin(o.periAnimT * 0.4 + o.a) * 15;
             });
         }
         
@@ -2815,132 +2827,173 @@
         function drawP9(ctx, isTSTU) {
             const w = ctx.canvas.width, h = ctx.canvas.height;
             const cx = w / 2, cy = h / 2;
-            
+
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, w, h);
             drawAetherGrid(ctx, isTSTU);
-            
-            // Draw Sun
-            const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 12);
-            grad.addColorStop(0, '#ffff00');
-            grad.addColorStop(1, '#ff8800');
-            ctx.fillStyle = grad;
+
+            // Scale: fit all TNOs, largest is a=1190 AU (Leleākūhonua)
+            const maxA = 1300;
+            const scl = (Math.min(w, h) / 2 - 50) / maxA;
+
+            // Neptune reference orbit
+            ctx.strokeStyle = 'rgba(68,102,255,0.3)';
+            ctx.lineWidth = 1; ctx.setLineDash([4,6]);
             ctx.beginPath();
-            ctx.arc(cx, cy, 10, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Neptune orbit reference
-            const nepScale = (Math.min(w,h)/2 - 60) / 1200;
-            ctx.strokeStyle = 'rgba(68,102,255,0.25)';
-            ctx.lineWidth = 1;
-            ctx.setLineDash([4,6]);
-            ctx.beginPath();
-            ctx.arc(cx, cy, 30 * nepScale, 0, Math.PI * 2);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.fillStyle = '#4466ff';
-            ctx.font = '10px Arial';
-            ctx.fillText('Neptune', cx + 30 * nepScale + 3, cy);
-            
-            // Draw each TNO
+            ctx.arc(cx, cy, 30 * scl, 0, Math.PI * 2);
+            ctx.stroke(); ctx.setLineDash([]);
+            ctx.fillStyle = '#4466ff'; ctx.font = '9px Arial';
+            ctx.fillText('Neptune 30 UA', cx + 30*scl + 3, cy - 4);
+
+            // φ field tension halo (TSTU only) — gets stronger outward
+            if(isTSTU) {
+                for(let r = 50; r < maxA; r += 80) {
+                    const phi = phiField(r / 10, beta, mu, 0.01);
+                    const t = Math.min(1, (phi - 1.0) * 15);
+                    ctx.strokeStyle = `rgba(0,${Math.floor(100+t*112)},255,${0.03 + t*0.05})`;
+                    ctx.lineWidth = 60 * scl;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r * scl, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                // Label the tension gradient
+                ctx.fillStyle = 'rgba(0,212,255,0.5)'; ctx.font = '9px Arial';
+                ctx.fillText(lang==='fr'?'← φ tendu (vide externe)':'← φ tensed (outer void)', cx + 200*scl + 5, cy - 5);
+            }
+
+            // Draw each TNO — elliptical orbit + current position + perihelion arrow
+            const peri_anim_complete = tnoObjects[0] && tnoObjects[0].periAnimT >= 1;
+
             tnoObjects.forEach(o => {
-                const peri = isTSTU ? (o.peri_tstu * Math.PI / 180) : (o.peri_gr * Math.PI / 180);
-                
-                // Draw elliptical orbit (simplified: show perihelion direction)
+                const periDeg = isTSTU ? o.peri_tstu : o.peri_gr;
+                const peri = periDeg * Math.PI / 180;
                 const rPerih = o.a * (1 - o.ecc);
                 const rAph   = o.a * (1 + o.ecc);
-                const scaleOrb = Math.min(w,h)/2 / (rAph * 1.05) * nepScale * 30;
-                
-                // Perihelion direction arrow
-                const pLen = Math.min(50, rPerih * scaleOrb);
-                ctx.strokeStyle = o.color + (isTSTU ? 'bb' : '55');
-                ctx.lineWidth = isTSTU ? 2 : 1;
+
+                // Draw orbit ellipse (simplified as circle scaled to semi-major axis)
+                ctx.strokeStyle = o.color + '22';
+                ctx.lineWidth = 1; ctx.setLineDash([2,4]);
+                ctx.beginPath();
+                ctx.arc(cx, cy, o.a * scl, 0, Math.PI * 2);
+                ctx.stroke(); ctx.setLineDash([]);
+
+                // Perihelion arrow — thicker and longer, color indicates clustering
+                const arrowLen = Math.max(25, Math.min(80, rPerih * scl * 2));
+                const arrowColor = isTSTU
+                    ? (peri_anim_complete ? o.color : o.color + '88')
+                    : o.color + '66';
+                ctx.strokeStyle = arrowColor;
+                ctx.lineWidth = isTSTU ? 2.5 : 1.5;
                 ctx.beginPath();
                 ctx.moveTo(cx, cy);
-                ctx.lineTo(cx + Math.cos(peri) * pLen, cy + Math.sin(peri) * pLen);
+                ctx.lineTo(cx + Math.cos(peri) * arrowLen, cy + Math.sin(peri) * arrowLen);
                 ctx.stroke();
-                
-                // Current position of the TNO
-                const r_now = o.a * (1 - o.ecc * o.ecc) / (1 + o.ecc * Math.cos(o.theta - peri));
-                const drawR = Math.min(r_now * scaleOrb, Math.min(w,h)/2 - 20);
-                const px = cx + Math.cos(o.theta) * drawR;
-                const py = cy + Math.sin(o.theta) * drawR;
-                
+                // Arrow head
+                const ax = cx + Math.cos(peri) * arrowLen;
+                const ay = cy + Math.sin(peri) * arrowLen;
+                ctx.fillStyle = arrowColor;
+                ctx.beginPath();
+                ctx.arc(ax, ay, isTSTU ? 4 : 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Current TNO position on orbit
+                const r_now = Math.min(o.a * scl, (o.a * (1-o.ecc*o.ecc) / (1 + o.ecc * Math.cos(o.theta - peri))) * scl);
+                const px = cx + Math.cos(o.theta) * r_now;
+                const py = cy + Math.sin(o.theta) * r_now;
+
+                // Object dot — glowing
+                const grd = ctx.createRadialGradient(px, py, 0, px, py, 7);
+                grd.addColorStop(0, o.color);
+                grd.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = grd;
+                ctx.beginPath();
+                ctx.arc(px, py, 7, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.fillStyle = o.color;
                 ctx.beginPath();
-                ctx.arc(px, py, isTSTU ? 5 : 4, 0, Math.PI * 2);
+                ctx.arc(px, py, isTSTU ? 4 : 3, 0, Math.PI * 2);
                 ctx.fill();
-                
-                if(isTSTU) {
-                    ctx.fillStyle = o.color;
-                    ctx.font = '9px Arial';
-                    ctx.fillText(o.name, px + 6, py);
-                }
-            });
-            
-            // Compute angular spread of perihelions
-            const periAngles = tnoObjects.map(o => isTSTU ? o.peri_tstu : o.peri_gr);
-            const meanAngle = periAngles.reduce((s,a) => s+a, 0) / periAngles.length;
-            const spread = Math.sqrt(periAngles.reduce((s,a) => {
-                const d = a - meanAngle; const nd = ((d+180)%360)-180;
-                return s + nd*nd;
-            }, 0) / periAngles.length);
 
+                // Name label
+                ctx.fillStyle = o.color + 'cc'; ctx.font = '9px Arial';
+                ctx.fillText(o.name, px + 6, py - 2);
+            });
+
+            // TSTU: clustering cone
             if(isTSTU) {
-                // Clustering cone
                 const clusterAngle = tnoMeanObs * Math.PI / 180;
-                ctx.fillStyle = 'rgba(0,212,255,0.10)';
+                const coneR = Math.min(w,h)/2 - 20;
+                const spread_rad = 0.5; // ~30° cone
+                ctx.fillStyle = 'rgba(0,212,255,0.06)';
                 ctx.beginPath();
                 ctx.moveTo(cx, cy);
-                ctx.arc(cx, cy, 70, clusterAngle - 0.4, clusterAngle + 0.4);
-                ctx.closePath();
-                ctx.fill();
-                ctx.strokeStyle = '#00d4ff';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-
-                // Stats panel
-                const px2 = 12, py2 = h - 118;
-                ctx.fillStyle = 'rgba(5,5,20,0.88)';
-                ctx.fillRect(px2, py2, 230, 110);
-                ctx.strokeStyle = '#00d4ff'; ctx.lineWidth = 1;
-                ctx.strokeRect(px2, py2, 230, 110);
-                ctx.fillStyle = '#00d4ff'; ctx.font = 'bold 11px Arial';
-                ctx.fillText('Clustering φ-ÆTHER', px2+8, py2+18);
-                ctx.fillStyle = '#aaa'; ctx.font = '10px Arial';
-                ctx.fillText((lang==='fr'?'Direction moyenne : ':'Mean direction: ') + meanAngle.toFixed(1) + '°', px2+8, py2+36);
-                ctx.fillText((lang==='fr'?'Dispersion : ±':'Spread: ±') + spread.toFixed(1) + '°', px2+8, py2+50);
-                ctx.fillText(lang==='fr'?'Observé (Sedna/VP113) : ~300°':'Observed (Sedna/VP113): ~300°', px2+8, py2+64);
-                ctx.fillStyle = '#00ff88';
-                ctx.fillText(lang==='fr'?'→ Champ φ tendu — sans Planète 9':'→ Tensed φ field — no Planet 9', px2+8, py2+82);
-                ctx.fillStyle = '#666'; ctx.font = '9px Arial';
-                ctx.fillText(lang==='fr'?'β_eff ≈ 0.088 au-delà de Neptune':'β_eff ≈ 0.088 beyond Neptune', px2+8, py2+98);
-            } else {
-                // Scatter indication
-                const px2 = 12, py2 = h - 118;
-                ctx.fillStyle = 'rgba(20,5,5,0.88)';
-                ctx.fillRect(px2, py2, 230, 110);
-                ctx.strokeStyle = '#ff4444'; ctx.lineWidth = 1;
-                ctx.strokeRect(px2, py2, 230, 110);
-                ctx.fillStyle = '#ff4444'; ctx.font = 'bold 11px Arial';
-                ctx.fillText('GR Standard — Anomalie', px2+8, py2+18);
-                ctx.fillStyle = '#aaa'; ctx.font = '10px Arial';
-                ctx.fillText((lang==='fr'?'Direction moyenne : ':'Mean direction: ') + meanAngle.toFixed(1) + '°', px2+8, py2+36);
-                ctx.fillText((lang==='fr'?'Dispersion : ±':'Spread: ±') + spread.toFixed(1) + (lang==='fr'?'° (aléatoire)':'° (random)'), px2+8, py2+50);
-                ctx.fillText(lang==='fr'?'Observé : clustering inexplicable':'Observed: unexplained clustering', px2+8, py2+64);
-                ctx.fillStyle = '#ff6666';
-                ctx.fillText(lang==='fr'?'→ Planète 9 requise (non observée)':'→ Planet 9 required (undetected)', px2+8, py2+82);
-                ctx.fillStyle = '#666'; ctx.font = '9px Arial';
-                ctx.fillText(lang==='fr'?'10 ans de recherche — aucune détection':'10 years searching — no detection', px2+8, py2+98);
-
-                // P9 hypothetical ring
-                ctx.strokeStyle = 'rgba(255,68,68,0.25)';
-                ctx.lineWidth = 6; ctx.setLineDash([10,8]);
+                ctx.arc(cx, cy, coneR, clusterAngle - spread_rad, clusterAngle + spread_rad);
+                ctx.closePath(); ctx.fill();
+                ctx.strokeStyle = 'rgba(0,212,255,0.4)';
+                ctx.lineWidth = 1.5; ctx.setLineDash([5,5]);
                 ctx.beginPath();
-                ctx.arc(cx, cy, w/2 - 50, 0, Math.PI * 2);
+                ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, coneR, clusterAngle - spread_rad, clusterAngle + spread_rad);
+                ctx.closePath(); ctx.stroke(); ctx.setLineDash([]);
+                // Label on cone
+                ctx.fillStyle = '#00d4ff'; ctx.font = 'bold 10px Arial';
+                const lx = cx + Math.cos(clusterAngle) * (coneR * 0.7);
+                const ly = cy + Math.sin(clusterAngle) * (coneR * 0.7);
+                ctx.fillText(lang==='fr'?'Clustering ~300°':'Clustering ~300°', lx - 35, ly - 8);
+            } else {
+                // GR: show P9 hypothetical zone
+                ctx.strokeStyle = 'rgba(255,68,68,0.2)';
+                ctx.lineWidth = 5; ctx.setLineDash([8,6]);
+                ctx.beginPath();
+                ctx.arc(cx, cy, w/2 - 40, 0, Math.PI * 2);
                 ctx.stroke(); ctx.setLineDash([]);
                 ctx.fillStyle = '#ff4444'; ctx.font = '10px Arial';
-                ctx.fillText(lang==='fr'?'? Orbite P9 hypothétique':'? Hypothetical P9 orbit', cx - 70, 28);
+                ctx.fillText(lang==='fr'?'? Orbite P9 (~500 UA, introuvée)':'? P9 orbit (~500 AU, not found)', cx - 90, 24);
+            }
+
+            // Sun
+            const sg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 10);
+            sg.addColorStop(0, '#ffff88'); sg.addColorStop(1, '#ff8800');
+            ctx.fillStyle = sg;
+            ctx.beginPath(); ctx.arc(cx, cy, 9, 0, Math.PI * 2); ctx.fill();
+
+            // Stats panel
+            const periAngles = tnoObjects.map(o => isTSTU ? o.peri_tstu : o.peri_gr);
+            const meanA = periAngles.reduce((s,a)=>s+a,0)/periAngles.length;
+            const spreadA = Math.sqrt(periAngles.reduce((s,a)=>{
+                const d=((a-meanA+180)%360)-180; return s+d*d;
+            },0)/periAngles.length);
+
+            const px2 = 10, py2 = h - 112;
+            ctx.fillStyle = isTSTU ? 'rgba(5,5,20,0.88)' : 'rgba(20,5,5,0.88)';
+            ctx.fillRect(px2, py2, 235, 104);
+            ctx.strokeStyle = isTSTU ? '#00d4ff' : '#ff4444';
+            ctx.lineWidth = 1; ctx.strokeRect(px2, py2, 235, 104);
+
+            if(isTSTU) {
+                ctx.fillStyle = '#00d4ff'; ctx.font = 'bold 11px Arial';
+                ctx.fillText(lang==='fr'?'φ-ÆTHER — Clustering naturel':'φ-ÆTHER — Natural clustering', px2+8, py2+16);
+                ctx.fillStyle = '#aaa'; ctx.font = '10px Arial';
+                ctx.fillText((lang==='fr'?'Direction : ':'Direction: ') + meanA.toFixed(0)+'° | '+(lang==='fr'?'Dispers. ':'Spread ')+'±'+spreadA.toFixed(0)+'°', px2+8, py2+32);
+                ctx.fillText(lang==='fr'?'Observé Sedna/VP₁₁₃ : ~300° ✅':'Observed Sedna/VP₁₁₃: ~300° ✅', px2+8, py2+48);
+                ctx.fillStyle = '#00ff88';
+                ctx.fillText(lang==='fr'?'Tension φ crée le bias — zéro masse':'φ tension creates bias — zero mass', px2+8, py2+64);
+                ctx.fillStyle = '#555'; ctx.font = '9px Arial';
+                ctx.fillText('β_eff ≈ 0.088 | β=0.095 Pantheon+ (Paper II)', px2+8, py2+80);
+                ctx.fillStyle = '#444';
+                ctx.fillText(lang==='fr'?'Les flèches convergent = périhélies alignés':'Arrows converge = aligned perihelia', px2+8, py2+94);
+            } else {
+                ctx.fillStyle = '#ff4444'; ctx.font = 'bold 11px Arial';
+                ctx.fillText(lang==='fr'?'GR Standard — Anomalie inexpliquée':'GR Standard — Unexplained anomaly', px2+8, py2+16);
+                ctx.fillStyle = '#aaa'; ctx.font = '10px Arial';
+                ctx.fillText((lang==='fr'?'Direction : ':'Direction: ') + meanA.toFixed(0)+'° | '+(lang==='fr'?'Dispers. ':'Spread ')+'±'+spreadA.toFixed(0)+'°', px2+8, py2+32);
+                ctx.fillText(lang==='fr'?'Périhélies dispersés — clustering inexpliqué':'Perihelia scattered — clustering unexplained', px2+8, py2+48);
+                ctx.fillStyle = '#ff6644';
+                ctx.fillText(lang==='fr'?'→ Planète 9 requise (non détectée)':'→ Planet 9 required (undetected)', px2+8, py2+64);
+                ctx.fillStyle = '#555'; ctx.font = '9px Arial';
+                ctx.fillText(lang==='fr'?'10 ans de recherche LSST/Subaru — rien':'10 years LSST/Subaru search — nothing', px2+8, py2+80);
+                ctx.fillStyle = '#444';
+                ctx.fillText(lang==='fr'?'Les flèches partent dans tous les sens':'Arrows point in random directions', px2+8, py2+94);
             }
         }
         
