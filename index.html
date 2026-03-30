@@ -927,24 +927,19 @@
             </div>
 
             <!-- Panneau éphémérides — visible en mode Solar uniquement -->
-            <div id="ephemerisPanel" style="display:none; margin-top:12px; padding:10px 14px; background:rgba(0,20,40,0.7); border-radius:8px; border:1px solid rgba(0,212,255,0.25);">
+            <div id="ephemerisPanel" style="display:block; margin-top:12px; padding:10px 14px; background:rgba(0,20,40,0.7); border-radius:8px; border:1px solid rgba(0,212,255,0.25);">
                 <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
-                    <span style="color:#00d4ff; font-weight:bold; font-size:0.9em;">🌍 Positions Réelles</span>
-                    <button onclick="ephSetNow()" style="background:rgba(0,212,255,0.2); border:1px solid #00d4ff; color:#00d4ff; padding:3px 10px; border-radius:4px; cursor:pointer; font-size:0.8em;">📡 Maintenant</button>
-                    <button onclick="ephToggleMode()" id="ephModeBtn" style="background:rgba(0,150,80,0.2); border:1px solid #00aa55; color:#00aa55; padding:3px 10px; border-radius:4px; cursor:pointer; font-size:0.8em;">🔄 Mode : Réel</button>
+                    <span style="color:#00d4ff; font-weight:bold; font-size:0.9em;">📡 Positions planétaires réelles</span>
+                    <button onclick="ephSetNow()" style="background:rgba(0,212,255,0.15); border:1px solid #00d4ff; color:#00d4ff; padding:3px 12px; border-radius:4px; cursor:pointer; font-size:0.82em;">📅 Aujourd'hui</button>
                 </div>
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                     <div style="display:flex; align-items:center; gap:6px;">
-                        <label style="color:#aaa; font-size:0.8em;">📅 Date :</label>
-                        <input type="date" id="ephDateInput" style="background:#0a1520; border:1px solid #336; color:#ddd; padding:3px 8px; border-radius:4px; font-size:0.85em;" onchange="ephSetDate()">
-                    </div>
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <label style="color:#aaa; font-size:0.8em;">⏱️ Vitesse :</label>
-                        <input type="range" id="ephSpeedSlider" min="-6" max="6" step="1" value="0" style="width:100px;" oninput="ephSetSpeed(this.value)">
-                        <span id="ephSpeedLabel" style="color:#00d4ff; font-size:0.8em; min-width:60px;">Pause</span>
+                        <label style="color:#aaa; font-size:0.8em;">Vitesse :</label>
+                        <input type="range" id="ephSpeedSlider" min="-4" max="4" step="1" value="2" style="width:120px;" oninput="ephSetSpeed(this.value)">
+                        <span id="ephSpeedLabel" style="color:#00d4ff; font-size:0.82em; min-width:70px;">1 mois/s</span>
                     </div>
                 </div>
-                <div id="ephDateDisplay" style="color:#ffcc00; font-size:0.78em; margin-top:6px; font-family:monospace;"></div>
+                <div id="ephDateDisplay" style="color:#ffcc00; font-size:0.82em; margin-top:5px; font-family:monospace;"></div>
             </div>
             
             <div class="metrics-grid">
@@ -2215,6 +2210,16 @@
 
         function resetSim() {
             time = 0;
+            if(mode === 'solar') {
+                // En mode solaire : recalibrer sur aujourd'hui
+                ephJD = dateToJD(new Date());
+                ephLastTs = null;
+                ephUpdateDisplay();
+                const spd = document.getElementById('ephSpeedSlider');
+                if(spd) { spd.value = 2; const idx=6; ephSpeedDays=EPH_SPEEDS_MAP[idx];
+                    const lbl=document.getElementById('ephSpeedLabel'); if(lbl) lbl.textContent=EPH_SPEED_LBLS[idx]; }
+                return; // ne pas randomiser les planètes en mode éphémérides
+            }
             planets.forEach(p => {
                 p.theta_tstu = Math.random() * Math.PI * 2;
                 p.theta_gr = p.theta_tstu;
@@ -2434,10 +2439,10 @@
         // Référence : Meeus "Astronomical Algorithms" ch.31-33
         // ══════════════════════════════════════════════════════
 
-        let ephMode = true;          // true = positions réelles, false = simulation
-        let ephJD = 0;               // Jour Julien courant
-        let ephSpeedDays = 0;        // jours/seconde (0=pause, >0=futur, <0=passé)
-        let ephLastTs = null;        // timestamp dernière frame
+        let ephMode = true;          // toujours actif — positions réelles en permanence
+        let ephJD = 2451545.0;       // J2000.0 par défaut (1 Jan 2000) — sera mis à jour par ephInit
+        let ephSpeedDays = 1;        // jours/seconde par défaut (1 j/s)
+        let ephLastTs = null;
 
         // Éléments orbitaux J2000 + dérivées séculaires (deg & deg/siècle)
         // Source : Meeus Table 31.a
@@ -2528,8 +2533,6 @@
         function ephSetNow() {
             ephJD = dateToJD(new Date());
             ephLastTs = null;
-            const d = jdToDate(ephJD);
-            document.getElementById('ephDateInput').value = d.toISOString().slice(0,10);
             ephUpdateDisplay();
         }
 
@@ -2541,71 +2544,84 @@
             ephUpdateDisplay();
         }
 
-        const EPH_SPEEDS = [0, 1, 7, 30, 365, 3650, 36500, -1, -7, -30, -365, -3650, -36500];
-        const EPH_SPEED_LABELS = ['Pause','1 j/s','1 sem/s','1 mois/s','1 an/s','10 ans/s','100 ans/s',
-                                   '-1 j/s','-1 sem/s','-1 mois/s','-1 an/s','-10 ans/s','-100 ans/s'];
-        function ephSetSpeed(v) {
-            const idx = parseInt(v) + 6; // slider -6..6 → index 0..12
-            ephSpeedDays = EPH_SPEEDS[idx] || 0;
-            document.getElementById('ephSpeedLabel').textContent = EPH_SPEED_LABELS[idx] || 'Pause';
-        }
+        // Slider -4..4 : négatif=passé, 0=pause, positif=futur
+        // Calibré sur Mercure (88j = 1 tour) :
+        // +1 = 11j/s (lent) | +2 = 44j/s (½ tour Mercure/s) | +3 = 88j/s (1 tour/s) | +4 = 365j/s (1an/s)
+        const EPH_SPEEDS_MAP = [-365, -88, -44, -11,  0,  11, 44, 88, 365];
+        const EPH_SPEED_LBLS = ['◀ 1an/s','◀ 1t☿/s','◀ ½t☿/s','◀ lent',
+                                 '⏸ Pause',
+                                 'lent ▶','½t☿/s ▶','1t☿/s ▶','1an/s ▶'];
+        // ephSetSpeed défini plus bas avec reset ephLastTs
 
-        function ephToggleMode() {
-            ephMode = !ephMode;
-            const btn = document.getElementById('ephModeBtn');
-            btn.textContent = ephMode ? '🔄 Mode : Réel' : '🔄 Mode : Simulation';
-            btn.style.color = ephMode ? '#00aa55' : '#ffaa00';
-            btn.style.borderColor = ephMode ? '#00aa55' : '#ffaa00';
-        }
+        // ephToggleMode supprimé — mode réel permanent
 
         function ephUpdateDisplay() {
             const d = jdToDate(ephJD);
+            if(!d || isNaN(d.getTime())) return; // guard against invalid date
             const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
-            const str = `📅 ${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}  |  JD ${ephJD.toFixed(1)}`;
             const el = document.getElementById('ephDateDisplay');
-            if(el) el.textContent = str;
-
-            // Mettre à jour les positions planétaires réelles
-            if(ephMode) {
-                const nameMap = {
-                    'Mercure':'Mercury','Mercury':'Mercury',
-                    'Vénus':'Venus','Venus':'Venus',
-                    'Terre':'Earth','Earth':'Earth',
-                    'Mars':'Mars',
-                    'Jupiter':'Jupiter',
-                    'Saturne':'Saturn','Saturn':'Saturn',
-                    'Uranus':'Uranus',
-                    'Neptune':'Neptune'
-                };
-                planets.forEach(p => {
-                    const engName = nameMap[p.name];
-                    if(!engName) return;
-                    const pos = ephGetPosition(engName, ephJD);
-                    if(!pos) return;
-                    // Convertir coordonnées héliocentriques → angles pour le simulateur
-                    p.theta_gr = Math.atan2(pos.y, pos.x);
-                    // TSTU : même position de départ + légère précession accumulée
-                    p.theta_tstu = p.theta_gr + p.precAngle;
-                });
+            if(el) el.textContent = `📅 ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+            // Set date input manually — avoid toISOString which can throw
+            const inp = document.getElementById('ephDateInput');
+            if(inp) {
+                const y = d.getUTCFullYear();
+                const m = String(d.getUTCMonth()+1).padStart(2,'0');
+                const day = String(d.getUTCDate()).padStart(2,'0');
+                inp.value = `${y}-${m}-${day}`;
             }
+
+            // Mise à jour positions planétaires réelles
+            const nameMap = {
+                'Mercure':'Mercury','Mercury':'Mercury',
+                'Vénus':'Venus','Venus':'Venus',
+                'Terre':'Earth','Earth':'Earth',
+                'Mars':'Mars','Jupiter':'Jupiter',
+                'Saturne':'Saturn','Saturn':'Saturn',
+                'Uranus':'Uranus','Neptune':'Neptune'
+            };
+            planets.forEach(p => {
+                const engName = nameMap[p.name];
+                if(!engName) return;  // Terre incluse — éphémérides Earth disponibles
+                const pos = ephGetPosition(engName, ephJD);
+                if(!pos) return;
+                p.theta_gr   = Math.atan2(pos.y, pos.x);
+                p.theta_tstu = p.theta_gr + p.precAngle;
+            });
         }
 
         function ephTick(ts) {
-            if(!ephMode || ephSpeedDays === 0) { ephLastTs = null; return; }
-            if(ephLastTs !== null) {
-                const dt_sec = (ts - ephLastTs) / 1000;
-                ephJD += ephSpeedDays * dt_sec;
-                ephUpdateDisplay();
+            if(typeof ts !== 'number') { ephLastTs = null; return; }
+            if(ephSpeedDays === 0) { ephLastTs = ts; return; }
+            if(ephLastTs !== null && typeof ephLastTs === 'number') {
+                const dt_sec = Math.min((ts - ephLastTs) / 1000, 0.1);
+                if(dt_sec > 0) {
+                    ephJD += ephSpeedDays * dt_sec;
+                    if(!isNaN(ephJD)) ephUpdateDisplay();
+                }
             }
             ephLastTs = ts;
         }
 
-        // Init éphémérides au chargement
+        function ephSetSpeed(v) {
+            const idx = Math.max(0, Math.min(8, parseInt(v) + 4));
+            ephSpeedDays = EPH_SPEEDS_MAP[idx];
+            const el = document.getElementById('ephSpeedLabel');
+            if(el) el.textContent = EPH_SPEED_LBLS[idx];
+            ephLastTs = null; // reset pour éviter un grand saut après changement de vitesse
+        }
+
         function ephInit() {
             ephJD = dateToJD(new Date());
-            const d = jdToDate(ephJD);
-            document.getElementById('ephDateInput').value = d.toISOString().slice(0,10);
-            document.getElementById('ephSpeedLabel').textContent = 'Pause';
+            ephLastTs = null;
+            // Vitesse par défaut : 1 sem/s (slider 2 → idx 6 → 7 j/s)
+            const spd = document.getElementById('ephSpeedSlider');
+            if(spd) {
+                spd.value = 2;
+                const idx = 2 + 4; // = 6
+                ephSpeedDays = EPH_SPEEDS_MAP[idx];
+                const lbl = document.getElementById('ephSpeedLabel');
+                if(lbl) lbl.textContent = EPH_SPEED_LBLS[idx];
+            }
             ephUpdateDisplay();
         }
 
@@ -2615,31 +2631,32 @@
             planets.forEach(p => {
                 const geff = effectiveGravity(p.a, beta, mu, 1.0);
                 const omega_tstu = Math.sqrt(geff / Math.pow(p.a, 3));
-                const prevTheta = p.theta_tstu;
-                p.theta_tstu += omega_tstu * dt;
+                const omega_gr   = Math.sqrt(1.0 / Math.pow(p.a, 3));
 
-                const omega_gr = Math.sqrt(1.0 / Math.pow(p.a, 3));
-                p.theta_gr += omega_gr * dt;
-
-                // Track cumulative precession angle (TSTU - GR difference)
+                // Précession TSTU accumulée (différence angulaire TSTU - GR)
                 p.precAngle += (omega_tstu - omega_gr) * dt;
 
-                // Count orbits for Mercury
-                if(p.name === "Mercure" || p.name === "Mercury") {
-                    if(prevTheta % (2*Math.PI) > p.theta_tstu % (2*Math.PI)) p.orbits++;
-                }
+                // Les angles sont mis à jour par ephTick via ephUpdateDisplay
+                // theta_tstu = theta_gr (éphéméride) + précession TSTU accumulée
+                p.theta_tstu = p.theta_gr + p.precAngle;
 
+                // Trails
                 const x_t = p.a * Math.cos(p.theta_tstu);
                 const y_t = p.a * Math.sin(p.theta_tstu);
                 const x_g = p.a * Math.cos(p.theta_gr);
                 const y_g = p.a * Math.sin(p.theta_gr);
-
                 p.trailL.push({x: x_t, y: y_t});
                 p.trailR.push({x: x_g, y: y_g});
-
                 const maxTrail = p.a > 10 ? 100 : 150;
                 if(p.trailL.length > maxTrail) p.trailL.shift();
                 if(p.trailR.length > maxTrail) p.trailR.shift();
+
+                // Compteur orbites Mercure
+                if(p.name === 'Mercure' || p.name === 'Mercury') {
+                    if(p._prevTheta !== undefined &&
+                       p._prevTheta % (2*Math.PI) > p.theta_gr % (2*Math.PI)) p.orbits++;
+                    p._prevTheta = p.theta_gr;
+                }
             });
         }
         
@@ -2911,20 +2928,20 @@
                     ctx.stroke();
                 }
 
-                // φ(r) colour legend — right side
+                // φ(r) colour legend — matches the green halo gradient
                 const legX = w - 90, legY = h - 130;
                 const grad = ctx.createLinearGradient(legX, legY, legX, legY + 90);
-                grad.addColorStop(0, 'rgba(0,210,255,0.9)');
-                grad.addColorStop(1, 'rgba(0,40,180,0.9)');
+                grad.addColorStop(0, 'rgba(0,210,120,0.9)');   // cyan-vert : φ tendu (vide)
+                grad.addColorStop(1, 'rgba(0,60,40,0.9)');     // vert foncé : φ écranté (dense)
                 ctx.fillStyle = grad;
                 ctx.fillRect(legX, legY, 10, 90);
-                ctx.fillStyle = '#00d4ff'; ctx.font = '9px Arial';
-                ctx.fillText(lang==='fr'?'φ tendu':'φ tensed', legX + 14, legY + 8);
-                ctx.fillText(lang==='fr'?'(vide)':'(void)', legX + 14, legY + 20);
-                ctx.fillStyle = '#4466ff';
-                ctx.fillText('φ\u2080 écranté', legX + 14, legY + 84);
+                ctx.fillStyle = '#00d4aa'; ctx.font = '9px Arial';
+                ctx.fillText('φ tendu', legX + 14, legY + 8);
+                ctx.fillText('(vide)', legX + 14, legY + 20);
+                ctx.fillStyle = '#336644';
+                ctx.fillText('φ écranté', legX + 14, legY + 84);
                 ctx.fillStyle = '#555';
-                ctx.fillText(lang==='fr'?'Champ φ(r)':'φ(r) field', legX - 2, legY - 6);
+                ctx.fillText('Champ φ(r)', legX - 2, legY - 6);
             }
 
             drawAetherGrid(ctx, isTSTU);
@@ -4017,6 +4034,22 @@
             ctxE.fillText(lang==='fr'?'— Observé':'— Observed', w - 230, 45);
             ctxE.fillStyle = '#00d4ff';
             ctxE.fillText('— ÆTHER', w - 230, 65);
+
+            // Badge : % d'accord ÆTHER vs observé à r=10 kpc
+            const r_ref = 10;
+            const Menc_ref = galaxyMass * Math.pow(r_ref / galaxyRadius, 1.5);
+            const v_tstu_ref = rotationVelocityTSTU(r_ref, Menc_ref, beta, mu) * 200;
+            const v_obs_ref  = rotationVelocityObserved(r_ref);
+            const pct_diff = Math.abs((v_tstu_ref - v_obs_ref) / v_obs_ref * 100);
+            const pct_col  = pct_diff < 3 ? '#00ff88' : (pct_diff < 10 ? '#ffcc00' : '#ff6644');
+            ctxE.fillStyle = 'rgba(5,5,20,0.85)';
+            ctxE.fillRect(m, m, 280, 38);
+            ctxE.strokeStyle = pct_col; ctxE.lineWidth=1; ctxE.strokeRect(m, m, 280, 38);
+            ctxE.fillStyle = pct_col; ctxE.font='bold 12px Arial';
+            ctxE.fillText(`Accord ÆTHER/Obs. à r=10 kpc : ${pct_diff < 1 ? '<1' : pct_diff.toFixed(1)}%`, m+8, m+15);
+            ctxE.fillStyle='#aaa'; ctxE.font='10px Arial';
+            const vDiff = (v_tstu_ref - v_obs_ref).toFixed(0);
+            ctxE.fillText(`v_ÆTHER=${v_tstu_ref.toFixed(0)} km/s  v_obs=${v_obs_ref.toFixed(0)} km/s  Δ=${vDiff} km/s`, m+8, m+30);
         }
         
         function drawPhiProfile() {
@@ -4201,6 +4234,20 @@
             ctxE.fillText(`— ÆTHER  K_eff=${K_EFF_HZ}Hz > K_c=${K_C_NUM}Hz  (ratio≈${(K_EFF_HZ/K_C_NUM).toFixed(1)}, Paper VII)`, m + 10, h - m - (h - 2*m) * 0.9 - 5);
             ctxE.fillStyle = '#ff6666';
             ctxE.fillText(`— Standard  K=${K_GR_HZ}Hz < K_c  →  chaos permanent`, m + 10, h - m - (h - 2*m) * 0.08 + 12);
+
+            // Badge criticité en temps réel
+            const lastPt = syncHistory.length ? syncHistory[syncHistory.length-1] : null;
+            const r_now = lastPt ? lastPt.r_tstu : 0;
+            let critState, critCol;
+            if(r_now < 0.3)       { critState = '🔴 Désynchronisé — chaos'; critCol = '#ff4444'; }
+            else if(r_now < 0.7)  { critState = '🟡 Transition — émergence'; critCol = '#ffcc00'; }
+            else                   { critState = '🟢 Synchronisé — conscience'; critCol = '#00ff88'; }
+            ctxE.fillStyle='rgba(5,5,20,0.85)'; ctxE.fillRect(m, h-m-50, 320, 44);
+            ctxE.strokeStyle=critCol; ctxE.lineWidth=1.5; ctxE.strokeRect(m, h-m-50, 320, 44);
+            ctxE.fillStyle=critCol; ctxE.font='bold 12px Arial';
+            ctxE.fillText(critState, m+8, h-m-32);
+            ctxE.fillStyle='#aaa'; ctxE.font='10px Arial';
+            ctxE.fillText(`r_ÆTHER = ${r_now.toFixed(3)}  |  K_eff/K_c = ${(K_EFF_HZ/K_C_NUM).toFixed(2)}  |  Criticité auto-organisée`, m+8, h-m-14);
         }
         
         // METRICS
@@ -4220,14 +4267,15 @@
                 const progress = (time % (2 * Math.PI * 10)) / (2 * Math.PI * 10) * 100;
                 setTimelineProgress(progress);
 
-                if(ephMode) {
-                    // En mode éphémérides : afficher la date réelle
-                    const d = jdToDate(ephJD);
-                    const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+                const d = isNaN(ephJD) ? null : jdToDate(ephJD);
+                const months = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+                if(d && !isNaN(d.getTime())) {
+                    const yearsOffset = (ephJD - dateToJD(new Date())) / 365.25;
+                    const offsetStr = yearsOffset >= 0
+                        ? `+${yearsOffset.toFixed(1)} ans`
+                        : `${yearsOffset.toFixed(1)} ans`;
                     document.getElementById('timeDisplay').textContent =
-                        `${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
-                } else {
-                    document.getElementById('timeDisplay').textContent = (time / (2 * Math.PI)).toFixed(1) + ' années';
+                        `${months[d.getUTCMonth()]} ${d.getUTCFullYear()} (${offsetStr})`;
                 }
             } else if(mode === 'p9') {
                 document.getElementById('m1').textContent = tnoObjects.length;
@@ -5658,6 +5706,8 @@
 
         // INIT
         updateUI();
+        // Init éphémérides au démarrage (mode solar par défaut)
+        ephInit();
         animate();
     </script>
 </body>
